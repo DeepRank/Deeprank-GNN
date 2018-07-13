@@ -6,12 +6,12 @@ Use Graph CNN to rank conformations.
 ## Installation
 
 The code is build so far on all the otjher tools developped in the DeepRank project. Hence you will need:
-  . deeprank: https://github.com/DeepRank/deeprank
-  . iScore : https://github.com/DeepRank/iScore
+  * deeprank: https://github.com/DeepRank/deeprank
+  * iScore : https://github.com/DeepRank/iScore
 
 You'll also need:
-  . pytorch_geometric : https://github.com/rusty1s/pytorch_geometric
-  . networkx : https://github.com/networkx/networkx
+  * pytorch_geometric : https://github.com/rusty1s/pytorch_geometric
+  * networkx : https://github.com/networkx/networkx
 
 When all the dependencies are installed just clone the repo and install it with:
 
