@@ -174,4 +174,4 @@ if __name__ == "__main__":
     pdb = 'data/pdb/1ATN_149w.pdb'
     pssm = {'A':'./data/pssm/1ATN.A.pdb.pssm','B':'./data/pssm/1ATN.B.pdb.pssm'}
     graph = ResidueGraph(pdb,pssm)
-    lgraph,g,lg = Graph.get_line_graph(graph)
+    lgraph = Graph.get_line_graph(graph)

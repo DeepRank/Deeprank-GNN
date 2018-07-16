@@ -90,7 +90,7 @@ class Graph(object):
         for key in nx_line_graph.edges.keys():
             lg.edge_index.append([dict_node[key[0]],dict_node[key[1]]])
 
-        return lg, nx_graph, nx_line_graph
+        return lg
 
     def score(self,decoy,ref):
 

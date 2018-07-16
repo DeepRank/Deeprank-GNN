@@ -9,7 +9,7 @@ import h5py
 class HDF5DataSet(Dataset):
 
     def __init__(self,root,database=None,transform=None,pre_transform=None,
-                dict_filter = None, target='dockQ',tqdm = True):
+                dict_filter = None, target='dockQ',tqdm = True, index=None):
         super().__init__(root,transform,pre_transform)
 
         # allow for multiple database
@@ -20,6 +20,7 @@ class HDF5DataSet(Dataset):
         self.target = target
         self.dict_filter = dict_filter
         self.tqdm = tqdm
+        self.index = index
 
         # check if the files are ok
         self.check_hdf5_files()
@@ -85,7 +86,7 @@ class HDF5DataSet(Dataset):
         grp = f5[mol]
 
         #nodes
-        x = torch.tensor(grp['node'].value,dtype=torch.float)
+        x = torch.tensor(grp['node'].value[:,0],dtype=torch.float)
 
         # index ! we have to have all the edges i.e : (i,j) and (j,i)
         ind = grp['edge_index'].value
@@ -137,7 +138,10 @@ class HDF5DataSet(Dataset):
                 data_tqdm.set_postfix(mol=os.path.basename(fdata))
             try:
                 fh5 = h5py.File(fdata,'r')
-                mol_names = list(fh5.keys())
+                if self.index is None:
+                    mol_names = list(fh5.keys())
+                else:
+                    mol_names = [list(fh5.keys())[i] for i in self.index]
                 for k in mol_names:
                     if self.filter(fh5[k]):
                         self.index_complexes += [(fdata,k)]

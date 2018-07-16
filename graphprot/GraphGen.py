@@ -17,7 +17,7 @@ class GraphHDF5(object):
         f5 = h5py.File(outfile,'w')
         f5line = h5py.File('line'+outfile,'w')
 
-        for name in pdbs[:10]:
+        for name in pdbs:
 
             print('Creating graph of PDB %s' %name)
 
