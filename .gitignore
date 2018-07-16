@@ -1,0 +1,16 @@
+#Byte-compiled / optimized 
+*__pycache__*
+
+# distribution 
+deeprank.egg-info
+
+
+# datafile
+*.pdb
+*.db
+*.izone
+*.lzone
+*.ref_pairs
+
+# hdf5
+*.hdf5
