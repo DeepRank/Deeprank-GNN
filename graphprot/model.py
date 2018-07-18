@@ -14,15 +14,22 @@ from DataSet import HDF5DataSet
 index = np.arange(400)
 #np.random.shuffle(index)
 
-index_train = index[:300]
-index_test = index[300:]
+index_train = index[:1]
+index_test = index[:1]
 
-train_dataset = HDF5DataSet(root='./',database='graph_residue.hdf5',index=index_train)
-train_loader = DataLoader(train_dataset, batch_size=10, shuffle=False)
-d = train_dataset.get(1)
 
-test_dataset = HDF5DataSet(root='./',database='graph_residue.hdf5',index=index_test)
-test_loader = DataLoader(test_dataset, batch_size=10, shuffle=False)
+h5 = 'graph_residue.hdf5'
+node_feature = ['type','bsa']
+edge_attr = ['dist']
+
+train_dataset = HDF5DataSet(root='./',database=h5,index=index_train,
+                            node_feature=node_feature,edge_attr=edge_attr)
+train_loader = DataLoader(train_dataset, batch_size=1, shuffle=False)
+d = train_dataset.get(0)
+
+test_dataset = HDF5DataSet(root='./',database=h5,index=index_test,
+                           node_feature=node_feature,edge_attr=edge_attr)
+test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 
 
@@ -35,10 +42,10 @@ def normalized_cut_2d(edge_index, pos):
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = SplineConv(d.num_features, 32, dim=3, kernel_size=5)
-        self.conv2 = SplineConv(32, 64, dim=3, kernel_size=5)
-        self.fc1 = torch.nn.Linear(64, 128)
-        self.fc2 = torch.nn.Linear(128, 1)
+        self.conv1 = SplineConv(d.num_features, 16, dim=3, kernel_size=3)
+        self.conv2 = SplineConv(16, 8, dim=3, kernel_size=3)
+        self.fc1 = torch.nn.Linear(8, 64)
+        self.fc2 = torch.nn.Linear(64, 1)
 
     def forward(self, data):
         data.x = F.elu(self.conv1(data.x, data.edge_index,data.edge_attr))
@@ -93,7 +100,7 @@ def test():
     return loss_val
 
 
-for epoch in range(1, 31):
-    train(epoch)
-    test_acc = test()
-    print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))
+# for epoch in range(1, 31):
+#     train(epoch)
+#     test_acc = test()
+#     print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))

@@ -3,6 +3,8 @@ import numpy as np
 from collections import OrderedDict, namedtuple
 from deeprank.features import AtomicFeature
 from deeprank.tools import StructureSimilarity
+
+from atomic_data import ELEMENTS
 import pkg_resources
 
 from Graph import Graph
@@ -88,7 +90,8 @@ class AtomicGraph(Graph):
     @staticmethod
     def _hot_encoding(feat):
         feat[0] = {'A':0,'B':1}[feat[0]]
-        feat[1] = {'H':1,'C':6,'N':7,'O':8,'S':16}[feat[1][0]]
+        atom_data = ELEMENTS[feat[1][0]]
+        feat[1] = atom_data.number
         return feat
 
     def _get_edge_attribute(self):

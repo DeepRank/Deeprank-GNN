@@ -73,6 +73,7 @@ if __name__ == '__main__':
     pssm_path = './data/pssm'
     ref = './data/ref'
 
-    GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,graph_type='residue',outfile='graph_residue.hdf5')
+    GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,
+              graph_type='atomic',outfile='graph_atomic.hdf5')
 
 
