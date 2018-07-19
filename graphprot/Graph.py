@@ -3,6 +3,7 @@ from deeprank.tools import StructureSimilarity
 import numpy as np
 import networkx as nx
 from collections import OrderedDict
+import time
 
 class Graph(object):
 
@@ -41,11 +42,13 @@ class Graph(object):
 
         # create a nx graph
         # that should be the default ....
+        #t0 = time.time()
         nx_graph = nx.Graph()
         for index in g.edge_index:
             i,j = index
             nx_graph.add_edge(i,j)
         nx_line_graph = nx.line_graph(nx_graph)
+        #print(' __ networkx %f' %(time.time()-t0))
 
         #make a new instance of the class
         # and copy some attributes
@@ -58,11 +61,14 @@ class Graph(object):
         lg.num_edges = nx_line_graph.number_of_edges()
 
         # the node feature are now edge_attr + node_feat1 + node_feat2
-        lg.node_feature_str = g.edge_feature_str+g.node_feature_str+g.node_feature_str
+        nodefeat1 = [x+'_1' for x in g.node_feature_str]
+        nodefeat2 = [x+'_2' for x in g.node_feature_str]
+        lg.node_feature_str = g.edge_feature_str + nodefeat1 + nodefeat2
 
         # crete a dict of node (i,e edge index) new node index
         dict_node = OrderedDict()
         lg.node, lg.pos = [], []
+        #t0 = time.time()
         for iN,key in enumerate(nx_line_graph.nodes.keys()):
 
             # map edge_index <-> new node index
@@ -80,16 +86,24 @@ class Graph(object):
             lg.node.append(edge_attr+node_feat_1+node_feat_2)
             pos = 0.5*(g.pos[key[0]]+g.pos[key[1]])
             lg.pos.append(pos)
+        #print(' __ Nodes %f' %(time.time()-t0))
 
         # numbr of node feature
         lg.num_node_features = len(lg.node[0])
 
         # create the edge
         lg.edge_index = []
-        lg.edge_feature_str = 'None'
+        lg.edge_feature_str = g.node_feature_str
+        lg.edge_attr = []
+
+        #t0 = time.time()
         for key in nx_line_graph.edges.keys():
             lg.edge_index.append([dict_node[key[0]],dict_node[key[1]]])
 
+            index_node = list(set(key[0]).intersection(key[1]))[0]
+            lg.edge_attr.append(g.node[index_node])
+        #print(' __ Edges %f' %(time.time()-t0))
+        
         return lg
 
     def score(self,decoy,ref):

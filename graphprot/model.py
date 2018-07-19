@@ -14,22 +14,30 @@ from DataSet import HDF5DataSet
 index = np.arange(400)
 #np.random.shuffle(index)
 
-index_train = index[:1]
-index_test = index[:1]
+index_train = index[:300]
+index_test = index[300:]
 
 
 h5 = 'graph_residue.hdf5'
 node_feature = ['type','bsa']
 edge_attr = ['dist']
 
+h5 = 'graph_atomic.hdf5'
+node_feature = ['name','charge']
+edge_attr = ['dist']
+
+h5 = 'linegraph_atomic.hdf5'
+node_feature = ['name','charge']
+edge_attr = ['dist']
+
 train_dataset = HDF5DataSet(root='./',database=h5,index=index_train,
                             node_feature=node_feature,edge_attr=edge_attr)
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False)
 d = train_dataset.get(0)
 
 test_dataset = HDF5DataSet(root='./',database=h5,index=index_test,
                            node_feature=node_feature,edge_attr=edge_attr)
-test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 
 

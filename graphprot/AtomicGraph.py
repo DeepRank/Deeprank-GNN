@@ -9,7 +9,7 @@ import pkg_resources
 
 from Graph import Graph
 
-
+import time
 
 class AtomicGraph(Graph):
 
@@ -28,27 +28,38 @@ class AtomicGraph(Graph):
         self.node_feature_str = [name.strip() for name in node_feature_str.split(',')]
         self.edge_feature_str = [name.strip() for name in edge_feature_str.split(',')]
 
+
+        #t0 = time.time()
         self.atfeat = AtomicFeature(self.pdb,
                        contact_distance = self.contact_distance,
                        param_charge = self.FF + 'protein-allhdg5-4_new.top',
                        param_vdw    = self.FF + 'protein-allhdg5-4_new.param',
                        patch_file   = self.FF + 'patch.top')
+        #print(' __ Init Graph %f' %(time.time()-t0))
 
-
+        #t0 = time.time()
         self.atfeat.assign_parameters()
+        #print(' __ Parameters %f' %(time.time()-t0))
 
         # only compute the pair interactions here
+        #t0 = time.time()
         self.atfeat.evaluate_pair_interaction()
+        #print(' __ Interaction %f' %(time.time()-t0))
 
         # get the pairs
+        #t0 = time.time()
         self._get_pair()
+        #print(' __ Get pair %f' %(time.time()-t0))
 
         # get edge attrs
+        #t0 = time.time()
         self._get_edge_attribute()
+        #print(' __ Get Edge %f' %(time.time()-t0))
 
         # get the edge within one chain
+        #t0 = time.time()
         self._get_internal_edges()
-
+        #print(' __ Get Internal Edge %f' %(time.time()-t0))
 
     def _get_pair(self):
 

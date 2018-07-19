@@ -1,8 +1,10 @@
-import os
+import os, sys
 import h5py
 from AtomicGraph import AtomicGraph
 from ResidueGraph import ResidueGraph
 from Graph import Graph
+from tqdm import tqdm
+import time
 
 class GraphHDF5(object):
 
@@ -17,9 +19,14 @@ class GraphHDF5(object):
         f5 = h5py.File(outfile,'w')
         f5line = h5py.File('line'+outfile,'w')
 
-        for name in pdbs:
 
-            print('Creating graph of PDB %s' %name)
+        desc = '{:25s}'.format('   Create HDF5')
+        data_tqdm = tqdm(pdbs,desc=desc,file=sys.stdout)
+        #data_tqdm = pdbs[:1]
+
+        for name in data_tqdm:
+
+            #print('Creating graph of PDB %s' %name)
 
             # pdb name
             pdbfile = os.path.join(pdb_path,name)
@@ -29,7 +36,9 @@ class GraphHDF5(object):
             base_name = mol_name.split('_')[0]
 
             if graph_type == 'atomic':
+                #t0 = time.time()
                 graph = AtomicGraph(pdb=pdbfile)
+                #print('Create Graph %f' %(time.time()-t0))
 
             elif graph_type == 'residue':
                 pssm = self._get_pssm(pssm_path,mol_name,base_name)
@@ -37,14 +46,20 @@ class GraphHDF5(object):
 
             # get the score
             ref = os.path.join(ref_path,base_name+'.pdb')
+            #t0 = time.time()
             graph.score(pdbfile,ref)
+            #print('Score  Graph %f' %(time.time()-t0))
 
             #export
+            #t0 = time.time()
             graph.export_hdf5(f5)
+            #print('Export Graph %f' %(time.time()-t0))
 
             # get the line graph
+            #t0 = time.time()
             lgraph = Graph.get_line_graph(graph)
             lgraph.export_hdf5(f5line)
+            #print('Line Graph %f' %(time.time()-t0))
 
         f5.close()
         f5line.close()
@@ -74,6 +89,6 @@ if __name__ == '__main__':
     ref = './data/ref'
 
     GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,
-              graph_type='atomic',outfile='graph_atomic.hdf5')
+              graph_type='residue',outfile='graph_residue.hdf5')
 
 
