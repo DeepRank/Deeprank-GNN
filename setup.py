@@ -11,9 +11,9 @@ setup(
 
     install_requires=[
         'numpy >= 1.13',
-        'scipy',
-        'tarfiles',
-        'pickle'],
+        'scipy'],
+        #'tarfiles',
+        #'pickle'],
 
     extras_require= {
         'test': ['nose', 'coverage', 'pytest',
