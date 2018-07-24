@@ -13,7 +13,7 @@ import time
 
 class AtomicGraph(Graph):
 
-    def __init__(self,pdb=None,contact_distance=8.5,internal_contact_distance = 2.,
+    def __init__(self,pdb=None,contact_distance=8.5,internal_contact_distance = 8.5,
                 node_feature_str = 'chainID,name,x,y,z,eps,sig,charge',
                 edge_feature_str = 'dist,coulomb,vanderwaals'):
 
@@ -156,9 +156,11 @@ class AtomicGraph(Graph):
     def _get_internal_edges(self):
 
         tmp_node = np.array(self.node)
+        feat = self.node_feature_str
 
-        indexA = np.argwhere(tmp_node[:,0] == 0).ravel()
-        indexB = np.argwhere(tmp_node[:,0] == 1).ravel()
+        index_chain = feat.index('chainID')
+        indexA = np.argwhere(tmp_node[:,index_chain] == 0).ravel()
+        indexB = np.argwhere(tmp_node[:,index_chain] == 1).ravel()
 
         nodeA = tmp_node[indexA,:]
         nodeB = tmp_node[indexB,:]
@@ -191,6 +193,34 @@ class AtomicGraph(Graph):
 
 if __name__ == '__main__':
 
+    from sklearn import manifold, datasets
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+
+    import community
+
     pdb = './data/ref/1ATN.pdb'
     graph = AtomicGraph(pdb=pdb)
-    lgraph = Graph.get_line_graph(graph)
+    nx = graph.toNX(internal_edge=False)
+    #lgraph = Graph.get_line_graph(graph)
+
+    for i,j in graph.internal_edge_index:
+        if graph.node[i][0] != graph.node[j][0]:
+            print('Issue with connection',i,j,graph.node[i][0],graph.node[j][0])
+
+    part = community.best_partition(nx)
+    size = len(set(part.values()))
+    color = [v for k,v in part.items()]
+
+    n_components = 2
+    tsne = manifold.TSNE(n_components=n_components, init='pca', random_state=0)
+
+    Y = tsne.fit_transform(np.hstack((graph.pos,np.array(graph.node)[:,0].reshape(-1,1))))
+    plt.scatter(Y[:,0],Y[:,1],c=color,cmap=plt.cm.tab10)
+
+    for i in range(len(Y)):
+        plt.text(Y[i,0],Y[i,1],str(color[i]))
+
+    for i,j in graph.internal_edge_index:
+        plt.plot([Y[i,0],Y[j,0]],[Y[i,1],Y[j,1]],c='black')
+    plt.show()

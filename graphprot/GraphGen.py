@@ -21,7 +21,7 @@ class GraphHDF5(object):
 
 
         desc = '{:25s}'.format('   Create HDF5')
-        data_tqdm = tqdm(pdbs,desc=desc,file=sys.stdout)
+        data_tqdm = tqdm(pdbs[:10],desc=desc,file=sys.stdout)
         #data_tqdm = pdbs[:1]
 
         for name in data_tqdm:
@@ -57,8 +57,8 @@ class GraphHDF5(object):
 
             # get the line graph
             #t0 = time.time()
-            lgraph = Graph.get_line_graph(graph)
-            lgraph.export_hdf5(f5line)
+            #lgraph = Graph.get_line_graph(graph)
+            #lgraph.export_hdf5(f5line)
             #print('Line Graph %f' %(time.time()-t0))
 
         f5.close()
@@ -89,6 +89,6 @@ if __name__ == '__main__':
     ref = './data/ref'
 
     GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,
-              graph_type='residue',outfile='graph_residue.hdf5')
+              graph_type='atomic',outfile='graph_atomic.hdf5')
 
 

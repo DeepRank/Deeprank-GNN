@@ -171,6 +171,13 @@ class HDF5DataSet(Dataset):
                     y = y,
                     pos=pos)
 
+
+        if 'internal_edge_index' in grp:
+            internal_edge_index = grp['internal_edge_index'].value
+            data.internal_edge_index = torch.tensor(internal_edge_index.T)
+        else:
+            data.internal_edge_index = None
+
         f5.close()
         return data
 

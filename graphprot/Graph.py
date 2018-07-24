@@ -103,8 +103,27 @@ class Graph(object):
             index_node = list(set(key[0]).intersection(key[1]))[0]
             lg.edge_attr.append(g.node[index_node])
         #print(' __ Edges %f' %(time.time()-t0))
-        
+
         return lg
+
+
+    def toNX(self,internal_edge=False):
+
+        nx_graph = nx.Graph()
+
+        for iN,node in enumerate(self.node):
+            nx_graph.add_node(iN,data=node)
+
+        if not internal_edge:
+            for index in self.edge_index:
+                i,j = index
+                nx_graph.add_edge(i,j)
+        else:
+            for index in self.internal_edge_index:
+                i,j = index
+                nx_graph.add_edge(i,j)
+
+        return nx_graph
 
     def score(self,decoy,ref):
 
