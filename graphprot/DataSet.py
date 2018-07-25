@@ -10,7 +10,7 @@ class HDF5DataSet(Dataset):
 
     def __init__(self,root,database=None,transform=None,pre_transform=None,
                 dict_filter = None, target='dockQ',tqdm = True, index=None,
-                node_feature='all', edge_attr = 'all'):
+                node_feature='all', edge_attr = 'all',edge_attr_transform=lambda x: 1./x**2):
         super().__init__(root,transform,pre_transform)
 
         # allow for multiple database
@@ -24,6 +24,7 @@ class HDF5DataSet(Dataset):
         self.index = index
         self.node_feature = node_feature
         self.edge_attr = edge_attr
+        self.edge_attr_transform = edge_attr_transform
 
         # check if the files are ok
         self.check_hdf5_files()
@@ -129,6 +130,7 @@ class HDF5DataSet(Dataset):
                     print('\n'.join(self.available_edge_attr))
                     #raise ValueError('Feature Not found')
                     exit()
+
     def load_one_graph(self,fname,mol):
 
         f5 = h5py.File(fname,'r')
@@ -154,6 +156,7 @@ class HDF5DataSet(Dataset):
             else:
                 attr = grp['edge_attr'].value[:,self.edge_attr_index]
             attr = np.vstack((attr,attr))
+            attr = self.edge_attr_transform(attr)
             edge_attr = torch.tensor(attr,dtype=torch.float)
         else:
             edge_attr = None
@@ -177,6 +180,16 @@ class HDF5DataSet(Dataset):
             data.internal_edge_index = torch.tensor(internal_edge_index.T)
         else:
             data.internal_edge_index = None
+
+        if 'internal_edge_attr' in grp:
+            if self.edge_attr == 'all':
+                attr = grp['internal_edge_attr'].value
+            else:
+                attr = grp['internal_edge_attr'].value[:,self.edge_attr_index]
+            attr = self.edge_attr_transform(attr)
+            data.internal_edge_attr = torch.tensor(attr,dtype=torch.float)
+        else:
+            data.internal_edge_attr = None
 
         f5.close()
         return data

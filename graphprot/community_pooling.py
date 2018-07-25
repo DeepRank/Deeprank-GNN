@@ -76,7 +76,7 @@ def community_pooling(cluster,data):
 
     # pool the edges
     edge_index, edge_attr  = pool_edge(cluster,data.edge_index, data.edge_attr)
-    internal_edge_index, _ = pool_edge(cluster,data.internal_edge_index, None)
+    internal_edge_index, internal_edge_attr = pool_edge(cluster,data.internal_edge_index, data.internal_edge_attr)
 
     # pool the pos
     pos = scatter_mean(data.pos, cluster, dim=0)
@@ -89,11 +89,13 @@ def community_pooling(cluster,data):
         data = Batch(batch=batch, x=x, edge_index=edge_index,
                      edge_attr = edge_attr, pos = pos)
         data.internal_edge_index = internal_edge_index
+        data.internal_edge_attr = internal_edge_attr
 
     else:
         data = Data(x=x, edge_index=edge_index,
                      edge_attr = edge_attr, pos = pos)
         data.internal_edge_index = internal_edge_index
+        data.internal_edge_attr = internal_edge_attr
         data.pos2D = pos2D
 
     return data

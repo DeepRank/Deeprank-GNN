@@ -139,7 +139,7 @@ class Graph(object):
 
         keys = ['type','name','num_nodes','num_edges','pos',
                 'num_node_features','num_edge_features',
-                'node','edge_index','edge_attr','internal_edge_index',
+                'node','edge_index','edge_attr','internal_edge_index','internal_edge_attr',
                 'irmsd','lrmsd','fnat','dockQ']
 
         grp = f5.create_group(self.name)

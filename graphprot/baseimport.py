@@ -33,6 +33,8 @@ def graph(pos,edge_index,edge_attr,internal_edge_index):
 
     data.pos2D = manifold_embedding(data.pos)
 
-    cluster = community_detection(data.internal_edge_index,data.num_nodes)#,edge_attr=1./data.edge_attr**2)
+    edge_attr = edge_attr=1./data.edge_attr**2
+    edge_attr = None
+    cluster = community_detection(data.internal_edge_index,data.num_nodes,edge_attr=edge_attr)
     d2 = community_pooling(cluster,data)
     plot_graph(data,cluster,pooled_data=d2)

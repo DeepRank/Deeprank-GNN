@@ -59,6 +59,7 @@ class AtomicGraph(Graph):
         # get the edge within one chain
         #t0 = time.time()
         self._get_internal_edges()
+        self._get_internal_edge_attribute()
         #print(' __ Get Internal Edge %f' %(time.time()-t0))
 
     def _get_pair(self):
@@ -191,6 +192,41 @@ class AtomicGraph(Graph):
 
         return index_edge, index_weight
 
+    def _get_internal_edge_attribute(self):
+
+        eps0 = 1
+        c = 332.0636
+
+        self.internal_edge_attr = []
+        for i,j in self.internal_edge_index:
+
+            dict_attr = {}
+
+            # distance
+            r = 0
+            for x in ['x','y','z']:
+                r += ( getattr(self.atoms[i],x)-getattr(self.atoms[j],x) )**2
+            r = np.sqrt(r)
+            dict_attr['dist'] = r
+
+            # coulomb
+            q1q2 = self.atoms[i].charge*self.atoms[j].charge
+            coulomb = q1q2 * c / (eps0*r) * (1 - (r/self.contact_distance)**2 ) **2
+            dict_attr['coulomb'] = coulomb
+
+            # vdw terms
+            sigma_avg = 0.5*(self.atoms[i].sig + self.atoms[j].sig)
+            eps_avg = np.sqrt(self.atoms[i].eps*self.atoms[i].eps)
+
+            # normal LJ potential
+            evdw = 4.0 *eps_avg * (  (sigma_avg/r)**12  - (sigma_avg/r)**6 ) * self._prefactor_vdw(r)
+            dict_attr['vanderwaals'] = evdw
+
+            self.internal_edge_attr.append([dict_attr[name] for name in self.edge_feature_str])
+
+        self.num_internal_edge_features = len(self.internal_edge_attr[0])
+
+
 if __name__ == '__main__':
 
     from sklearn import manifold, datasets
@@ -201,26 +237,5 @@ if __name__ == '__main__':
 
     pdb = './data/ref/1ATN.pdb'
     graph = AtomicGraph(pdb=pdb)
-    nx = graph.toNX(internal_edge=False)
+    #nx = graph.toNX(internal_edge=False)
     #lgraph = Graph.get_line_graph(graph)
-
-    for i,j in graph.internal_edge_index:
-        if graph.node[i][0] != graph.node[j][0]:
-            print('Issue with connection',i,j,graph.node[i][0],graph.node[j][0])
-
-    part = community.best_partition(nx)
-    size = len(set(part.values()))
-    color = [v for k,v in part.items()]
-
-    n_components = 2
-    tsne = manifold.TSNE(n_components=n_components, init='pca', random_state=0)
-
-    Y = tsne.fit_transform(np.hstack((graph.pos,np.array(graph.node)[:,0].reshape(-1,1))))
-    plt.scatter(Y[:,0],Y[:,1],c=color,cmap=plt.cm.tab10)
-
-    for i in range(len(Y)):
-        plt.text(Y[i,0],Y[i,1],str(color[i]))
-
-    for i,j in graph.internal_edge_index:
-        plt.plot([Y[i,0],Y[j,0]],[Y[i,1],Y[j,1]],c='black')
-    plt.show()

@@ -18,7 +18,8 @@ class GraphHDF5(object):
 
 
         f5 = h5py.File(outfile,'w')
-        f5line = h5py.File('line'+outfile,'w')
+        if line:
+            f5line = h5py.File('line'+outfile,'w')
 
 
         desc = '{:25s}'.format('   Create HDF5')
@@ -64,7 +65,8 @@ class GraphHDF5(object):
                 #print('Line Graph %f' %(time.time()-t0))
 
         f5.close()
-        f5line.close()
+        if line:
+            f5line.close()
 
     @staticmethod
     def _get_pssm(pssm_path,mol_name,base_name):
