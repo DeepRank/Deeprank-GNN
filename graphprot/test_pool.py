@@ -24,7 +24,7 @@ import community
 
 target = 'irmsd'
 h5 = 'graph_atomic.hdf5'
-node_feature = ['name','charge']
+node_feature = ['chainID','name','charge']
 edge_attr = ['dist']
 
 
@@ -32,12 +32,9 @@ train_dataset = HDF5DataSet(root='./',database=h5,
                             node_feature=node_feature,edge_attr=edge_attr,
                             target=target)
 train_loader = DataLoader(train_dataset, batch_size=2, shuffle=False)
-d = train_dataset.get(1)
 
-
-cluster = community_detection(d.internal_edge_index,d.num_nodes)
-
-plot_graph(d,cluster)
-
-
-batch2 = community_pooling(cluster,d)
+d = train_dataset.get(0)
+d.pos2D = manifold_embedding(d.pos)
+cluster = community_detection(d.internal_edge_index,d.num_nodes,edge_attr=1./d.edge_attr**2)
+d2 = community_pooling(cluster,d)
+plot_graph(d,cluster,pooled_data=d2)
