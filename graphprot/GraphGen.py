@@ -8,7 +8,8 @@ import time
 
 class GraphHDF5(object):
 
-    def __init__(self,pdb_path,ref_path,graph_type='atomic',pssm_path=None,select=None,outfile='graph.hdf5'):
+    def __init__(self,pdb_path,ref_path,graph_type='atomic',pssm_path=None,
+                select=None,outfile='graph.hdf5',line=False):
 
         # get the list of PDB names
         pdbs = list(filter(lambda x: x.endswith('.pdb'),os.listdir(pdb_path)))
@@ -21,7 +22,7 @@ class GraphHDF5(object):
 
 
         desc = '{:25s}'.format('   Create HDF5')
-        data_tqdm = tqdm(pdbs[:10],desc=desc,file=sys.stdout)
+        data_tqdm = tqdm(pdbs,desc=desc,file=sys.stdout)
         #data_tqdm = pdbs[:1]
 
         for name in data_tqdm:
@@ -56,10 +57,11 @@ class GraphHDF5(object):
             #print('Export Graph %f' %(time.time()-t0))
 
             # get the line graph
-            #t0 = time.time()
-            #lgraph = Graph.get_line_graph(graph)
-            #lgraph.export_hdf5(f5line)
-            #print('Line Graph %f' %(time.time()-t0))
+            if line:
+                #t0 = time.time()
+                lgraph = Graph.get_line_graph(graph)
+                lgraph.export_hdf5(f5line)
+                #print('Line Graph %f' %(time.time()-t0))
 
         f5.close()
         f5line.close()

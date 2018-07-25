@@ -46,7 +46,6 @@ def plot_graph(data,cluster,pooled_data=None):
     for i,j in data.internal_edge_index.transpose(0,1).tolist():
         plt.plot([data.pos2D[i,0],data.pos2D[j,0]],[data.pos2D[i,1],data.pos2D[j,1]],c='grey',alpha=0.4)
 
-
     plt.show()
 
 
@@ -81,7 +80,8 @@ def community_pooling(cluster,data):
 
     # pool the pos
     pos = scatter_mean(data.pos, cluster, dim=0)
-    pos2D = scatter_mean(data.pos2D, cluster, dim=0)
+    if hasattr(data,'pos2D'):
+        pos2D = scatter_mean(data.pos2D, cluster, dim=0)
 
     # pool batch
     if hasattr(data,'batch'):
@@ -89,7 +89,6 @@ def community_pooling(cluster,data):
         data = Batch(batch=batch, x=x, edge_index=edge_index,
                      edge_attr = edge_attr, pos = pos)
         data.internal_edge_index = internal_edge_index
-        data.pos2D = pos2D
 
     else:
         data = Data(x=x, edge_index=edge_index,
