@@ -50,13 +50,15 @@ def context_menu(self, treeview, position):
                 edge_index = grp['edge_index'].value
                 edge_attr = grp['edge_attr'].value
                 internal_edge_index = grp['internal_edge_index'].value
+                internal_edge_attr = grp['internal_edge_attr'].value
 
                 data_dict = {'_pos':pos,
                             '_edge_index':edge_index,
                             '_edge_attr':edge_attr,
-                            '_internal_edge_index':internal_edge_index}
+                            '_internal_edge_index':internal_edge_index,
+                            '_internal_edge_attr':internal_edge_attr[:,0],}
                 treeview.emitDict.emit(data_dict)
 
-                cmd = 'graph(_pos,_edge_index,_edge_attr,_internal_edge_index)'
+                cmd = 'graph(_pos,_edge_index,_edge_attr,_internal_edge_index,_internal_edge_attr)'
                 data_dict = {'exec_cmd':cmd}
                 treeview.emitDict.emit(data_dict)

@@ -14,7 +14,7 @@ import numpy as np
 from torch_geometric.data import Data
 from community_pooling import *
 
-def graph(pos,edge_index,edge_attr,internal_edge_index):
+def graph(pos,edge_index,edge_attr,internal_edge_index,internal_edge_attr,pos2D=None):
 
     x = torch.tensor(list(range(len(pos))))
 
@@ -30,11 +30,19 @@ def graph(pos,edge_index,edge_attr,internal_edge_index):
                  edge_attr = edge_attr, pos = pos)
 
     data.internal_edge_index = torch.tensor(internal_edge_index.T)
+    data.internal_edge_attr = torch.tensor(internal_edge_attr)
 
-    data.pos2D = manifold_embedding(data.pos)
+    if pos2D is None:
+        data.pos2D = manifold_embedding(data.pos)
+    else:
+        data.pos2D = pos2D
 
-    edge_attr = edge_attr=1./data.edge_attr**2
-    edge_attr = None
-    cluster = community_detection(data.internal_edge_index,data.num_nodes,edge_attr=edge_attr)
+    cluster = community_detection(data.internal_edge_index,data.num_nodes,
+                                  edge_attr=data.internal_edge_attr)
     d2 = community_pooling(cluster,data)
     plot_graph(data,cluster,pooled_data=d2)
+
+    if pos2D is  None:
+        return data.pos2D
+    else:
+        return None

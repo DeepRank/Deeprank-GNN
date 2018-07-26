@@ -8,13 +8,15 @@ from torch_geometric.datasets import MNISTSuperpixels
 import torch_geometric.transforms as T
 from torch_geometric.data import DataLoader
 from torch_geometric.utils import normalized_cut
-from torch_geometric.nn import GCNConv, ChebConv, SplineConv, graclus, max_pool, max_pool_x, NNConv
-
+from torch_geometric.nn import GCNConv, ChebConv, SplineConv, NNConv, GATConv
+from torch_geometric.nn import graclus, max_pool, max_pool_x
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from DataSet import HDF5DataSet
 from community_pooling import *
+
+from wgat_conv import WGATConv
 
 
 index = np.arange(400)
@@ -22,7 +24,7 @@ index = np.arange(400)
 
 index_train = index[0:50]
 index_test = index[350:]
-batch_size = 5
+batch_size = 10
 
 target = 'irmsd'
 
@@ -58,8 +60,8 @@ class Net(torch.nn.Module):
         # self.conv1 = GCNConv(d.num_features, 16)
         # self.conv2 = GCNConv(16, 32)
 
-        self.conv1 = SplineConv(d.num_features, 16, dim=3, kernel_size=3)
-        self.conv2 = SplineConv(16, 64, dim=3, kernel_size=3)
+        #self.conv1 = SplineConv(d.num_features, 16, dim=3, kernel_size=3)
+        #self.conv2 = SplineConv(16, 64, dim=3, kernel_size=3)
 
         # self.conv1 = ChebConv(d.num_features,8,K=3)
         # self.conv2 = ChebConv(8,16,K=3)
@@ -70,21 +72,29 @@ class Net(torch.nn.Module):
         # n2 = nn.Sequential(nn.Linear(2, 25), nn.ReLU(), nn.Linear(25, 2048))
         # self.conv2 = NNConv(32, 64, n2)
 
-        self.fc1 = torch.nn.Linear(64, 32)
-        self.fc2 = torch.nn.Linear(32, 1)
+        self.conv1 = WGATConv(d.num_features, 16)
+        self.conv2 = WGATConv(16 , 32)
+
+        self.fc1 = torch.nn.Linear(32, 64)
+        self.fc2 = torch.nn.Linear(64, 1)
 
     def forward(self, data):
-        data.x = F.elu(self.conv1(data.x, data.edge_index,data.edge_attr))
+
+        act = nn.Tanhshrink()
+        act = F.elu
+        act = nn.LeakyReLU(0.25)
+
+        data.x = act(self.conv1(data.x, data.edge_index,data.edge_attr))
         cluster = community_detection(data.internal_edge_index,data.num_nodes,edge_attr=None)
         data = community_pooling(cluster, data)
 
-        data.x = F.elu(self.conv2(data.x, data.edge_index, data.edge_attr))
+        data.x = act(self.conv2(data.x, data.edge_index,data.edge_attr))
         cluster = community_detection(data.internal_edge_index,data.num_nodes,edge_attr=None)
         x, batch = max_pool_x(cluster, data.x, data.batch)
 
         x = scatter_mean(x, batch, dim=0)
-        x = F.elu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
+        x = act(self.fc1(x))
+        #x = F.dropout(x, training=self.training)
         return F.elu(self.fc2(x))
 
 
@@ -98,13 +108,13 @@ def train(epoch):
 
     if epoch == 50:
         for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.001
+            param_group['lr'] = 0.01
 
     if epoch == 75:
         for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.0001
+            param_group['lr'] = 0.001
 
-    for data in tqdm(train_loader):
+    for data in (train_loader):
         data = data.to(device)
         optimizer.zero_grad()
         out = model(data).reshape(-1)
@@ -124,10 +134,11 @@ def test():
     return loss_val
 
 
-for epoch in range(1, 26):
+for epoch in range(1, 100):
     train(epoch)
-    test_acc = test()
-    print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))
+    #test_acc = test()
+    #print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))
+    print('Epoch: {:02d}'.format(epoch))
 
 pred, truth = [], []
 for data in train_loader:
