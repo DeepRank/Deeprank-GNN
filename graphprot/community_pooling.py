@@ -30,18 +30,18 @@ def manifold_embedding(pos,method='tsne'):
         Y = mds.fit_transform(pos)
     return torch.tensor(Y)
 
-def plot_graph(data,cluster,pooled_data=None):
+def plot_graph(data,cluster,point_size=None,edge_color='grey'):
 
 
-    if pooled_data is not None:
+    # if pooled_data is not None:
 
-        for i,j in pooled_data.internal_edge_index.transpose(0,1).tolist():
-            plt.plot([pooled_data.pos2D[i,0],pooled_data.pos2D[j,0]],[pooled_data.pos2D[i,1],pooled_data.pos2D[j,1]],c='black')
+    #     for i,j in pooled_data.internal_edge_index.transpose(0,1).tolist():
+    #         plt.plot([pooled_data.pos2D[i,0],pooled_data.pos2D[j,0]],[pooled_data.pos2D[i,1],pooled_data.pos2D[j,1]],c='black')
 
-        plt.scatter(pooled_data.pos2D[:,0],pooled_data.pos2D[:,1],s=1000,c='white',edgecolor='black')
+    #     plt.scatter(pooled_data.pos2D[:,0],pooled_data.pos2D[:,1],s=1000,c='white',edgecolor='black')
 
     for i,j in data.internal_edge_index.transpose(0,1).tolist():
-            plt.plot([data.pos2D[i,0],data.pos2D[j,0]],[data.pos2D[i,1],data.pos2D[j,1]],c='grey',alpha=0.4)
+            plt.plot([data.pos2D[i,0],data.pos2D[j,0]],[data.pos2D[i,1],data.pos2D[j,1]],c=edge_color,alpha=0.4)
 
     color = cluster.tolist()
     ncluster = len(set(cluster))
@@ -49,13 +49,15 @@ def plot_graph(data,cluster,pooled_data=None):
     #cmap = plt.cm.tab10
     cmap = colors.ListedColormap(np.random.rand(ncluster,3))
 
-    plt.scatter(data.pos2D[:,0],data.pos2D[:,1],c=color,cmap=cmap)
-
+    if point_size is None:
+        plt.scatter(data.pos2D[:,0],data.pos2D[:,1],c=color,cmap=cmap)
+    else:
+        plt.scatter(data.pos2D[:,0],data.pos2D[:,1],c=color,cmap=cmap,s=point_size)
     # for i in range(len(data.pos2D)):
     #     txt = str(color[i]) + {0:'_A',1:'_B'}[int(data.x.tolist()[i][0])]
     #     plt.text(data.pos2D[i,0],data.pos2D[i,1],txt)
 
-    plt.show()
+    #plt.show()
 
 
 

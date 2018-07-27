@@ -23,7 +23,9 @@ index = np.arange(400)
 #np.random.shuffle(index)
 
 index_train = index[0:50]
-index_test = index[350:]
+index_test = index[0:
+
+50]
 batch_size = 10
 
 target = 'irmsd'
@@ -32,7 +34,9 @@ target = 'irmsd'
 # node_feature = ['type','bsa']
 # edge_attr = ['dist','polarity']
 
-h5 = 'graph_atomic.hdf5'
+h5train = '1ATN_atomic.hdf5'
+h5test = '1AK4_atomic.hdf5'
+
 node_feature = ['name','charge','sig']
 edge_attr = ['dist']
 
@@ -40,13 +44,13 @@ edge_attr = ['dist']
 # node_feature = ['dist','coulomb','vanderwaals','name_1','name_2','charge_1','charge_2']
 # edge_attr = ['name','charge']
 
-train_dataset = HDF5DataSet(root='./',database=h5,index=index_train,
+train_dataset = HDF5DataSet(root='./',database=h5train,index=index_train,
                             node_feature=node_feature,edge_attr=edge_attr,
                             target=target)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
 d = train_dataset.get(0)
 
-test_dataset = HDF5DataSet(root='./',database=h5,index=index_test,
+test_dataset = HDF5DataSet(root='./',database=h5test,index=index_test,
                            node_feature=node_feature,edge_attr=edge_attr,
                            target=target)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
@@ -74,6 +78,7 @@ class Net(torch.nn.Module):
 
         self.conv1 = WGATConv(d.num_features, 16)
         self.conv2 = WGATConv(16 , 32)
+        #self.conv3 = WGATConv(32 , 32)
 
         self.fc1 = torch.nn.Linear(32, 64)
         self.fc2 = torch.nn.Linear(64, 1)

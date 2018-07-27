@@ -39,8 +39,14 @@ def graph(pos,edge_index,edge_attr,internal_edge_index,internal_edge_attr,pos2D=
 
     cluster = community_detection(data.internal_edge_index,data.num_nodes,
                                   edge_attr=data.internal_edge_attr)
-    d2 = community_pooling(cluster,data)
-    plot_graph(data,cluster,pooled_data=d2)
+
+    data2 = community_pooling(cluster,data)
+    cluster2 = community_detection(data2.internal_edge_index,data2.num_nodes,
+                                  edge_attr=data2.internal_edge_attr)
+
+    plot_graph(data2,cluster2,point_size=1000,edge_color='black')
+    plot_graph(data,cluster)
+    plt.show()
 
     if pos2D is  None:
         return data.pos2D

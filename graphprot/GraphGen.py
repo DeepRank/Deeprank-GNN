@@ -88,11 +88,11 @@ class GraphHDF5(object):
 
 if __name__ == '__main__':
 
-    pdb_path = './data/pdb'
-    pssm_path = './data/pssm'
-    ref = './data/ref'
+    pdb_path = './data/pdb/1AK4/'
+    pssm_path = './data/pssm/'
+    ref = './data/ref/1AK4/'
 
     GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,
-              graph_type='atomic',outfile='graph_atomic.hdf5')
+              graph_type='atomic',outfile='1AK4_atomic.hdf5')
 
 
