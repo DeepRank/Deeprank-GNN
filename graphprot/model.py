@@ -23,9 +23,7 @@ index = np.arange(400)
 #np.random.shuffle(index)
 
 index_train = index[0:50]
-index_test = index[0:
-
-50]
+index_test = index[0:50]
 batch_size = 10
 
 target = 'irmsd'
@@ -139,22 +137,23 @@ def test():
     return loss_val
 
 
-for epoch in range(1, 100):
-    train(epoch)
-    #test_acc = test()
-    #print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))
-    print('Epoch: {:02d}'.format(epoch))
 
-pred, truth = [], []
-for data in train_loader:
-    truth += data.y.tolist()
-    pred += model(data).reshape(-1).tolist()
+# for epoch in range(1, 100):
+#     train(epoch)
+#     #test_acc = test()
+#     #print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))
+#     print('Epoch: {:02d}'.format(epoch))
 
-test_pred, test_truth = [], []
-for data in test_loader:
-    test_truth += data.y.tolist()
-    test_pred += model(data).reshape(-1).tolist()
-plt.scatter(truth,pred,c='blue')
-plt.scatter(test_truth,test_pred,c='red')
-#plt.plot([0,1],[0,1])
-plt.show()
+# pred, truth = [], []
+# for data in train_loader:
+#     truth += data.y.tolist()
+#     pred += model(data).reshape(-1).tolist()
+
+# test_pred, test_truth = [], []
+# for data in test_loader:
+#     test_truth += data.y.tolist()
+#     test_pred += model(data).reshape(-1).tolist()
+# plt.scatter(truth,pred,c='blue')
+# plt.scatter(test_truth,test_pred,c='red')
+# #plt.plot([0,1],[0,1])
+# plt.show()

@@ -235,7 +235,19 @@ if __name__ == '__main__':
 
     import community
 
-    pdb = './data/ref/1ATN.pdb'
+    pdb = './data/ref/1ATN/1ATN.pdb'
     graph = AtomicGraph(pdb=pdb)
     #nx = graph.toNX(internal_edge=False)
     #lgraph = Graph.get_line_graph(graph)
+
+    # charge = {'CYS':0, 'HIS':1, 'ASN':2, 'GLN':3, 'SER':4, 'THR':5, 'TYR':6, 'TRP':7,
+    #           'ALA':8, 'PHE':9, 'GLY':10,'ILE':11,'VAL':12,'MET':13,'PRO':14,'LEU':15,
+    #            'GLU':16,'ASP':17,'LYS':18,'ARG':20}
+
+    # for k in charge.keys():
+
+    #     index = graph.atfeat.sqldb.get('resSeq',resName=k)
+    #     if len(index)>0:
+    #         index = index[0]
+    #         q = np.sum(graph.atfeat.sqldb.get('charge',resSeq=index))
+    #         print('%s %1.2f' %(k,q))

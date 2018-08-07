@@ -74,7 +74,7 @@ class WGATConv(torch.nn.Module):
         alpha = edge_attr*alpha
 
         # scatter the resulting edge feature to get node features
-        out = torch.zeros(num_node,self.out_channels)
+        out = torch.zeros(num_node,self.out_channels).to(alpha.device)
         out = scatter_mean(alpha,row,dim=0,out=out)
         out = scatter_mean(alpha,col,dim=0,out=out)
 

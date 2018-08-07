@@ -12,7 +12,7 @@ class GraphHDF5(object):
                 select=None,outfile='graph.hdf5',line=False):
 
         # get the list of PDB names
-        pdbs = list(filter(lambda x: x.endswith('.pdb'),os.listdir(pdb_path)))
+        pdbs = list(filter(lambda x: x.endswith('.pdb'),os.listdir(pdb_path)))[:5]
         if select is not None:
             pdbs = list(filter(lambda x: x.startswith(select),pdbs))
 
@@ -88,11 +88,11 @@ class GraphHDF5(object):
 
 if __name__ == '__main__':
 
-    pdb_path = './data/pdb/1AK4/'
-    pssm_path = './data/pssm/'
-    ref = './data/ref/1AK4/'
+    pdb_path = './data/pdb/1ATN/'
+    pssm_path = './data/pssm/1ATN/'
+    ref = './data/ref/1ATN/'
 
     GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,
-              graph_type='atomic',outfile='1AK4_atomic.hdf5')
+              graph_type='residue',outfile='1AK4_residue.hdf5')
 
 

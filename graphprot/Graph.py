@@ -33,7 +33,7 @@ class Graph(object):
         self.edge_feature_str = None
 
         self.internal_edge_index = None
-        self.internal_edge_weight = None
+        self.internal_edge_attr = None
 
         self.node_info = None
 
@@ -137,18 +137,31 @@ class Graph(object):
 
     def export_hdf5(self,f5):
 
-        keys = ['type','name','num_nodes','num_edges','pos',
+        keys = ['type','name',
+                'num_nodes','num_edges',
                 'num_node_features','num_edge_features',
-                'node','edge_index','edge_attr','internal_edge_index','internal_edge_attr',
+                'node','pos',
+                'edge_index','edge_attr',
+                'internal_edge_index','internal_edge_attr',
+                'node_feature_str', 'node_feature_size',
+                'edge_feature_str', 'edge_feature_size',
+                'internal_edge_feature_str', 'internal_edge_feature_size',
                 'irmsd','lrmsd','fnat','dockQ']
 
         grp = f5.create_group(self.name)
-        grp.attrs['node_feature'] = np.void([bytes(name,encoding='utf-8') for name in self.node_feature_str])
-        grp.attrs['edge_attr'] = np.void([bytes(name,encoding='utf-8') for name in self.edge_feature_str])
+        # grp.attrs['node_feature'] = np.void([bytes(name,encoding='utf-8') for name in self.node_feature_str])
+        # grp.attrs['node_feature_size'] = self.node_feature_size
+
+        # grp.attrs['edge_attr'] = np.void([bytes(name,encoding='utf-8') for name in self.edge_feature_str])
+        # grp.attrs['edge_feature_size'] = self.edge_feature_size
 
         for k in keys:
             if self.__dict__[k] is not None:
-                grp.create_dataset(k,data=self.__dict__[k])
+                if k.endswith('_str'):
+                    data = np.void([bytes(name,encoding='utf-8') for name in self.__dict__[k]])
+                    grp.create_dataset(k,data=self.__dict__[k])
+                else:
+                    grp.create_dataset(k,data=self.__dict__[k])
 
 
 

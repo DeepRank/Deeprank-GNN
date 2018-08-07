@@ -76,11 +76,13 @@ def community_detection(edge_index,num_nodes,edge_attr=None):
     cluster = community.best_partition(g)
 
     # return
-    return torch.tensor([v for k,v in cluster.items()])
+    device = edge_index.device
+    return torch.tensor([v for k,v in cluster.items()]).to(device)
 
 def community_pooling(cluster,data):
 
     cluster,perm = consecutive_cluster(cluster)
+    cluster = cluster.to(data.x.device)
 
     # pool the node infos
     x, _ = scatter_max(data.x,cluster,dim=0)
