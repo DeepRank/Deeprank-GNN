@@ -10,7 +10,8 @@ class HDF5DataSet(Dataset):
 
     def __init__(self,root,database=None,transform=None,pre_transform=None,
                 dict_filter = None, target='dockQ',tqdm = True, index=None,
-                node_feature='all', edge_attr = 'all',edge_attr_transform=lambda x: 1./x**2):
+                node_feature='all', edge_feature = 'all',
+                edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
         super().__init__(root,transform,pre_transform)
 
         # allow for multiple database
@@ -23,15 +24,16 @@ class HDF5DataSet(Dataset):
         self.tqdm = tqdm
         self.index = index
         self.node_feature = node_feature
-        self.edge_attr = edge_attr
-        self.edge_attr_transform = edge_attr_transform
+        self.edge_feature = edge_feature
+
+        self.edge_feature_transform = edge_feature_transform
 
         # check if the files are ok
         self.check_hdf5_files()
 
-        # get the possible feature/attr
-        self.get_index_edge_attr()
-        self.get_index_node_feature()
+        # check the selection of features
+        self.check_node_feature()
+        self.check_edge_feature()
 
         # create the indexing system
         # alows to associate each mol to an index
@@ -88,84 +90,106 @@ class HDF5DataSet(Dataset):
             self.database.remove(name)
 
 
-    def get_index_node_feature(self):
+    def check_node_feature(self):
 
         f = h5py.File(self.database[0],'r')
         mol_key = list(f.keys())[0]
-        tmp = f[mol_key].attrs['node_feature']
-        self.available_node_feature = [x.tostring().decode('utf-8').strip('\x00') for x in tmp]
+        self.available_node_feature = list(f[mol_key+'/node_data/'].keys())
         f.close()
 
         if self.node_feature == 'all':
-            self.node_feature_index = range(len(self.available_node_feature))
+            self.node_feature = self.available_node_feature
         else:
-            self.node_feature_index = []
             for feat in self.node_feature:
-                try:
-                    self.node_feature_index.append(self.available_node_feature.index(feat))
-                except:
-                    print(feat, ' node feature not found in the file', self.database[0])
-                    print('Possible node feature : ')
-                    print('\n'.join(self.available_node_feature))
-                    #raise ValueError('Feature Not found')
-                    exit()
-    def get_index_edge_attr(self):
+                if feat not in self.available_node_feature:
+                        print(feat, ' node feature not found in the file', self.database[0])
+                        print('Possible node feature : ')
+                        print('\n'.join(self.available_node_feature))
+                        #raise ValueError('Feature Not found')
+                        exit()
+
+    def check_edge_feature(self):
 
         f = h5py.File(self.database[0],'r')
         mol_key = list(f.keys())[0]
-        tmp = f[mol_key].attrs['edge_attr']
-        self.available_edge_attr = [x.tostring().decode('utf-8').strip('\x00') for x in tmp]
+        self.available_edge_feature = list(f[mol_key+'/edge_data/'].keys())
         f.close()
 
-        if self.edge_attr == 'all':
-            self.edge_attr_index = range(len(self.available_edge_attr))
-        else:
-            self.edge_attr_index = []
-            for attr in self.edge_attr:
-                try:
-                    self.edge_attr_index.append(self.available_edge_attr.index(attr))
-                except:
-                    print(attr, ' edge attribute not found in the file', self.database[0])
+        if self.edge_feature == 'all':
+            self.edge_feature = self.available_edge_feature
+        elif self.edge_feature is not None:
+            for feat in self.edge_feature:
+                if feat not in self.available_edge_feature:
+                    print(feat, ' edge attribute not found in the file', self.database[0])
                     print('Possible edge attribute : ')
-                    print('\n'.join(self.available_edge_attr))
+                    print('\n'.join(self.available_edge_feature))
                     #raise ValueError('Feature Not found')
                     exit()
 
     def load_one_graph(self,fname,mol):
 
+        #print('Load mol :', mol)
+
         f5 = h5py.File(fname,'r')
         grp = f5[mol]
 
         #nodes
-        #x = torch.tensor(grp['node'].value[:,0],dtype=torch.float)
-        if self.node_feature == 'all':
-            x = torch.tensor(grp['node'].value,dtype=torch.float)
-        else:
-            x = torch.tensor(grp['node'].value[:,self.node_feature_index],dtype=torch.float)
-
+        data = ()
+        for feat in self.node_feature:
+            vals = grp['node_data/'+feat].value
+            if vals.ndim == 1:
+                vals = vals.reshape(-1,1)
+            data += (vals,)
+        x = torch.tensor(np.hstack(data),dtype=torch.float)
 
         # index ! we have to have all the edges i.e : (i,j) and (j,i)
         ind = grp['edge_index'].value
         ind = np.vstack((ind,np.flip(ind,1))).T
         edge_index = torch.tensor(ind,dtype=torch.long)
 
-        # edge attr (same issue than above)
-        if 'edge_attr' in grp:
-            if self.edge_attr == 'all':
-                attr = grp['edge_attr'].value
-            else:
-                attr = grp['edge_attr'].value[:,self.edge_attr_index]
-            attr = np.vstack((attr,attr))
-            attr = self.edge_attr_transform(attr)
-            edge_attr = torch.tensor(attr,dtype=torch.float)
+        # edge feature (same issue than above)
+        data = ()
+        if self.edge_feature is not None:
+            for feat in self.edge_feature:
+                vals = grp['edge_data/'+feat].value
+                if vals.ndim == 1:
+                    vals = vals.reshape(-1,1)
+                data += (vals,)
+            data = np.hstack(data)
+            data = np.vstack((data,data))
+            data = self.edge_feature_transform(data)
+            edge_attr = torch.tensor(data,dtype=torch.float)
+
         else:
             edge_attr = None
 
+        #internal edges
+        ind = grp['internal_edge_index'].value
+        ind = np.vstack((ind,np.flip(ind,1))).T
+        internal_edge_index = torch.tensor(ind,dtype=torch.long)
+
+        # internal edge feature
+        data = ()
+        if self.edge_feature is not None:
+            for feat in self.edge_feature:
+                vals = grp['internal_edge_data/'+feat].value
+                if vals.ndim == 1:
+                    vals = vals.reshape(-1,1)
+                data += (vals,)
+            data = np.hstack(data)
+            data = np.vstack((data,data))
+            data = self.edge_feature_transform(data)
+            internal_edge_attr = torch.tensor(data,dtype=torch.float)
+
+        else:
+            internal_edge_attr = None
+
+
         #target
-        y = torch.tensor([grp[self.target].value],dtype=torch.float)
+        y = torch.tensor([grp['score/'+self.target].value],dtype=torch.float)
 
         #pos
-        pos = torch.tensor(grp['pos'].value,dtype=torch.float)
+        pos = torch.tensor(grp['node_data/pos/'].value,dtype=torch.float)
 
         # load
         data = Data(x = x,
@@ -174,27 +198,11 @@ class HDF5DataSet(Dataset):
                     y = y,
                     pos=pos)
 
-
-        if 'internal_edge_index' in grp:
-            internal_edge_index = grp['internal_edge_index'].value
-            data.internal_edge_index = torch.tensor(internal_edge_index.T)
-        else:
-            data.internal_edge_index = None
-
-        if 'internal_edge_attr' in grp:
-            if self.edge_attr == 'all':
-                attr = grp['internal_edge_attr'].value
-            else:
-                attr = grp['internal_edge_attr'].value[:,self.edge_attr_index]
-            attr = self.edge_attr_transform(attr)
-            data.internal_edge_attr = torch.tensor(attr,dtype=torch.float)
-        else:
-            data.internal_edge_attr = None
+        data.internal_edge_index = internal_edge_index
+        data.internal_edge_attr = internal_edge_attr
 
         f5.close()
         return data
-
-
 
     def create_index_molecules(self):
         '''Create the indexing of each molecule in the dataset.
@@ -272,7 +280,6 @@ class HDF5DataSet(Dataset):
 
 if __name__ == '__main__':
 
-    dataset = HDF5DataSet(root='./',database='graph_residue.hdf5',
-                          node_feature=['type'], edge_attr = ['dist'])
-    #dataset = HDF5DataSet(root='./',database='graph_residue.hdf5')
-    dataset.get(1)
+    dataset = HDF5DataSet(root='./',database='test.hdf5',
+                          node_feature='all', edge_feature = ['dist'])
+    dataset.get(0)

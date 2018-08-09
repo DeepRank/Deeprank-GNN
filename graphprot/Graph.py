@@ -4,6 +4,8 @@ import numpy as np
 import networkx as nx
 from collections import OrderedDict
 import time
+from graphprot.tools.embedding import manifold_embedding
+import community
 
 class Graph(object):
 
@@ -11,158 +13,371 @@ class Graph(object):
 
         self.type = None
         self.name = None
+        self.nx = None
+        self.score = {'irmsd':None, 'lrmsd': None, 'fnat':None, 'dockQ':None, 'binclass': None}
 
-        self.num_nodes = None
-        self.num_node_features = None
-        self.node = None
-
-        self.pos = None
-
-        self.num_edges = None
-        self.num_edge_features = None
-        self.edge_attr = None
-        self.edge_index = None
-
-        self.irmsd = None
-        self.lrmsd = None
-        self.fnat = None
-        self.dockQ = None
-        self.binclass = None
-
-        self.node_feature_str = None
-        self.edge_feature_str = None
-
-        self.internal_edge_index = None
-        self.internal_edge_attr = None
-
-        self.node_info = None
-
-    @classmethod
-    def get_line_graph(cls,g):
-
-        # create a nx graph
-        # that should be the default ....
-        #t0 = time.time()
-        nx_graph = nx.Graph()
-        for index in g.edge_index:
-            i,j = index
-            nx_graph.add_edge(i,j)
-        nx_line_graph = nx.line_graph(nx_graph)
-        #print(' __ networkx %f' %(time.time()-t0))
-
-        #make a new instance of the class
-        # and copy some attributes
-        lg = cls()
-        for k in ['type','name','irmsd','lrmsd','fnat','dockQ','binclass']:
-            lg.__dict__[k] = g.__dict__[k]
-
-        # new number of nodes/edges
-        lg.num_nodes = nx_line_graph.number_of_nodes()
-        lg.num_edges = nx_line_graph.number_of_edges()
-
-        # the node feature are now edge_attr + node_feat1 + node_feat2
-        nodefeat1 = [x+'_1' for x in g.node_feature_str]
-        nodefeat2 = [x+'_2' for x in g.node_feature_str]
-        lg.node_feature_str = g.edge_feature_str + nodefeat1 + nodefeat2
-
-        # crete a dict of node (i,e edge index) new node index
-        dict_node = OrderedDict()
-        lg.node, lg.pos = [], []
-        #t0 = time.time()
-        for iN,key in enumerate(nx_line_graph.nodes.keys()):
-
-            # map edge_index <-> new node index
-            dict_node[key] = iN
-
-            # the attribute of the normal graph edge
-            ind_attr = g.edge_index.index(list(key))
-            edge_attr = g.edge_attr[ind_attr]
-
-            # the feature of the connected node in the old graph
-            node_feat_1 = g.node[key[0]]
-            node_feat_2 = g.node[key[1]]
-
-            # create the line graph node feature
-            lg.node.append(edge_attr+node_feat_1+node_feat_2)
-            pos = 0.5*(g.pos[key[0]]+g.pos[key[1]])
-            lg.pos.append(pos)
-        #print(' __ Nodes %f' %(time.time()-t0))
-
-        # numbr of node feature
-        lg.num_node_features = len(lg.node[0])
-
-        # create the edge
-        lg.edge_index = []
-        lg.edge_feature_str = g.node_feature_str
-        lg.edge_attr = []
-
-        #t0 = time.time()
-        for key in nx_line_graph.edges.keys():
-            lg.edge_index.append([dict_node[key[0]],dict_node[key[1]]])
-
-            index_node = list(set(key[0]).intersection(key[1]))[0]
-            lg.edge_attr.append(g.node[index_node])
-        #print(' __ Edges %f' %(time.time()-t0))
-
-        return lg
-
-
-    def toNX(self,internal_edge=False):
-
-        nx_graph = nx.Graph()
-
-        for iN,node in enumerate(self.node):
-            nx_graph.add_node(iN,data=node)
-
-        if not internal_edge:
-            for index in self.edge_index:
-                i,j = index
-                nx_graph.add_edge(i,j)
-        else:
-            for index in self.internal_edge_index:
-                i,j = index
-                nx_graph.add_edge(i,j)
-
-        return nx_graph
-
-    def score(self,decoy,ref):
+    def get_score(self,ref):
 
         ref_name = os.path.splitext(os.path.basename(ref))[0]
-        sim = StructureSimilarity(decoy,ref)
-        self.lrmsd = sim.compute_lrmsd_fast(method='svd',lzone=ref_name+'.lzone')
-        self.irmsd = sim.compute_irmsd_fast(method='svd',izone=ref_name+'.izone')
-        self.fnat = sim.compute_Fnat_fast(ref_pairs=ref_name+'.refpairs')
-        self.dockQ = sim.compute_DockQScore(self.fnat,self.lrmsd,self.irmsd)
-        self.binclass = not self.irmsd < 4.0
+        sim = StructureSimilarity(self.pdb,ref)
 
-    def export_hdf5(self,f5):
+        self.score['lrmsd'] = sim.compute_lrmsd_fast(method='svd',lzone=ref_name+'.lzone')
+        self.score['irmsd'] = sim.compute_irmsd_fast(method='svd',izone=ref_name+'.izone')
+        self.score['fnat'] = sim.compute_Fnat_fast(ref_pairs=ref_name+'.refpairs')
+        self.score['dockQ'] = sim.compute_DockQScore(self.score['fnat'],self.score['lrmsd'],self.score['irmsd'])
+        self.score['binclass'] = self.score['irmsd'] < 4.0
 
-        keys = ['type','name',
-                'num_nodes','num_edges',
-                'num_node_features','num_edge_features',
-                'node','pos',
-                'edge_index','edge_attr',
-                'internal_edge_index','internal_edge_attr',
-                'node_feature_str', 'node_feature_size',
-                'edge_feature_str', 'edge_feature_size',
-                'internal_edge_feature_str', 'internal_edge_feature_size',
-                'irmsd','lrmsd','fnat','dockQ']
+    def nx2h5(self,f5):
 
+        # group for the graph
         grp = f5.create_group(self.name)
-        # grp.attrs['node_feature'] = np.void([bytes(name,encoding='utf-8') for name in self.node_feature_str])
-        # grp.attrs['node_feature_size'] = self.node_feature_size
 
-        # grp.attrs['edge_attr'] = np.void([bytes(name,encoding='utf-8') for name in self.edge_feature_str])
-        # grp.attrs['edge_feature_size'] = self.edge_feature_size
+        # store the nodes
+        data = np.array(list(self.nx.nodes)).astype('S')
+        grp.create_dataset('nodes',data = data)
 
-        for k in keys:
-            if self.__dict__[k] is not None:
-                if k.endswith('_str'):
-                    data = np.void([bytes(name,encoding='utf-8') for name in self.__dict__[k]])
-                    grp.create_dataset(k,data=self.__dict__[k])
+        # store node features
+        node_feat_grp = grp.create_group('node_data')
+        feature_names = list(list(self.nx.nodes.data())[0][1].keys())
+        for feat in feature_names:
+            data = [v for _,v in nx.get_node_attributes(self.nx,feat).items()]
+            node_feat_grp.create_dataset(feat,data=data)
+
+
+        edges, internal_edges = [], []
+        edge_index, internal_edge_index = [], []
+
+        edge_feat = list(list(self.nx.edges.data())[0][2].keys())
+        edge_data, internal_edge_data = {}, {}
+        for feat in edge_feat:
+            edge_data[feat] = []
+            internal_edge_data[feat] = []
+
+        node_key = list(self.nx.nodes)
+
+        for e in self.nx.edges:
+
+            edge_type = self.nx.edges[e]['type'].decode('utf-8')
+            ind1, ind2 = node_key.index(e[0]), node_key.index(e[1])
+
+            if edge_type == 'interface':
+                edges.append(e)
+                edge_index.append([ind1,ind2])
+
+                for feat in edge_feat:
+                    edge_data[feat].append(self.nx.edges[e][feat])
+
+            elif edge_type == 'internal':
+                internal_edges.append(e)
+                internal_edge_index.append([ind1,ind2])
+
+                for feat in edge_feat:
+                    internal_edge_data[feat].append(self.nx.edges[e][feat])
+
+        # store the edges
+        data = np.array(edges).astype('S')
+        grp.create_dataset('edges',data=data)
+
+        data = np.array(internal_edges).astype('S')
+        grp.create_dataset('internal_edges',data=data)
+
+        # store the edge index
+        grp.create_dataset('edge_index',data=edge_index)
+        grp.create_dataset('internal_edge_index',data=internal_edge_index)
+
+        # store the edge attributes
+        edge_feat_grp = grp.create_group('edge_data')
+        internal_edge_feat_grp = grp.create_group('internal_edge_data')
+
+        for feat in edge_feat:
+            edge_feat_grp.create_dataset(feat,data=edge_data[feat])
+            internal_edge_feat_grp.create_dataset(feat,data=internal_edge_data[feat])
+
+        # store the score
+        score_grp = grp.create_group('score')
+        for k,v in self.score.items():
+            score_grp.create_dataset(k,data=v)
+
+    def h52nx(self,f5name,mol,molgrp=None):
+
+        if molgrp is None:
+
+            f5 = h5py.File(f5name,'r')
+            molgrp = f5[mol]
+            self.name = mol
+            self.pdb = mol+'.pdb'
+
+        else:
+            self.name = molgrp.name
+            self.pdb = self.name+'.pdb'
+
+        # creat the graph
+        self.nx = nx.Graph()
+
+        # get nodes
+        nodes = molgrp['nodes'].value.astype('U').tolist()
+        nodes = [tuple(n) for n in nodes]
+
+        # get node features
+        node_keys = list(molgrp['node_data'].keys())
+        node_feat = {}
+        for key in node_keys:
+            node_feat[key] = molgrp['node_data/'+key].value
+
+        # add nodes
+        for iN,n in enumerate(nodes):
+            self.nx.add_node(n)
+            for k,v in node_feat.items():
+                v = v.reshape(-1,1) if v.ndim == 1 else v
+                v = v[iN,:]
+                v = v[0] if len(v)==1 else v
+                self.nx.nodes[n][k] = v
+
+        # get edges
+        edges = molgrp['edges'].value.astype('U').tolist()
+        edges = [ (tuple(e[0]),tuple(e[1])) for e in edges ]
+
+        # get edge data
+        edge_key = list(molgrp['edge_data'].keys())
+        edge_feat = {}
+        for  key in edge_key:
+            edge_feat[key] = molgrp['edge_data/'+key].value
+
+        # add edges
+        for iedge,e in enumerate(edges):
+            self.nx.add_edge(e[0],e[1])
+            for k,v in edge_feat.items():
+                v = v.reshape(-1,1) if v.ndim == 1 else v
+                v = v[iedge,:]
+                v = v[0] if len(v)==1 else v
+                self.nx.edges[e[0],e[1]][k] = v
+
+        # get internal edges
+        edges = molgrp['internal_edges'].value.astype('U').tolist()
+        edges = [ (tuple(e[0]),tuple(e[1])) for e in edges ]
+
+        # get edge data
+        edge_key = list(molgrp['internal_edge_data'].keys())
+        edge_feat = {}
+        for  key in edge_key:
+            edge_feat[key] = molgrp['internal_edge_data/'+key].value
+
+        # add edges
+        for iedge,e in enumerate(edges):
+            self.nx.add_edge(e[0],e[1])
+            for k,v in edge_feat.items():
+                v = v.reshape(-1,1) if v.ndim == 1 else v
+                v = v[iedge,:]
+                v = v[0] if len(v)==1 else v
+                self.nx.edges[e[0],e[1]][k] = v
+
+
+        # add score
+        self.score = {}
+        score_key = list(molgrp['score'].keys())
+        for key in score_key:
+            self.score[key] = molgrp['score/'+key].value
+
+        if molgrp is None:
+            f5.close()
+
+
+    def plotly_2d(self,out=None,offline=False,iplot=True):
+
+        if offline:
+            import plotly.offline as py
+        else:
+            import plotly.plotly as py
+
+        import plotly.graph_objs as go
+        import matplotlib.pyplot as plt
+
+        pos = np.array([v.tolist() for _,v in nx.get_node_attributes(self.nx,'pos').items()])
+        pos2D = manifold_embedding(pos)
+        dict_pos = { n:p for n,p in zip(self.nx.nodes,pos2D)}
+        nx.set_node_attributes(self.nx,dict_pos,'pos2D')
+
+        # remove interface edges for clustering
+        gtmp = self.nx.copy()
+        ebunch = []
+        for e in self.nx.edges:
+            typ = self.nx.edges[e]['type']
+            if isinstance(typ,bytes):
+                typ = typ.decode('utf-8')
+            if typ == 'interface':
+                ebunch.append(e)
+        gtmp.remove_edges_from(ebunch)
+        cluster = community.best_partition(gtmp)
+
+        # get the colormap for the clsuter line
+        ncluster = np.max([v for _,v in cluster.items()])+1
+        cmap = plt.cm.nipy_spectral
+        N = cmap.N
+        cmap = [cmap(i) for i in range(N)]
+        cmap = cmap[::int(N/ncluster)]
+
+        edge_trace_list, internal_edge_trace_list = [], []
+        node_connect = {}
+
+        for edge in self.nx.edges:
+
+            edge_type = self.nx.edges[edge[0],edge[1]]['type'].decode('utf-8')
+            if edge_type == 'internal':
+                trace = go.Scatter(x=[],y=[],text=[],mode='lines', hoverinfo=None,  showlegend=False,
+                                     line=go.Line(color='rgb(110,110,110)', width = 3))
+            elif edge_type == 'interface':
+                trace = go.Scatter(x=[],y=[],text=[],mode='lines', hoverinfo=None,  showlegend=False,
+                                     line=go.Line(color='rgb(230,230,230)', width = 1))
+
+            x0, y0 = self.nx.nodes[edge[0]]['pos2D']
+            x1, y1 = self.nx.nodes[edge[1]]['pos2D']
+
+            trace['x'] += [x0, x1, None]
+            trace['y'] += [y0, y1, None]
+
+            if edge_type == 'internal':
+                internal_edge_trace_list.append(trace)
+            elif edge_type == 'interface':
+                edge_trace_list.append(trace)
+
+            for i in [0,1]:
+                if edge[i] not in node_connect:
+                    node_connect[edge[i]] = 1
                 else:
-                    grp.create_dataset(k,data=self.__dict__[k])
+                    node_connect[edge[i]] += 1
 
 
+        node_trace_A = go.Scatter(x=[],y=[],text=[],mode='markers',hoverinfo='text',
+                                  marker=dict( color='rgb(227,28,28)', size=[],
+                                               line=dict(color=[],width=4,colorscale=cmap)))
+        # 'rgb(227,28,28)'
+        node_trace_B = go.Scatter(x=[],y=[],text=[],mode='markers',hoverinfo='text',
+                                  marker=dict( color='rgb(0,102,255)', size=[],
+                                               line=dict(color=[],width=4,colorscale=cmap)))
+        # 'rgb(0,102,255)'
+        node_trace = [node_trace_A,node_trace_B]
 
+        for node in self.nx.nodes:
+
+            index = self.nx.nodes[node]['chain']
+            pos = self.nx.nodes[node]['pos2D']
+
+            node_trace[index]['x'].append(pos[0])
+            node_trace[index]['y'].append(pos[1])
+            node_trace[index]['text'].append('[Clst:' + str(cluster[node]) + '] ' + ' '.join(node))
+
+            nc = node_connect[node]
+            node_trace[index]['marker']['size'].append(5 + 15*np.tanh(nc/5))
+            node_trace[index]['marker']['line']['color'].append(cluster[node])
+
+        fig = go.Figure(data=[ *internal_edge_trace_list, *edge_trace_list, *node_trace],
+                     layout=go.Layout(
+                        title='<br>tSNE connection graph for %s' %self.pdb,
+                        titlefont=dict(size=16),
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20,l=5,r=5,t=40),
+                        annotations=[ dict(
+                            text="",
+                            showarrow=False,
+                            xref="paper", yref="paper",
+                            x=0.005, y=-0.002 ) ],
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
+
+        if iplot :
+            py.iplot(fig, filename=out)
+        else:
+            py.plot(fig)
+
+
+    def plotly_3d(self,out=None,offline=False,iplot=True):
+
+        if offline:
+            import plotly.offline as py
+        else:
+            import plotly.plotly as py
+
+        import plotly.graph_objs as go
+
+        edge_trace_list, internal_edge_trace_list = [], []
+        node_connect = {}
+
+        for edge in self.nx.edges:
+
+            edge_type = self.nx.edges[edge[0],edge[1]]['type'].decode('utf-8')
+            if edge_type == 'internal':
+                trace = go.Scatter3d(x=[],y=[],z=[],text=[],mode='lines', hoverinfo=None,  showlegend=False,
+                                     line=go.Line(color='rgb(110,110,110)', width = 5))
+            elif edge_type == 'interface':
+                trace = go.Scatter3d(x=[],y=[],z=[],text=[],mode='lines', hoverinfo=None,  showlegend=False,
+                                     line=go.Line(color='rgb(210,210,210)', width = 2))
+
+            x0, y0, z0 = self.nx.nodes[edge[0]]['pos']
+            x1, y1, z1 = self.nx.nodes[edge[1]]['pos']
+
+            trace['x'] += [x0, x1, None]
+            trace['y'] += [y0, y1, None]
+            trace['z'] += [z0, z1, None]
+
+            if edge_type == 'internal':
+                internal_edge_trace_list.append(trace)
+            elif edge_type == 'interface':
+                edge_trace_list.append(trace)
+
+            for i in [0,1]:
+                if edge[i] not in node_connect:
+                    node_connect[edge[i]] = 1
+                else:
+                    node_connect[edge[i]] += 1
+
+
+        node_trace_A = go.Scatter3d(x=[],y=[],z=[],text=[],mode='markers',hoverinfo='text',
+                                  marker=dict( color='rgb(227,28,28)', size=[], symbol='circle',
+                                               line=dict(color='rgb(50,50,50)',width=2)))
+
+        node_trace_B = go.Scatter3d(x=[],y=[],z=[],text=[],mode='markers',hoverinfo='text',
+                                  marker=dict( color='rgb(0,102,255)', size=[], symbol='circle',
+                                               line=dict(color='rgb(50,50,50)',width=2)))
+
+        node_trace = [node_trace_A,node_trace_B]
+
+        for node in self.nx.nodes:
+
+            index = self.nx.nodes[node]['chain']
+            pos = self.nx.nodes[node]['pos']
+
+            node_trace[index]['x'].append(pos[0])
+            node_trace[index]['y'].append(pos[1])
+            node_trace[index]['z'].append(pos[2])
+            node_trace[index]['text'].append(' '.join(node))
+
+            nc = node_connect[node]
+            node_trace[index]['marker']['size'].append(5 + 15*np.tanh(nc/5))
+
+        fig = go.Figure(data=[*node_trace, *internal_edge_trace_list, *edge_trace_list],
+                     layout=go.Layout(
+                        title='<br>Connection graph for %s' %self.pdb,
+                        titlefont=dict(size=16),
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20,l=5,r=5,t=40),
+                        annotations=[ dict(
+                            text="",
+                            showarrow=False,
+                            xref="paper", yref="paper",
+                            x=0.005, y=-0.002 ) ],
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
+
+        if iplot :
+            py.iplot(fig, filename=out)
+        else:
+            py.plot(fig)
+
+if __name__ == "__main__":
+    import h5py
+    graph = Graph()
+    graph.h52nx('1AK4_residue.hdf5','1ATN')
+    graph.plotly('1ATN')
 

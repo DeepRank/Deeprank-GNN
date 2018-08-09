@@ -14,7 +14,7 @@ def context_menu(self, treeview, position):
         data = get_group_data(get_current_hdf5_group(self,item))
 
         if data is None:
-            list_operations = ['Print attrs','-','Graph']
+            list_operations = ['Print attrs','-','tSNE Graph', '3D Plot']
 
         elif data.ndim == 1:
             list_operations = ['Print attrs','-','Plot Hist', 'Plot Line']
@@ -42,23 +42,24 @@ def context_menu(self, treeview, position):
             if action == actions['Plot Map']:
                 plot2d(self,item,treeview)
 
-        if 'Graph' in actions:
-            if action == actions['Graph']:
+        if 'tSNE Graph' in actions:
+            if action == actions['tSNE Graph']:
 
                 grp = get_current_hdf5_group(self,item)
-                pos = grp['pos'].value
-                edge_index = grp['edge_index'].value
-                edge_attr = grp['edge_attr'].value
-                internal_edge_index = grp['internal_edge_index'].value
-                internal_edge_attr = grp['internal_edge_attr'].value
-
-                data_dict = {'_pos':pos,
-                            '_edge_index':edge_index,
-                            '_edge_attr':edge_attr,
-                            '_internal_edge_index':internal_edge_index,
-                            '_internal_edge_attr':internal_edge_attr[:,0],}
+                data_dict = {'_grp':grp}
                 treeview.emitDict.emit(data_dict)
 
-                cmd = 'graph(_pos,_edge_index,_edge_attr,_internal_edge_index,_internal_edge_attr)'
+                cmd = 'tsne_graph(_grp)'
+                data_dict = {'exec_cmd':cmd}
+                treeview.emitDict.emit(data_dict)
+
+        if '3D Plot' in actions:
+            if action == actions['3D Plot']:
+
+                grp = get_current_hdf5_group(self,item)
+                data_dict = {'_grp':grp}
+                treeview.emitDict.emit(data_dict)
+
+                cmd = 'graph3d(_grp)'
                 data_dict = {'exec_cmd':cmd}
                 treeview.emitDict.emit(data_dict)

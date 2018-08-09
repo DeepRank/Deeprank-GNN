@@ -6,7 +6,7 @@ setup(
     description='Graph Neural network Scoring of protein-protein conformations',
     version='0.0',
     url='https://github.com/DeepRank/GraphProt',
-    packages=['iScore'],
+    packages=['graphprot'],
 
 
     install_requires=[

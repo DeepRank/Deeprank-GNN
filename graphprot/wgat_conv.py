@@ -60,6 +60,8 @@ class WGATConv(torch.nn.Module):
 
     def forward(self, x, edge_index, edge_attr):
 
+        #print('weight : ', torch.sum(self.weight))
+
         row, col = edge_index
         num_node = len(x)
         edge_attr = edge_attr.unsqueeze(-1) if edge_attr.dim() == 1 else edge_attr
