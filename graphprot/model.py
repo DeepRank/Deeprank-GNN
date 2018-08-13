@@ -126,11 +126,13 @@ for epoch in range(1, 50):
 
 pred, truth = [], []
 for data in train_loader:
+    data = data.to(device)
     truth += data.y.tolist()
     pred += model(data).reshape(-1).tolist()
 
 test_pred, test_truth = [], []
 for data in test_loader:
+    data = data.to(device)
     test_truth += data.y.tolist()
     test_pred += model(data).reshape(-1).tolist()
 plt.scatter(truth,pred,c='blue')
