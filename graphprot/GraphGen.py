@@ -1,9 +1,10 @@
 import os, sys
 import h5py
-from ResidueGraph import ResidueGraph
-from Graph import Graph
 from tqdm import tqdm
 import time
+
+from .ResidueGraph import ResidueGraph
+from .Graph import Graph
 
 class GraphHDF5(object):
 
