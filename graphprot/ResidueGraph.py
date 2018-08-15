@@ -13,7 +13,7 @@ from .Graph import Graph
 class ResidueGraph(Graph):
 
     def __init__(self,pdb=None,pssm={},
-        contact_distance=8.5,internal_contact_distance = 8.5,
+        contact_distance=8.5,internal_contact_distance = 3,
         pssm_align = 'res'):
 
         super().__init__()
@@ -78,12 +78,14 @@ class ResidueGraph(Graph):
 
         # get all the nodes
         all_nodes = self._get_all_valid_nodes(self.res_contact_pairs,self.pssm)
-        self.nx.add_nodes_from(all_nodes)
 
+
+        print(self.res_contact_pairs)
         # create the interface edges
         for key,val in self.res_contact_pairs.items():
             for v in val:
-                self.nx.add_edge(key,v,type=bytes('interface',encoding='utf-8'))
+                d = self._get_edge_distance(key,v,db)
+                self.nx.add_edge(key,v,dist=d,type=bytes('interface',encoding='utf-8'))
 
         # get the internal edges
         edges, dist = self.get_internal_edges(db)
@@ -233,10 +235,10 @@ class ResidueGraph(Graph):
             xyz1 = np.array(db.get('x,y,z',chainID=nodes[i1][0],resSeq=nodes[i1][1]))
             for i2 in range(i1+1,nn):
                 xyz2 = np.array(db.get('x,y,z',chainID=nodes[i2][0],resSeq=nodes[i2][1]))
-                d = -2*np.dot(xyz1,xyz2.T) + np.sum(xyz1**2,axis=1)[:,None] + np.sum(xyz2**2,axis=1)
-                if np.any(d<cutoff):
+                d2 = -2*np.dot(xyz1,xyz2.T) + np.sum(xyz1**2,axis=1)[:,None] + np.sum(xyz2**2,axis=1)
+                if np.any(d2<cutoff**2):
                     edges.append((nodes[i1],nodes[i2]))
-                    dist.append(d)
+                    dist.append(np.sqrt(np.min(d2)))
 
         return edges, dist
 
@@ -273,11 +275,13 @@ class ResidueGraph(Graph):
         return self.edge_polarity_encoding[key]
 
 
-    def _get_edge_distance(self,node1,node2):
+    def _get_edge_distance(self,node1,node2,db):
 
-        pos1 = self.nx.nodes[node1]['pos']
-        pos2 = self.nx.nodes[node2]['pos']
-        return np.linalg.norm(pos1-pos2)
-
-
+        # pos1 = self.nx.nodes[node1]['pos']
+        # pos2 = self.nx.nodes[node2]['pos']
+        # return np.linalg.norm(pos1-pos2)
+        xyz1 = np.array(db.get('x,y,z',chainID=node1[0],resSeq=node1[1]))
+        xyz2 = np.array(db.get('x,y,z',chainID=node2[0],resSeq=node2[1]))
+        d2 = -2*np.dot(xyz1,xyz2.T) + np.sum(xyz1**2,axis=1)[:,None] + np.sum(xyz2**2,axis=1)
+        return np.sqrt(np.min(d2))
 
