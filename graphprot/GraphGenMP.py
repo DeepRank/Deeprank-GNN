@@ -1,4 +1,5 @@
 import os, sys
+import glob
 import h5py
 from tqdm import tqdm
 import time
@@ -11,24 +12,29 @@ from .Graph import Graph
 class GraphHDF5(object):
 
     def __init__(self,pdb_path,ref_path,graph_type='residue',pssm_path=None,
-                select=None,outfile='graph.hdf5',nproc=1,use_tqdm=True,tmpdir='./'):
+                select=None,outfile='graph.hdf5',nproc=1,use_tqdm=True,tmpdir='./',
+                limit=None):
 
         # get the list of PDB names
         pdbs = list(filter(lambda x: x.endswith('.pdb'),os.listdir(pdb_path)))
         if select is not None:
             pdbs = list(filter(lambda x: x.startswith(select),pdbs))
 
+        # get the full path of the pdbs
+        pdbs = [os.path.join(pdb_path,name) for name in pdbs]
+        if limit is not None:
+            pdbs = pdbs[:limit]
+
         # get the pssm data
-        mol_name = os.path.splitext(pdbs[0])[0]
-        base_name = mol_name.split('_')[0]
-        pssm = self._get_pssm(pssm_path,mol_name,base_name)
+        pssm = {}
+        for p in pdbs:
+            base = os.path.basename(p)
+            mol_name = os.path.splitext(base)[0]
+            base_name = mol_name.split('_')[0]
+            pssm[p] = self._get_pssm(pssm_path,mol_name,base_name)
 
         # get the ref path
         ref = os.path.join(ref_path,base_name+'.pdb')
-
-        # get the full path of the pdbs
-        pdbs = [os.path.join(pdb_path,name) for name in pdbs]
-        pdbs = pdbs[:100]
 
         # compute all the graphs on 1 core and directly
         # store the graphs the HDF5 file
@@ -42,12 +48,7 @@ class GraphHDF5(object):
 
             pool = mp.Pool(nproc)
             part_process = partial(self._pickle_one_graph,pssm=pssm,ref=ref,tmpdir=tmpdir)
-
-            if use_tqdm:
-                desc = '{:25s}'.format('   Create Graphs')
-                list(tqdm(pool.imap(part_process,pdbs), total=len(pdbs), desc=desc, file=sys.stdout))
-            else:
-                pool.map(part_process,pdbs)
+            pool.map(part_process,pdbs)
 
             # get teh graph names
             graph_names = [os.path.join(tmpdir,f) for f in os.listdir(tmpdir)]
@@ -64,6 +65,10 @@ class GraphHDF5(object):
                 f.close()
             f5.close()
 
+        #clean up
+        rmfiles = glob.glob('*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs')
+        for f in rmfiles:
+            os.remove(f)
 
     def get_all_graphs(self,pdbs,pssm,ref):
 
@@ -81,7 +86,7 @@ class GraphHDF5(object):
     def _pickle_one_graph(name,pssm,ref,tmpdir='./'):
 
         # get the graph
-        g = ResidueGraph(pdb=name,pssm=pssm)
+        g = ResidueGraph(pdb=name,pssm=pssm[name])
         g.get_score(ref)
 
 
@@ -99,7 +104,7 @@ class GraphHDF5(object):
     def _get_one_graph(name,pssm,ref):
 
         # get the graph
-        g = ResidueGraph(pdb=name,pssm=pssm)
+        g = ResidueGraph(pdb=name,pssm=pssm[name])
         g.get_score(ref)
         return g
 
