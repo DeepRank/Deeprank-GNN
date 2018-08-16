@@ -79,8 +79,6 @@ class ResidueGraph(Graph):
         # get all the nodes
         all_nodes = self._get_all_valid_nodes(self.res_contact_pairs,self.pssm)
 
-
-        print(self.res_contact_pairs)
         # create the interface edges
         for key,val in self.res_contact_pairs.items():
             for v in val:
