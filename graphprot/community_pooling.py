@@ -54,7 +54,7 @@ def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None):
         ncluster = max(cluster)
 
         if _plot_:
-            plot_graph(g,c)
+            plot_graph(subg,[v for k,v in c.items()])
 
     # return
     device = edge_index.device

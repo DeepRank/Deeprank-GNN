@@ -24,7 +24,7 @@ index = np.arange(400)
 
 index_train = index[0:50]
 index_test = index[350:]
-batch_size = 16
+batch_size = 2
 
 
 
@@ -66,7 +66,7 @@ class Net(torch.nn.Module):
         #act = nn.LeakyReLU(0.25)
 
         data.x = act(self.conv1(data.x, data.edge_index,data.edge_attr))
-        cluster = community_detection(data.internal_edge_index,data.num_nodes,edge_attr=None)
+        cluster = community_detection(data.internal_edge_index,data.num_nodes,edge_attr=None,batches=data.batches)
         data = community_pooling(cluster, data)
 
         data.x = act(self.conv2(data.x, data.edge_index,data.edge_attr))
