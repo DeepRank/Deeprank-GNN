@@ -39,7 +39,7 @@ class GraphHDF5(object):
         # compute all the graphs on 1 core and directly
         # store the graphs the HDF5 file
         if nproc == 1:
-            graphs = self.get_all_graphs(pdbs,pssm,ref,outfile)
+            graphs = self.get_all_graphs(pdbs,pssm,ref,outfile,use_tqdm)
 
         else:
 
@@ -70,13 +70,18 @@ class GraphHDF5(object):
         for f in rmfiles:
             os.remove(f)
 
-    def get_all_graphs(self,pdbs,pssm,ref,outfile):
+    def get_all_graphs(self,pdbs,pssm,ref,outfile,use_tqdm=True):
 
-        desc = '{:25s}'.format('   Create HDF5')
         graphs = []
-        for name in tqdm(pdbs,desc=desc, file=sys.stdout):
+        if use_tqdm:
+            desc = '{:25s}'.format('   Create HDF5')
+            lst = tqdm(pdbs,desc=desc, file=sys.stdout)
+        else:
+            lst = pdbs
+
+        for name in lst:
             graphs.append(self._get_one_graph(name,pssm,ref))
-            
+
         f5 = h5py.File(outfile,'w')
         for g in graphs:
             g.nx2h5(f5)
