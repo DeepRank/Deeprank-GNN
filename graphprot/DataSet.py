@@ -5,6 +5,27 @@ from torch_geometric.data.dataset import Dataset
 from torch_geometric.data.data import Data
 from tqdm import tqdm
 import h5py
+import copy
+
+def DivideDataSet(dataset,percent = [0.8,0.2],shuffle=True):
+
+    size = dataset.__len__()
+    index = np.arange(size)
+
+    if shuffle:
+        np.random.shuffle(index)
+
+    size1 = int(percent[0]*size)
+    index1, index2 = index[:size1], index[size1:]
+
+    dataset1 = copy.deepcopy(dataset)
+    dataset1.index_complexes = [dataset.index_complexes[i] for i in index1]
+
+    dataset2 = copy.deepcopy(dataset)
+    dataset2.index_complexes = [dataset.index_complexes[i] for i in index2]
+
+    return dataset1,dataset2
+
 
 class HDF5DataSet(Dataset):
 
@@ -12,6 +33,7 @@ class HDF5DataSet(Dataset):
                 dict_filter = None, target='dockQ',tqdm = True, index=None,
                 node_feature='all', edge_feature = 'all',
                 edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
+
         super().__init__(root,transform,pre_transform)
 
         # allow for multiple database
@@ -282,4 +304,5 @@ if __name__ == '__main__':
 
     dataset = HDF5DataSet(root='./',database='test.hdf5',
                           node_feature='all', edge_feature = ['dist'])
-    dataset.get(0)
+
+    d1,d2 = DivideDataSet(dataset)
