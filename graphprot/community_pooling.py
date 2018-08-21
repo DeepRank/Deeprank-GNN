@@ -11,7 +11,7 @@ from torch_geometric.data import Batch, Data
 
 import numpy as np
 
-
+from time import time
 
 def plot_graph(graph,cluster):
 
@@ -19,6 +19,13 @@ def plot_graph(graph,cluster):
     pos = nx.spring_layout(graph,iterations=200)
     nx.draw(graph,pos,node_color=cluster)
     plt.show()
+
+
+def get_preloaded_cluster(cluster,batch):
+    nbatch = torch.max(batch)+1
+    for ib in range(1,nbatch):
+        cluster[batch==ib] += torch.max(cluster[batch==ib-1]) + 1
+    return cluster
 
 
 def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None,method='mcl'):
@@ -54,7 +61,7 @@ def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None,meth
             result = mc.run_mcl(matrix)           # run MCL with default parameters
             mc_clust = mc.get_clusters(result)    # get clusters
 
-            index = np.zeros(num_nodes)
+            index = np.zeros(subg.number_of_nodes()).astype('int')
             for ic, c in enumerate(mc_clust):
                 index[list(c)] = ic+ncluster
             cluster += index.tolist()
@@ -90,13 +97,26 @@ def community_detection(edge_index,num_nodes,edge_attr=None,method='mcl'):
 
     # detect the communities using MCL detection
     elif method == 'mcl':
-        matrix = nx.to_scipy_sparse_matrix(g)
-        result = mc.run_mcl(matrix)           # run MCL with default parameters
-        clusters = mc.get_clusters(result)    # get clusters
 
-        index = np.zeros(num_nodes)
+        #print('')
+        #t0 = time()
+        matrix = nx.to_scipy_sparse_matrix(g)
+        #print('__ scipy %f' %(time()-t0))
+
+        #t0 = time()
+        result = mc.run_mcl(matrix)           # run MCL with default parameters
+        #print('__ run %f' %(time()-t0))
+
+        #t0 = time()
+        clusters = mc.get_clusters(result)    # get clusters
+        #print('__ cluster %f' %(time()-t0))
+
+        #t0 = time()
+        index = np.zeros(num_nodes).astype('int')
         for ic, c in enumerate(clusters):
             index[list(c)] = ic
+        #print('__ process %f' %(time()-t0))
+
         return torch.tensor(index).to(device)
     else:
         raise ValueError('Clustering method %s not supported' %method)
@@ -108,6 +128,7 @@ def community_pooling(cluster,data):
     has_internal_edges = hasattr(data,'internal_edge_index')
     has_pos2D = hasattr(data,'pos2D')
     has_pos = hasattr(data,'pos')
+    has_cluster = hasattr(data,'cluster0')
 
     cluster, perm = consecutive_cluster(cluster)
     cluster = cluster.to(data.x.device)
@@ -128,6 +149,10 @@ def community_pooling(cluster,data):
     if has_pos2D:
         pos2D = scatter_mean(data.pos2D, cluster, dim=0)
 
+    if has_cluster:
+        c0, c1 = data.cluster0, data.cluster1
+
+
     # pool batch
     if hasattr(data,'batch'):
         batch = None if data.batch is None else pool_batch(perm, data.batch)
@@ -138,6 +163,10 @@ def community_pooling(cluster,data):
             data.internal_edge_index = internal_edge_index
             data.internal_edge_attr = internal_edge_attr
 
+        if has_cluster:
+            data.cluster0 = c0
+            data.cluster1 = c1
+
     else:
         data = Data(x=x, edge_index=edge_index,
                      edge_attr = edge_attr, pos = pos)
@@ -145,8 +174,13 @@ def community_pooling(cluster,data):
         if has_internal_edges:
             data.internal_edge_index = internal_edge_index
             data.internal_edge_attr = internal_edge_attr
+
         if has_pos2D:
             data.pos2D = pos2D
+
+        if has_cluster:
+            data.cluster0 = c0
+            data.cluster1 = c1
 
     return data
 

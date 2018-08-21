@@ -7,6 +7,10 @@ from tqdm import tqdm
 import h5py
 import copy
 
+from .community_pooling import community_detection, community_pooling
+
+
+
 def DivideDataSet(dataset,percent = [0.8,0.2],shuffle=True):
 
     size = dataset.__len__()
@@ -27,11 +31,37 @@ def DivideDataSet(dataset,percent = [0.8,0.2],shuffle=True):
     return dataset1, dataset2
 
 
+def PreCluster(dataset,method):
+
+    for fname, mol in tqdm(dataset.index_complexes):
+
+        data = dataset.load_one_graph(fname,mol)
+
+        f5 = h5py.File(fname,'a')
+        grp = f5[mol]
+        clust_grp = grp.require_group('clustering')
+
+        if method.lower() in grp:
+            print('Deleting previous data for mol %s method %s' %(mol,method))
+            del clust_grp[method.lower()]
+
+        method_grp = clust_grp.create_group(method.lower())
+
+        cluster = community_detection(data.internal_edge_index,data.num_nodes,method=method)
+        method_grp.create_dataset('depth_0', data=cluster)
+
+        data = community_pooling(cluster, data)
+
+        cluster = community_detection(data.internal_edge_index,data.num_nodes,method=method)
+        method_grp.create_dataset('depth_1', data=cluster)
+
+        f5.close()
+
 class HDF5DataSet(Dataset):
 
     def __init__(self,root,database=None,transform=None,pre_transform=None,
                 dict_filter = None, target='dockQ',tqdm = True, index=None,
-                node_feature='all', edge_feature = 'all',
+                node_feature='all', edge_feature = 'all', clustering_method='mcl',
                 edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
 
         super().__init__(root,transform,pre_transform)
@@ -49,6 +79,8 @@ class HDF5DataSet(Dataset):
         self.edge_feature = edge_feature
 
         self.edge_feature_transform = edge_feature_transform
+
+        self.clustering_method = clustering_method
 
         # check if the files are ok
         self.check_hdf5_files()
@@ -206,7 +238,6 @@ class HDF5DataSet(Dataset):
         else:
             internal_edge_attr = None
 
-
         #target
         y = torch.tensor([grp['score/'+self.target].value],dtype=torch.float)
 
@@ -222,6 +253,12 @@ class HDF5DataSet(Dataset):
 
         data.internal_edge_index = internal_edge_index
         data.internal_edge_attr = internal_edge_attr
+
+        # cluster
+        if 'clustering' in grp:
+            if self.clustering_method in grp['clustering']:
+                data.cluster0 = torch.tensor(grp['clustering/' + self.clustering_method + '/depth_0'].value,dtype=torch.long)
+                data.cluster1 = torch.tensor(grp['clustering/' + self.clustering_method + '/depth_1'].value,dtype=torch.long)
 
         f5.close()
         return data
@@ -300,9 +337,3 @@ class HDF5DataSet(Dataset):
         return True
 
 
-if __name__ == '__main__':
-
-    dataset = HDF5DataSet(root='./',database='test.hdf5',
-                          node_feature='all', edge_feature = ['dist'])
-
-    d1,d2 = DivideDataSet(dataset)

@@ -179,6 +179,13 @@ class Graph(object):
         for key in score_key:
             self.score[key] = molgrp['score/'+key].value
 
+
+        # add cluster
+        if 'clustering' in molgrp:
+            self.clusters = {}
+            for method in list(molgrp['clustering'].keys()):
+                self.clusters[method] = molgrp['clustering/'+method+'/depth_0'].value
+
         if molgrp is None:
             f5.close()
 
@@ -209,10 +216,20 @@ class Graph(object):
                 ebunch.append(e)
         gtmp.remove_edges_from(ebunch)
 
-        if method == 'louvain':
+        if hasattr(self,'clusters'):
+            if method in self.clusters:
+
+                raw_cluster = self.clusters[method]
+                cluster = {}
+                node_key = list(self.nx.nodes.keys())
+
+                for inode, index_cluster in enumerate(raw_cluster):
+                        cluster[node_key[inode]] = index_cluster
+
+        elif method == 'louvain':
             cluster = community.best_partition(gtmp)
 
-        if method == 'mcl':
+        elif method == 'mcl':
             matrix = nx.to_scipy_sparse_matrix(gtmp)
             result = mc.run_mcl(matrix)           # run MCL with default parameters
             mcl_clust = mc.get_clusters(result)    # get clusters

@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+from time import time
 
 # torch import
 import torch
@@ -31,6 +32,8 @@ class Net(torch.nn.Module):
         self.fc1 = torch.nn.Linear(32, 64)
         self.fc2 = torch.nn.Linear(64, 1)
 
+        self.clustering = 'mcl'
+
     def forward(self, data):
 
         act = nn.Tanhshrink()
@@ -39,12 +42,16 @@ class Net(torch.nn.Module):
 
         # first conv block
         data.x = act(self.conv1(data.x, data.edge_index,data.edge_attr))
-        cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,method='mcl')
+        #cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,method=self.clustering)
+        #cluster = community_detection(data.internal_edge_index,data.num_nodes,method=self.clustering)
+        cluster = get_preloaded_cluster(data.cluster0,data.batch)
         data = community_pooling(cluster, data)
 
         # second conv block
         data.x = act(self.conv2(data.x, data.edge_index,data.edge_attr))
-        cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,,method='mcl')
+        #cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,method=self.clustering)
+        #cluster = community_detection(data.internal_edge_index,data.num_nodes,method=self.clustering)
+        cluster = get_preloaded_cluster(data.cluster1,data.batch)
         x, batch = max_pool_x(cluster, data.x, data.batch)
 
         # FC
@@ -60,7 +67,7 @@ class NeuralNet(object):
 
     def __init__ (self, database, Net, node_feature = ['type','polarity','bsa'],
                         edge_feature = ['dist'], target = 'irmsd',
-                        batch_size = 32, nepoch = 100, percent = [0.8,0.2],index=None):
+                        batch_size = 32, percent = [0.8,0.2],index=None):
 
         # dataset
         dataset = HDF5DataSet(root='./',database=database,index=index,
@@ -81,20 +88,22 @@ class NeuralNet(object):
         # optimizer/loss/epoch
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
         self.loss = MSELoss()
-        self.nepoch = nepoch
 
 
-    def train(self,validate=False):
+    def train(self,nepoch=1,validate=False):
 
         self.model.train()
-        for epoch in range(1, self.nepoch):
+        for epoch in range(1, nepoch+1):
+            t0 = time()
             loss = self._epoch(epoch)
 
             if validate:
                 _, val_loss = self.eval(self.valid_loader)
-                print ('Epoch [%04d] : train loss %e | valid loss %e' %(epoch,loss, val_loss))
+                t = time() - t0
+                print ('Epoch [%04d] : train loss %e | valid loss %e | time %1.2e sec.' %(epoch,loss, val_loss,t))
             else:
-                print ('Epoch [%04d] : train loss %e' %(epoch,loss))
+                t = time() - t0
+                print ('Epoch [%04d] : train loss %e | time %1.2e sec.' %(epoch,loss,t))
 
     def eval(self,loader):
 
