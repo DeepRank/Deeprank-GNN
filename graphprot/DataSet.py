@@ -24,7 +24,7 @@ def DivideDataSet(dataset,percent = [0.8,0.2],shuffle=True):
     dataset2 = copy.deepcopy(dataset)
     dataset2.index_complexes = [dataset.index_complexes[i] for i in index2]
 
-    return dataset1,dataset2
+    return dataset1, dataset2
 
 
 class HDF5DataSet(Dataset):

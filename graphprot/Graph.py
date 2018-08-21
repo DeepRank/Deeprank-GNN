@@ -6,6 +6,7 @@ from collections import OrderedDict
 import time
 from graphprot.tools.embedding import manifold_embedding
 import community
+import markov_clustering as mc
 
 class Graph(object):
 
@@ -182,7 +183,7 @@ class Graph(object):
             f5.close()
 
 
-    def plotly_2d(self,out=None,offline=False,iplot=True):
+    def plotly_2d(self,out=None,offline=False,iplot=True,method='louvain'):
 
         if offline:
             import plotly.offline as py
@@ -207,7 +208,20 @@ class Graph(object):
             if typ == 'interface':
                 ebunch.append(e)
         gtmp.remove_edges_from(ebunch)
-        cluster = community.best_partition(gtmp)
+
+        if method == 'louvain':
+            cluster = community.best_partition(gtmp)
+
+        if method == 'mcl':
+            matrix = nx.to_scipy_sparse_matrix(gtmp)
+            result = mc.run_mcl(matrix)           # run MCL with default parameters
+            mcl_clust = mc.get_clusters(result)    # get clusters
+            cluster = {}
+            node_key = list(self.nx.nodes.keys())
+            for ic, c in enumerate(mcl_clust):
+                for node in c:
+                    cluster[node_key[node]] = ic
+
 
         # get the colormap for the clsuter line
         ncluster = np.max([v for _,v in cluster.items()])+1

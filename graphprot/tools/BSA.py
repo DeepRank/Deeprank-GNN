@@ -16,25 +16,17 @@ class BSA(object):
 
         Freesasa is required for this feature.
 
-        Install Freesasa option 1
-
-        >>> git clone https://github.com/mittinatten/freesasa.git
-        >>> cd freesasa
-        >>> autoconf -i configure.ac``
-
-        Install Freesasa option 2 (preferred)
+        https://freesasa.github.io
 
         >>> wget http://freesasa.github.io/freesasa-2.0.2.tar.gz
-        >>> tar -xvf freesasa-2.0.2.tar.gz
+        >>> tar -xvf freesasa-2.0.3.tar.gz
         >>> cd freesasa
-        >>> ./configure --enable-python-bindings CFLAGS=-fPIC
+        >>> ./configure CFLAGS=-fPIC (--prefix /home/<user>/)
         >>> make
         >>> make install
 
-        If the install of the python bindings fails because no python (problem with anaconda)
-
-        >>> cd ./bindings/python
-        >>> python setup.py install
+        Since release 2.0.3 the python bindings are separate module
+        >>> pip install freesasa
 
         Args :
             pdb_data (list(byte) or str): pdb data or filename of the pdb

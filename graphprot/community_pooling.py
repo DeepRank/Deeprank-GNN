@@ -1,4 +1,5 @@
 import community
+import markov_clustering as mc
 import networkx as nx
 import torch
 
@@ -7,11 +8,6 @@ from torch_geometric.nn.pool.pool import pool_edge, pool_batch, pool_pos
 from torch_geometric.nn.pool.consecutive import consecutive_cluster
 from torch_geometric.data import Batch, Data
 
-
-from sklearn import manifold, datasets
-from matplotlib import colors
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 import numpy as np
 
@@ -25,9 +21,7 @@ def plot_graph(graph,cluster):
     plt.show()
 
 
-def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None):
-
-    _plot_ = False
+def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None,method='mcl'):
 
     # make the networkX graph
     g = nx.Graph()
@@ -48,27 +42,36 @@ def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None):
         index = torch.tensor(all_index)[batch==iB].tolist()
         subg = g.subgraph(index)
 
-        # detect the communities
-        c = community.best_partition(subg)
-        cluster += [v+ncluster for k,v in c.items()]
-        ncluster = max(cluster)
+        # detect the communities using Louvain method
+        if method == 'louvain':
+            c = community.best_partition(subg)
+            cluster += [v+ncluster for k,v in c.items()]
+            ncluster = max(cluster)
 
-        if _plot_:
-            plot_graph(subg,[v for k,v in c.items()])
+        # detect communities using MCL
+        elif method == 'mcl':
+            matrix = nx.to_scipy_sparse_matrix(subg)
+            result = mc.run_mcl(matrix)           # run MCL with default parameters
+            mc_clust = mc.get_clusters(result)    # get clusters
 
+            index = np.zeros(num_nodes)
+            for ic, c in enumerate(mc_clust):
+                index[list(c)] = ic+ncluster
+            cluster += index.tolist()
+            ncluster = max(cluster)
+
+        else:
+            raise ValueError('Clustering method %s not supported' %method)
     # return
     device = edge_index.device
     return torch.tensor(cluster).to(device)
 
 
-def community_detection(edge_index,num_nodes,edge_attr=None,batches=None):
-
-    _plot_ = False
+def community_detection(edge_index,num_nodes,edge_attr=None,method='mcl'):
 
     # make the networkX graph
     g = nx.Graph()
     g.add_nodes_from(range(num_nodes))
-
 
     for iedge,(i,j) in enumerate(edge_index.transpose(0,1).tolist()):
         if edge_attr is None:
@@ -76,20 +79,27 @@ def community_detection(edge_index,num_nodes,edge_attr=None,batches=None):
         else:
             g.add_edge(i,j,weight=edge_attr[iedge])
 
-    # detect the communities
-    cluster = community.best_partition(g)
-
-    if _plot_:
-        if batches is None:
-            col = [v for k,v in cluster.items()]
-        else:
-            col = batches
-        plot_graph(g,col)
-
-    # return
+    # get the device
     device = edge_index.device
-    return torch.tensor([v for k,v in cluster.items()]).to(device)
 
+
+    # detect the communities using Louvain detection
+    if method == 'louvain':
+        cluster = community.best_partition(g)
+        return torch.tensor([v for k,v in cluster.items()]).to(device)
+
+    # detect the communities using MCL detection
+    elif method == 'mcl':
+        matrix = nx.to_scipy_sparse_matrix(g)
+        result = mc.run_mcl(matrix)           # run MCL with default parameters
+        clusters = mc.get_clusters(result)    # get clusters
+
+        index = np.zeros(num_nodes)
+        for ic, c in enumerate(clusters):
+            index[list(c)] = ic
+        return torch.tensor(index).to(device)
+    else:
+        raise ValueError('Clustering method %s not supported' %method)
 
 def community_pooling(cluster,data):
 

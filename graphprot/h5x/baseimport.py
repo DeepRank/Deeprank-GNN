@@ -16,14 +16,14 @@ from graphprot.community_pooling import *
 from graphprot.Graph import Graph
 
 
-def tsne_graph(grp):
+def tsne_graph(grp,method):
 
     import plotly.offline as py
     py.init_notebook_mode(connected=True)
 
     g = Graph()
     g.h52nx(None,None,molgrp=grp)
-    g.plotly_2d(offline=True,iplot=False)
+    g.plotly_2d(offline=True,iplot=False,method=method)
 
 
 

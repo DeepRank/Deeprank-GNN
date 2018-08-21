@@ -39,12 +39,12 @@ class Net(torch.nn.Module):
 
         # first conv block
         data.x = act(self.conv1(data.x, data.edge_index,data.edge_attr))
-        cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes)
+        cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,method='mcl')
         data = community_pooling(cluster, data)
 
         # second conv block
         data.x = act(self.conv2(data.x, data.edge_index,data.edge_attr))
-        cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes)
+        cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,,method='mcl')
         x, batch = max_pool_x(cluster, data.x, data.batch)
 
         # FC
