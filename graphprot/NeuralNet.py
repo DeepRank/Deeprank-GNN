@@ -89,6 +89,11 @@ class NeuralNet(object):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
         self.loss = MSELoss()
 
+        # parameters
+        self.node_feature = node_feature
+        self.edge_feature = edge_feature
+        self.target = target
+
 
     def train(self,nepoch=1,validate=False):
 
@@ -138,7 +143,7 @@ class NeuralNet(object):
 
         self.model.eval()
 
-        pred, truth = {'train':[], 'valid':[]}
+        pred, truth = {'train':[], 'valid':[]}, {'train':[], 'valid':[]}
 
         for data in self.train_loader:
             data = data.to(self.device)
@@ -147,10 +152,31 @@ class NeuralNet(object):
 
 
         for data in self.valid_loader:
-            data = data.to(device)
+            data = data.to(self.device)
             truth['valid'] += data.y.tolist()
-            pred['valid'] += model(data).reshape(-1).tolist()
+            pred['valid'] += self.model(data).reshape(-1).tolist()
 
         plt.scatter(truth['train'],pred['train'],c='blue')
         plt.scatter(truth['valid'],pred['valid'],c='red')
         plt.show()
+
+    def save_model(self,filename='model.pth.tar'):
+
+        state = {'model'       : self.model.state_dict(),
+                 'optimizer'   : self.optimizer.state_dict(),
+                 'node'        : self.node_feature,
+                 'edge'        : self.edge_feature,
+                 'target'      : self.target }
+
+        torch.save(state,filename)
+
+
+    def load_model(self,filename):
+
+        state = torch.load(filename)
+
+        self.model.load_state_dict(state['model'])
+        self.optimizer.load_state_dict(state['optimizer'])
+        self.node_feature = state['node_feature']
+        self.edge_feature = state[edge_feature]
+        self.target = target
