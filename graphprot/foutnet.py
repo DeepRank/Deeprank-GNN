@@ -23,17 +23,15 @@ def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
     return edge_index, edge_attr
 
 
-class GINet(torch.nn.Module):
+class FoutNet(torch.nn.Module):
 
     """
-    This is a new layer that is similar to the graph attention network but simpler
+    This layher is described by eq. (1) of
+    Protein Interface Predition using Graph Convolutional Network
+    by Alex Fout et al. NIPS 2018
 
-    z_i =  1 / Ni \Sum_j a_ij * [x_i || x_j] * W + b_i
+    z =   x_i * Wc + 1 / Ni \Sum_j x_j * Wn + b
 
-    || is the concatenation operator: [1,2,3] || [4,5,6] = [1,2,3,4,5,6]
-    Ni is the number of neighbor of node i
-    \Sum_j runs over the neighbors of node i
-    a_ij is the edge attribute between node i and j
 
     Args:
         in_channels (int): Size of each input sample.
@@ -47,13 +45,14 @@ class GINet(torch.nn.Module):
                  out_channels,
                  bias=True):
 
-        super(GINet, self).__init__()
+        super(FoutNet, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        self.weight = Parameter(
-            torch.Tensor(2 * in_channels, out_channels))
+        # Wc and Wn are the center and neighbor weight matrix
+        self.Wc = Parameter(torch.Tensor(in_channels, out_channels))
+        self.Wn = Parameter(torch.Tensor(in_channels, out_channels))
 
         if bias:
             self.bias = Parameter(torch.Tensor(out_channels))
@@ -63,41 +62,38 @@ class GINet(torch.nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        size = 2 * self.in_channels
-        uniform(size, self.weight)
+        size = self.in_channels
+        uniform(size, self.Wc)
+        uniform(size, self.Wn)
         uniform(size, self.bias)
 
-    def forward(self, x, edge_index, edge_attr):
-
-        #print('weight : ', torch.sum(self.weight))
+    def forward(self, x, edge_index):
 
         row, col = edge_index
         num_node = len(x)
-        edge_attr = edge_attr.unsqueeze(-1) if edge_attr.dim() == 1 else edge_attr
 
-        # create edge feature by concatenating node feature
-        alpha = torch.cat([x[row], x[col]], dim=-1)
+        # alpha = x * Wc
+        alpha = torch.mm(x,self.Wc)
 
-        # multiply the edge features with the fliter
-        alpha = torch.mm(alpha,self.weight)
+        # beta = x * Wn
+        beta = torch.mm(x,self.Wn)
 
-        # multiply each edge features with the corresponding dist
-        alpha = edge_attr*alpha
+        # gamma_i = 1/Ni Sum_j x_j * Wn
+        # since we have no uncconcted nodes (they are all conneced to a node on the other protein)
+        # we can directly reuse beta
+        gamma = torch.zeros(num_node,self.out_channels).to(alpha.device)
+        for n in range(num_node):
+            index = edge_index[:,edge_index[0,:]==n][1,:]
+            gamma[n,:] = torch.mean(beta[index,:],dim=0)
 
-        # scatter the resulting edge feature to get node features
-        out = torch.zeros(num_node,self.out_channels).to(alpha.device)
-        out = scatter_mean(alpha,row,dim=0,out=out)
-
-        # if the graph is undirected and (i,j) and (j,i) are both in
-        # the edge_index then we do not need to have that second line
-        # or we count everythong twice
-        #out = scatter_mean(alpha,col,dim=0,out=out)
+        # alpha = alpha + beta
+        alpha = alpha + beta
 
         # add the bias
         if self.bias is not None:
-            out = out + self.bias
+            alpha = alpha + self.bias
 
-        return out
+        return alpha
 
     def __repr__(self):
         return '{}({}, {})'.format(self.__class__.__name__,
