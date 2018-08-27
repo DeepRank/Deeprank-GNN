@@ -216,28 +216,30 @@ class Graph(object):
                 ebunch.append(e)
         gtmp.remove_edges_from(ebunch)
 
-        if hasattr(self,'clusters'):
-            if method in self.clusters:
+        try:
 
-                raw_cluster = self.clusters[method]
-                cluster = {}
-                node_key = list(self.nx.nodes.keys())
-
-                for inode, index_cluster in enumerate(raw_cluster):
-                        cluster[node_key[inode]] = index_cluster
-
-        elif method == 'louvain':
-            cluster = community.best_partition(gtmp)
-
-        elif method == 'mcl':
-            matrix = nx.to_scipy_sparse_matrix(gtmp)
-            result = mc.run_mcl(matrix)           # run MCL with default parameters
-            mcl_clust = mc.get_clusters(result)    # get clusters
+            raw_cluster = self.clusters[method]
             cluster = {}
             node_key = list(self.nx.nodes.keys())
-            for ic, c in enumerate(mcl_clust):
-                for node in c:
-                    cluster[node_key[node]] = ic
+
+            for inode, index_cluster in enumerate(raw_cluster):
+                    cluster[node_key[inode]] = index_cluster
+        except:
+
+            print('No cluster in the group. Computing cluster now with method : %s' %method)
+
+            if method == 'louvain':
+                cluster = community.best_partition(gtmp)
+
+            elif method == 'mcl':
+                matrix = nx.to_scipy_sparse_matrix(gtmp)
+                result = mc.run_mcl(matrix)           # run MCL with default parameters
+                mcl_clust = mc.get_clusters(result)    # get clusters
+                cluster = {}
+                node_key = list(self.nx.nodes.keys())
+                for ic, c in enumerate(mcl_clust):
+                    for node in c:
+                        cluster[node_key[node]] = ic
 
 
         # get the colormap for the clsuter line

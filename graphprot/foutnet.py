@@ -79,8 +79,7 @@ class FoutNet(torch.nn.Module):
         beta = torch.mm(x,self.Wn)
 
         # gamma_i = 1/Ni Sum_j x_j * Wn
-        # since we have no uncconcted nodes (they are all conneced to a node on the other protein)
-        # we can directly reuse beta
+        # there might be a better way than looping over the nodes
         gamma = torch.zeros(num_node,self.out_channels).to(alpha.device)
         for n in range(num_node):
             index = edge_index[:,edge_index[0,:]==n][1,:]
