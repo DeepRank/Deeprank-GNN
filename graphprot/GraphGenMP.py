@@ -80,7 +80,10 @@ class GraphHDF5(object):
             lst = pdbs
 
         for name in lst:
-            graphs.append(self._get_one_graph(name,pssm,ref))
+            try:
+                graphs.append(self._get_one_graph(name,pssm,ref))
+            except:
+                print('Issue encountered with ', name)
 
         f5 = h5py.File(outfile,'w')
         for g in graphs:
