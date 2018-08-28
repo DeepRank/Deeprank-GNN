@@ -44,7 +44,6 @@ class Graph(object):
             data = [v for _,v in nx.get_node_attributes(self.nx,feat).items()]
             node_feat_grp.create_dataset(feat,data=data)
 
-
         edges, internal_edges = [], []
         edge_index, internal_edge_index = [], []
 

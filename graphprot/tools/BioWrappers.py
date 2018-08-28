@@ -54,5 +54,12 @@ def get_hse(model):
     data = {}
     for k in list(hse.keys()):
         new_key = (k[0],k[1][1])
-        data[new_key] = hse[k]
+
+        x = hse[k]
+        if x[2] is None:
+            x = list(x)
+            x[2] = 0.0
+            x = tuple(x)
+
+        data[new_key] = x
     return data

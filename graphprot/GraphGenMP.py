@@ -94,11 +94,11 @@ class GraphHDF5(object):
 
         f5 = h5py.File(outfile,'w')
         for g in graphs:
-            try:
-                g.nx2h5(f5)
-            except Exception as e:
-                print('Issue encountered while storing graph ', g.pdb)
-                print(e)
+            #try:
+            g.nx2h5(f5)
+            # except Exception as e:
+            #     print('Issue encountered while storing graph ', g.pdb)
+            #     print(e)
         f5.close()
 
 
