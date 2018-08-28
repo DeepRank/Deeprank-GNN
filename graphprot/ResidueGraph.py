@@ -12,7 +12,7 @@ from .Graph import Graph
 
 class ResidueGraph(Graph):
 
-    def __init__(self,pdb=None,pssm={},
+    def __init__(self,pdb=None,pssm=None,
         contact_distance=8.5,internal_contact_distance = 3,
         pssm_align = 'res'):
 
@@ -21,7 +21,11 @@ class ResidueGraph(Graph):
         self.type = 'residue'
         self.pdb = pdb
         self.name = os.path.splitext(os.path.basename(pdb))[0]
-        self.pssm, self.ic = PSSM.PSSM_aligned(pssm,style=pssm_align)
+
+        if pssm is not None:
+            self.pssm, self.ic = PSSM.PSSM_aligned(pssm,style=pssm_align)
+        else:
+            self.pssm, self.ic = None, None
 
         self.contact_distance = contact_distance
         self.internal_contact_distance = internal_contact_distance
@@ -107,11 +111,12 @@ class ResidueGraph(Graph):
                 Warning('--> Residue ',res,' not valid')
 
         # tag the ones that are not in PSSM
-        for res in list(res_contact_pairs.keys()):
-            if res not in pssm:
-                keys_to_pop.append(res)
-                #res_contact_pairs.pop(res,None)
-                Warning('--> Residue ',res,' not found in PSSM file')
+        if pssm is not None:
+            for res in list(res_contact_pairs.keys()):
+                if res not in pssm:
+                    keys_to_pop.append(res)
+                    #res_contact_pairs.pop(res,None)
+                    Warning('--> Residue ',res,' not found in PSSM file')
 
         # Remove the residue
         for res in keys_to_pop:
@@ -125,8 +130,11 @@ class ResidueGraph(Graph):
         for k,reslist in list(res_contact_pairs.items()):
 
             for res in reslist:
-                if res[2] in valid_res and res in pssm:
-                    nodesB += [res]
+                if res[2] in valid_res:
+                    if pssm is None:
+                        nodesB += [res]
+                    elif res in pssm:
+                        nodesB += [res]
                 else:
                     if verbose:
                         print('removed node', res)
@@ -162,7 +170,7 @@ class ResidueGraph(Graph):
 
         #biopython data
         t0 = time()
-        model = BioWrappers.get_bio_model(db)
+        model = BioWrappers.get_bio_model(db.pdbfile)
         #print('_Model %f' %(time()-t0))
 
         #t0 = time()
@@ -189,10 +197,11 @@ class ResidueGraph(Graph):
 
             self.nx.nodes[node_key]['bsa'] = bsa_data[node_key]
 
-            data = PSSM.get_pssm_data(node_key,self.pssm)
-            self.nx.nodes[node_key]['pssm'] = data
-            self.nx.nodes[node_key]['cons'] = data[self.pssm_pos[resName]]
-            self.nx.nodes[node_key]['ic'] = PSSM.get_ic_data(node_key,self.ic)
+            if self.pssm is not None:
+                data = PSSM.get_pssm_data(node_key,self.pssm)
+                self.nx.nodes[node_key]['pssm'] = data
+                self.nx.nodes[node_key]['cons'] = data[self.pssm_pos[resName]]
+                self.nx.nodes[node_key]['ic'] = PSSM.get_ic_data(node_key,self.ic)
 
             self.nx.nodes[node_key]['depth'] = ResDepth[node_key] if node_key in ResDepth else 0
             bio_key = (chainID,resSeq)

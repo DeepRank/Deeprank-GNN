@@ -34,7 +34,10 @@ class GraphHDF5(object):
             pssm[p] = self._get_pssm(pssm_path,mol_name,base_name)
 
         # get the ref path
-        ref = os.path.join(ref_path,base_name+'.pdb')
+        if ref_path is None:
+            ref = None
+        else:
+            ref = os.path.join(ref_path,base_name+'.pdb')
 
         # compute all the graphs on 1 core and directly
         # store the graphs the HDF5 file
@@ -82,8 +85,9 @@ class GraphHDF5(object):
         for name in lst:
             try:
                 graphs.append(self._get_one_graph(name,pssm,ref))
-            except:
+            except Exception as e:
                 print('Issue encountered with ', name)
+                print(e)
 
         f5 = h5py.File(outfile,'w')
         for g in graphs:
@@ -96,7 +100,8 @@ class GraphHDF5(object):
 
         # get the graph
         g = ResidueGraph(pdb=name,pssm=pssm[name])
-        g.get_score(ref)
+        if ref is not None:
+            g.get_score(ref)
 
 
         # pickle it
@@ -114,11 +119,15 @@ class GraphHDF5(object):
 
         # get the graph
         g = ResidueGraph(pdb=name,pssm=pssm[name])
-        g.get_score(ref)
+        if ref is not None:
+            g.get_score(ref)
         return g
 
     @staticmethod
     def _get_pssm(pssm_path,mol_name,base_name):
+
+        if pssm_path is None:
+            return None
 
         pssmA = os.path.join(pssm_path,mol_name+'.A.pdb.pssm')
         pssmB = os.path.join(pssm_path,mol_name+'.B.pdb.pssm')

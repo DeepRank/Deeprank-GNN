@@ -97,7 +97,8 @@ class Graph(object):
         # store the score
         score_grp = grp.create_group('score')
         for k,v in self.score.items():
-            score_grp.create_dataset(k,data=v)
+            if v is not None:
+                score_grp.create_dataset(k,data=v)
 
     def h52nx(self,f5name,mol,molgrp=None):
 

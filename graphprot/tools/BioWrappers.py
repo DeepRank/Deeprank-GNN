@@ -14,13 +14,14 @@ with warnings.catch_warnings():
 
 from time import time
 
-def get_bio_model(sqldb):
+def get_bio_model(pdbfile):
 
-    (f,name) = tempfile.mkstemp()
-    sqldb.exportpdb(name)
-    parser = PDBParser(PERMISSIVE=1)
-    structure = parser.get_structure('_tmp',name)
-    os.remove(name)
+    # (f,name) = tempfile.mkstemp()
+    # sqldb.exportpdb(name)
+    #parser = PDBParser(PERMISSIVE=1)
+    parser = PDBParser()
+    structure = parser.get_structure('_tmp',pdbfile)
+    #os.remove(name)
     return structure[0]
 
 def get_depth_res(model):
