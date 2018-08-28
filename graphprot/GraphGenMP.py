@@ -23,7 +23,10 @@ class GraphHDF5(object):
         # get the full path of the pdbs
         pdbs = [os.path.join(pdb_path,name) for name in pdbs]
         if limit is not None:
-            pdbs = pdbs[:limit]
+            if isinstance(limit,list):
+                pdbs = pdbs[limit[0]:limit[1]]
+            else:
+                pdbs = pdbs[:limit]
 
         # get the pssm data
         pssm = {}
