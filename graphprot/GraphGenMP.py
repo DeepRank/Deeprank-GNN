@@ -89,12 +89,16 @@ class GraphHDF5(object):
             try:
                 graphs.append(self._get_one_graph(name,pssm,ref))
             except Exception as e:
-                print('Issue encountered with ', name)
+                print('Issue encountered while computing graph ', name)
                 print(e)
 
         f5 = h5py.File(outfile,'w')
         for g in graphs:
-            g.nx2h5(f5)
+            try:
+                g.nx2h5(f5)
+            except Exception as e:
+                print('Issue encountered while storing graph ', g.pdb)
+                print(e)
         f5.close()
 
 
