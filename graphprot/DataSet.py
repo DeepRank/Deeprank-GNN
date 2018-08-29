@@ -59,9 +59,9 @@ def PreCluster(dataset,method):
 
 class HDF5DataSet(Dataset):
 
-    def __init__(self,root,database=None,transform=None,pre_transform=None,
+    def __init__(self,root='./',database=None,transform=None,pre_transform=None,
                 dict_filter = None, target='dockQ',tqdm = True, index=None,
-                node_feature='all', edge_feature = 'all', clustering_method='mcl',
+                node_feature='all', edge_feature = ['dist'], clustering_method='mcl',
                 edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
 
         super().__init__(root,transform,pre_transform)
@@ -239,7 +239,10 @@ class HDF5DataSet(Dataset):
             internal_edge_attr = None
 
         #target
-        y = torch.tensor([grp['score/'+self.target].value],dtype=torch.float)
+        if self.target is None:
+            y = None
+        else:
+            y = torch.tensor([grp['score/'+self.target].value],dtype=torch.float)
 
         #pos
         pos = torch.tensor(grp['node_data/pos/'].value,dtype=torch.float)
