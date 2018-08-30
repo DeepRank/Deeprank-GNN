@@ -13,55 +13,10 @@ from torch_scatter import scatter_mean
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import max_pool_x
 
-# community pooling import
-from .community_pooling import *
-
 # graphprot import
 from .DataSet import HDF5DataSet, DivideDataSet
-from .ginet import GINet
 
 
-class Net(torch.nn.Module):
-
-    def __init__(self,input_shape):
-        super(Net, self).__init__()
-
-        self.conv1 = GINet(input_shape, 16)
-        self.conv2 = GINet(16 , 32)
-
-        self.fc1 = torch.nn.Linear(32, 64)
-        self.fc2 = torch.nn.Linear(64, 1)
-
-        self.clustering = 'mcl'
-
-    def forward(self, data):
-
-        act = nn.Tanhshrink()
-        act = F.relu
-        #act = nn.LeakyReLU(0.25)
-
-        # first conv block
-        data.x = act(self.conv1(data.x, data.edge_index,data.edge_attr))
-        #cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,method=self.clustering)
-        #cluster = community_detection(data.internal_edge_index,data.num_nodes,method=self.clustering)
-        cluster = get_preloaded_cluster(data.cluster0,data.batch)
-        data = community_pooling(cluster, data)
-
-        # second conv block
-        data.x = act(self.conv2(data.x, data.edge_index,data.edge_attr))
-        #cluster = community_detection_per_batch(data.internal_edge_index,data.batch,data.num_nodes,method=self.clustering)
-        #cluster = community_detection(data.internal_edge_index,data.num_nodes,method=self.clustering)
-        cluster = get_preloaded_cluster(data.cluster1,data.batch)
-        x, batch = max_pool_x(cluster, data.x, data.batch)
-
-        # FC
-        x = scatter_mean(x, batch, dim=0)
-        x = act(self.fc1(x))
-        x = self.fc2(x)
-        #x = F.dropout(x, training=self.training)
-
-        return x
-        #return F.relu(x)
 
 class NeuralNet(object):
 
@@ -125,6 +80,7 @@ class NeuralNet(object):
 
 
     def _epoch(self,epoch):
+
         running_loss = 0
         for data in self.train_loader:
             data = data.to(self.device)
