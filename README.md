@@ -3,6 +3,9 @@
 
 Use Graph CNN to rank conformations.
 
+
+![alt-text](./graphprot.png)
+
 ## Installation
 
 The code is build so far on all the otjher tools developped in the DeepRank project. Hence you will need:
