@@ -40,10 +40,12 @@ setup(
     ],
     test_suite='tests',
 
-
-    install_requires=['numpy >= 1.13', 'scipy', 'h5py', 'torch',
-                      'torch-geometric', 'networkx', 'pdb2sql', 'sklearn',
-                      'BioPython', 'python-louvain', 'markov-clustering'],
+    # not sure if the install of torhc-geometric will work ..
+    install_requires=['numpy >= 1.13', 'scipy', 'h5py', 'torch>=1.5.0',
+                      'networkx', 'pdb2sql', 'sklearn', 'plotly',
+                      'BioPython', 'python-louvain', 'markov-clustering',
+                      'torch-sparse', 'torch-scatter', 'torch-cluster',
+                      'torch-spline-conv', 'torch-geometric'],
 
     extras_require={
         'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],

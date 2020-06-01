@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import shutil
 
 from time import time
 import networkx as nx
@@ -57,6 +58,9 @@ class ResidueGraph(Graph):
                     self.edge_polarity_encoding[key] = iencod
                     iencod += 1
 
+        # check if external execs are installed
+        self.check_execs()
+
         # create the sqldb
         db = interface(self.pdb)
 
@@ -70,7 +74,21 @@ class ResidueGraph(Graph):
         self.get_edge_features()
 
         # close the db
-        db.close()
+        db._close()
+
+    def check_execs(self):
+        """see if all the required external execs are installed.
+
+        Raises:
+            OSError: if execs not found
+        """
+
+        execs = {'msms': 'http://mgltools.scripps.edu/downloads#msms'}
+
+        for e, inst in execs.items():
+            if shutil.which(e) is None:
+                raise OSError(e, ' is not installed see ',
+                              inst, ' for details')
 
     def get_graph(self, db):
 
@@ -241,6 +259,7 @@ class ResidueGraph(Graph):
             nodesB, db, self.internal_contact_distance)
 
         return edgesA+edgesB, distA+distB
+
     def _get_internal_edges_chain(self, nodes, db, cutoff):
 
         lnodes = list(nodes)
@@ -259,6 +278,7 @@ class ResidueGraph(Graph):
                     dist.append(np.sqrt(np.min(d2)))
 
         return edges, dist
+
     def _get_internal_edges_chain_mean(self, nodes, db, cutoff):
 
         lnodes = list(nodes)
@@ -281,6 +301,7 @@ class ResidueGraph(Graph):
                 dist.append(distances[i, j])
 
         return edges, dist
+
     def _get_edge_polarity(self, node1, node2):
 
         v1 = self.nx.nodes[node1]['polarity']
@@ -288,6 +309,7 @@ class ResidueGraph(Graph):
 
         key = tuple(np.sort([v1, v2]))
         return self.edge_polarity_encoding[key]
+
     def _get_edge_distance(self, node1, node2, db):
 
         # pos1 = self.nx.nodes[node1]['pos']

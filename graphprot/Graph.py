@@ -28,8 +28,7 @@ class Graph(object):
             method='svd', lzone=ref_name+'.lzone')
         self.score['irmsd'] = sim.compute_irmsd_fast(
             method='svd', izone=ref_name+'.izone')
-        self.score['fnat'] = sim.compute_Fnat_fast(
-            ref_pairs=ref_name+'.refpairs')
+        self.score['fnat'] = sim.compute_fnat_fast()
         self.score['dockQ'] = sim.compute_DockQScore(
             self.score['fnat'], self.score['lrmsd'], self.score['irmsd'])
         self.score['binclass'] = self.score['irmsd'] < 4.0
@@ -127,14 +126,14 @@ class Graph(object):
         self.nx = nx.Graph()
 
         # get nodes
-        nodes = molgrp['nodes'].value.astype('U').tolist()
+        nodes = molgrp['nodes'][()].astype('U').tolist()
         nodes = [tuple(n) for n in nodes]
 
         # get node features
         node_keys = list(molgrp['node_data'].keys())
         node_feat = {}
         for key in node_keys:
-            node_feat[key] = molgrp['node_data/'+key].value
+            node_feat[key] = molgrp['node_data/'+key][()]
 
         # add nodes
         for iN, n in enumerate(nodes):
@@ -146,14 +145,14 @@ class Graph(object):
                 self.nx.nodes[n][k] = v
 
         # get edges
-        edges = molgrp['edges'].value.astype('U').tolist()
+        edges = molgrp['edges'][()].astype('U').tolist()
         edges = [(tuple(e[0]), tuple(e[1])) for e in edges]
 
         # get edge data
         edge_key = list(molgrp['edge_data'].keys())
         edge_feat = {}
         for key in edge_key:
-            edge_feat[key] = molgrp['edge_data/'+key].value
+            edge_feat[key] = molgrp['edge_data/'+key][()]
 
         # add edges
         for iedge, e in enumerate(edges):
@@ -165,14 +164,16 @@ class Graph(object):
                 self.nx.edges[e[0], e[1]][k] = v
 
         # get internal edges
-        edges = molgrp['internal_edges'].value.astype('U').tolist()
+        edges = molgrp['internal_edges'][()].astype(
+            'U').tolist()
         edges = [(tuple(e[0]), tuple(e[1])) for e in edges]
 
         # get edge data
         edge_key = list(molgrp['internal_edge_data'].keys())
         edge_feat = {}
         for key in edge_key:
-            edge_feat[key] = molgrp['internal_edge_data/'+key].value
+            edge_feat[key] = molgrp['internal_edge_data/' +
+                                    key][()]
 
         # add edges
         for iedge, e in enumerate(edges):
@@ -187,17 +188,18 @@ class Graph(object):
         self.score = {}
         score_key = list(molgrp['score'].keys())
         for key in score_key:
-            self.score[key] = molgrp['score/'+key].value
+            self.score[key] = molgrp['score/'+key][()]
 
         # add cluster
         if 'clustering' in molgrp:
             self.clusters = {}
             for method in list(molgrp['clustering'].keys()):
                 self.clusters[method] = molgrp['clustering/' +
-                                               method+'/depth_0'].value
+                                               method+'/depth_0'][()]
 
         if molgrp is None:
             f5.close()
+
     def plotly_2d(self, out=None, offline=False, iplot=True, method='louvain'):
 
         if offline:
@@ -275,7 +277,7 @@ class Graph(object):
 
             x0, y0 = self.nx.nodes[edge[0]]['pos2D']
             x1, y1 = self.nx.nodes[edge[1]]['pos2D']
-
+            print(x0, y0)
             trace['x'] += [x0, x1, None]
             trace['y'] += [y0, y1, None]
 
@@ -335,6 +337,7 @@ class Graph(object):
             py.iplot(fig, filename=out)
         else:
             py.plot(fig)
+
     def plotly_3d(self, out=None, offline=False, iplot=True):
 
         if offline:
