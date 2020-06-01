@@ -42,7 +42,8 @@ setup(
 
 
     install_requires=['numpy >= 1.13', 'scipy', 'h5py', 'torch',
-                      'torch-geometric', 'networkx'],
+                      'torch-geometric', 'networkx', 'pdb2sql', 'sklearn',
+                      'BioPython', 'python-louvain', 'markov-clustering'],
 
     extras_require={
         'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],

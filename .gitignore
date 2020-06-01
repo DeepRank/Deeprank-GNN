@@ -14,3 +14,4 @@ GraphProt.egg-info
 
 # hdf5
 *.hdf5
+*.tar
