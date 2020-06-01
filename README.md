@@ -15,30 +15,9 @@ When all the dependencies are installed just clone the repo and install it with:
 pip install -e ./
 ```
 
-## Graphs
-
-Two types of graphs can be generated and use in a siamese network later: Residue graphs and Atomic graphs (the names are self explanatory). These graphs contains the all the node/edge info as:
-
-  . `Graph.node` : the signal on each node. For `Atomic` graphs these are typically the atom name, charge, .... For `Residue` graph these are residue names, BSA, PSSM, ...
-  . `Graph.edge_index` : the index of the edges
-  . `Grapg.edge_attr`: Attribute of the edges (length, coulomb interaction, vdwaals interaction ...)
-
-
-To see how the graph look like you can use:
-
-```
-python -i AtomicGraph.py
-```
-
-or
-
-```
-python -i ResidueGraph.py
-```
-
 ## Generate Graphs
 
-All the graphs/line graphs of all the pdb/pssm stored in `data/pdb/` and `data/pssm/` with the `GenGraph.py` script. This will generate two hdf5 files `graph_residue.hdf5` and 'linegraph_residue.hdf5' that contains the graph of the different conformations.
+All the graphs/line graphs of all the pdb/pssm stored in `data/pdb/` and `data/pssm/` with the `GenGraph.py` script. This will generate the hdf5 file `graph_residue.hdf5` which contains the graph of the different conformations.
 
 
 ```python
