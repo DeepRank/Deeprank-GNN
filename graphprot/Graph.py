@@ -206,7 +206,7 @@ class Graph(object):
         if offline:
             import plotly.offline as py
         else:
-            import plotly.plotly as py
+            import chart_studio.plotly as py
 
         import plotly.graph_objs as go
         import matplotlib.pyplot as plt
@@ -261,7 +261,7 @@ class Graph(object):
         N = cmap.N
         cmap = [cmap(i) for i in range(N)]
         cmap = cmap[::int(N/ncluster)]
-        cmap = 'aggrnyl'
+        cmap = 'plasma'
 
         edge_trace_list, internal_edge_trace_list = [], []
         node_connect = {}
@@ -275,7 +275,7 @@ class Graph(object):
                                    line=go.scatter.Line(color='rgb(110,110,110)', width=3))
             elif edge_type == 'interface':
                 trace = go.Scatter(x=[], y=[], text=[], mode='lines', hoverinfo=None,  showlegend=False,
-                                   line=go.scatter.Line(color='rgb(230,230,230)', width=1))
+                                   line=go.scatter.Line(color='rgb(210,210,210)', width=1))
 
             x0, y0 = self.nx.nodes[edge[0]]['pos2D']
             x1, y1 = self.nx.nodes[edge[1]]['pos2D']
@@ -307,7 +307,7 @@ class Graph(object):
 
             index = self.nx.nodes[node]['chain']
             pos = self.nx.nodes[node]['pos2D']
-            print(pos[1])
+
             node_trace[index]['x'] += (pos[0],)
             node_trace[index]['y'] += (pos[1],)
             node_trace[index]['text'] += (
@@ -345,7 +345,7 @@ class Graph(object):
         if offline:
             import plotly.offline as py
         else:
-            import plotly.plotly as py
+            import chart_studio.plotly as py
 
         import plotly.graph_objs as go
 
@@ -358,17 +358,17 @@ class Graph(object):
                                       edge[1]]['type'].decode('utf-8')
             if edge_type == 'internal':
                 trace = go.Scatter3d(x=[], y=[], z=[], text=[], mode='lines', hoverinfo=None,  showlegend=False,
-                                     line=go.Line(color='rgb(110,110,110)', width=5))
+                                     line=go.scatter3d.Line(color='rgb(110,110,110)', width=5))
             elif edge_type == 'interface':
                 trace = go.Scatter3d(x=[], y=[], z=[], text=[], mode='lines', hoverinfo=None,  showlegend=False,
-                                     line=go.Line(color='rgb(210,210,210)', width=2))
+                                     line=go.scatter3d.Line(color='rgb(210,210,210)', width=2))
 
             x0, y0, z0 = self.nx.nodes[edge[0]]['pos']
             x1, y1, z1 = self.nx.nodes[edge[1]]['pos']
 
-            trace['x'] += [x0, x1, None]
-            trace['y'] += [y0, y1, None]
-            trace['z'] += [z0, z1, None]
+            trace['x'] += (x0, x1, None)
+            trace['y'] += (y0, y1, None)
+            trace['z'] += (z0, z1, None)
 
             if edge_type == 'internal':
                 internal_edge_trace_list.append(trace)
@@ -395,14 +395,14 @@ class Graph(object):
             index = self.nx.nodes[node]['chain']
             pos = self.nx.nodes[node]['pos']
 
-            node_trace[index]['x'].append(pos[0])
-            node_trace[index]['y'].append(pos[1])
-            node_trace[index]['z'].append(pos[2])
-            node_trace[index]['text'].append(' '.join(node))
+            node_trace[index]['x'] += (pos[0],)
+            node_trace[index]['y'] += (pos[1],)
+            node_trace[index]['z'] += (pos[2], )
+            node_trace[index]['text'] += (' '.join(node),)
 
             nc = node_connect[node]
-            node_trace[index]['marker']['size'].append(
-                5 + 15*np.tanh(nc/5))
+            node_trace[index]['marker']['size'] += (
+                5 + 15*np.tanh(nc/5), )
 
         fig = go.Figure(data=[*node_trace, *internal_edge_trace_list, *edge_trace_list],
                         layout=go.Layout(
