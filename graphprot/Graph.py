@@ -7,6 +7,7 @@ import time
 from graphprot.tools.embedding import manifold_embedding
 import community
 import markov_clustering as mc
+import h5py
 
 
 class Graph(object):
@@ -260,6 +261,7 @@ class Graph(object):
         N = cmap.N
         cmap = [cmap(i) for i in range(N)]
         cmap = cmap[::int(N/ncluster)]
+        cmap = 'aggrnyl'
 
         edge_trace_list, internal_edge_trace_list = [], []
         node_connect = {}
@@ -270,16 +272,16 @@ class Graph(object):
                                       edge[1]]['type'].decode('utf-8')
             if edge_type == 'internal':
                 trace = go.Scatter(x=[], y=[], text=[], mode='lines', hoverinfo=None,  showlegend=False,
-                                   line=go.Line(color='rgb(110,110,110)', width=3))
+                                   line=go.scatter.Line(color='rgb(110,110,110)', width=3))
             elif edge_type == 'interface':
                 trace = go.Scatter(x=[], y=[], text=[], mode='lines', hoverinfo=None,  showlegend=False,
-                                   line=go.Line(color='rgb(230,230,230)', width=1))
+                                   line=go.scatter.Line(color='rgb(230,230,230)', width=1))
 
             x0, y0 = self.nx.nodes[edge[0]]['pos2D']
             x1, y1 = self.nx.nodes[edge[1]]['pos2D']
-            print(x0, y0)
-            trace['x'] += [x0, x1, None]
-            trace['y'] += [y0, y1, None]
+
+            trace['x'] += (x0, x1, None)
+            trace['y'] += (y0, y1, None)
 
             if edge_type == 'internal':
                 internal_edge_trace_list.append(trace)
@@ -305,33 +307,33 @@ class Graph(object):
 
             index = self.nx.nodes[node]['chain']
             pos = self.nx.nodes[node]['pos2D']
-
-            node_trace[index]['x'].append(pos[0])
-            node_trace[index]['y'].append(pos[1])
-            node_trace[index]['text'].append(
-                '[Clst:' + str(cluster[node]) + '] ' + ' '.join(node))
+            print(pos[1])
+            node_trace[index]['x'] += (pos[0],)
+            node_trace[index]['y'] += (pos[1],)
+            node_trace[index]['text'] += (
+                '[Clst:' + str(cluster[node]) + '] ' + ' '.join(node),)
 
             nc = node_connect[node]
-            node_trace[index]['marker']['size'].append(
-                5 + 15*np.tanh(nc/5))
-            node_trace[index]['marker']['line']['color'].append(
-                cluster[node])
+            node_trace[index]['marker']['size'] += (
+                5 + 15*np.tanh(nc/5),)
+            node_trace[index]['marker']['line']['color'] += (
+                cluster[node],)
 
         fig = go.Figure(data=[*internal_edge_trace_list, *edge_trace_list, *node_trace],
                         layout=go.Layout(
-                        title='<br>tSNE connection graph for %s' % self.pdb,
-                        titlefont=dict(size=16),
-                        showlegend=False,
-                        hovermode='closest',
-                        margin=dict(b=20, l=5, r=5, t=40),
-                        annotations=[dict(
-                            text="",
-                            showarrow=False,
-                            xref="paper", yref="paper",
-                            x=0.005, y=-0.002)],
-                        xaxis=dict(
-                            showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
+            title='<br>tSNE connection graph for %s' % self.pdb,
+            titlefont=dict(size=16),
+            showlegend=False,
+            hovermode='closest',
+            margin=dict(b=20, l=5, r=5, t=40),
+            annotations=[dict(
+                text="",
+                showarrow=False,
+                xref="paper", yref="paper",
+                x=0.005, y=-0.002)],
+            xaxis=dict(
+                showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
 
         if iplot:
             py.iplot(fig, filename=out)
@@ -428,4 +430,4 @@ if __name__ == "__main__":
     import h5py
     graph = Graph()
     graph.h52nx('1AK4_residue.hdf5', '1ATN')
-    graph.plotly('1ATN')
+    graph.plotly_2d('1ATN')

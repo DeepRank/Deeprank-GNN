@@ -65,13 +65,18 @@ class ResidueGraph(Graph):
         db = interface(self.pdb)
 
         # get the graphs
-        #t0 = time()
+        t0 = time()
         self.get_graph(db)
-        #print('Graph %f' %(time()-t0))
+        print('Graph %f' % (time()-t0))
 
         # get the nodes/edge attributes
+        t0 = time()
         self.get_node_features(db)
+        print('Node %f' % (time()-t0))
+
+        t0 = time()
         self.get_edge_features()
+        print('Edge %f' % (time()-t0))
 
         # close the db
         db._close()
