@@ -1,11 +1,15 @@
 import torch
 from torch.nn import Parameter
 import torch.nn.functional as F
-from torch_scatter import scatter_add
+import torch.nn as nn
+
+from torch_scatter import scatter_add, scatter_mean
 from torch_geometric.utils import remove_self_loops, add_self_loops, softmax
 
 from torch_geometric.nn.inits import uniform
-from torch_scatter import scatter_mean
+from torch_geometric.nn import max_pool_x
+
+from .community_pooling import get_preloaded_cluster, community_pooling
 
 
 def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
@@ -17,16 +21,16 @@ def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
     edge_index = torch.cat([edge_index, loop], dim=1)
 
     dtype, device = edge_attr.dtype, edge_attr.device
-    loop = torch.ones(num_nodes,dtype=dtype, device=device)
-    edge_attr = torch.cat([edge_attr,loop])
+    loop = torch.ones(num_nodes, dtype=dtype, device=device)
+    edge_attr = torch.cat([edge_attr, loop])
 
     return edge_index, edge_attr
 
 
-class FoutNet(torch.nn.Module):
+class FoutLayer(torch.nn.Module):
 
     """
-    This layher is described by eq. (1) of
+    This layer is described by eq. (1) of
     Protein Interface Predition using Graph Convolutional Network
     by Alex Fout et al. NIPS 2018
 
@@ -45,7 +49,7 @@ class FoutNet(torch.nn.Module):
                  out_channels,
                  bias=True):
 
-        super(FoutNet, self).__init__()
+        super(FoutLayer, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -73,17 +77,18 @@ class FoutNet(torch.nn.Module):
         num_node = len(x)
 
         # alpha = x * Wc
-        alpha = torch.mm(x,self.Wc)
+        alpha = torch.mm(x, self.Wc)
 
         # beta = x * Wn
-        beta = torch.mm(x,self.Wn)
+        beta = torch.mm(x, self.Wn)
 
         # gamma_i = 1/Ni Sum_j x_j * Wn
         # there might be a better way than looping over the nodes
-        gamma = torch.zeros(num_node,self.out_channels).to(alpha.device)
+        gamma = torch.zeros(
+            num_node, self.out_channels).to(alpha.device)
         for n in range(num_node):
-            index = edge_index[:,edge_index[0,:]==n][1,:]
-            gamma[n,:] = torch.mean(beta[index,:],dim=0)
+            index = edge_index[:, edge_index[0, :] == n][1, :]
+            gamma[n, :] = torch.mean(beta[index, :], dim=0)
 
         # alpha = alpha + beta
         alpha = alpha + beta
@@ -96,5 +101,44 @@ class FoutNet(torch.nn.Module):
 
     def __repr__(self):
         return '{}({}, {})'.format(self.__class__.__name__,
-                                             self.in_channels,
-                                             self.out_channels)
+                                   self.in_channels,
+                                   self.out_channels)
+
+
+class FoutNet(torch.nn.Module):
+
+    def __init__(self, input_shape):
+        super(FoutNet, self).__init__()
+
+        self.conv1 = FoutLayer(input_shape, 16)
+        self.conv2 = FoutLayer(16, 32)
+
+        self.fc1 = torch.nn.Linear(32, 64)
+        self.fc2 = torch.nn.Linear(64, 1)
+
+        self.clustering = 'mcl'
+
+    def forward(self, data):
+
+        act = nn.Tanhshrink()
+        act = F.relu
+        #act = nn.LeakyReLU(0.25)
+
+        # first conv block
+        data.x = act(self.conv1(data.x, data.edge_index))
+        cluster = get_preloaded_cluster(data.cluster0, data.batch)
+        data = community_pooling(cluster, data)
+
+        # second conv block
+        data.x = act(self.conv2(data.x, data.edge_index))
+        cluster = get_preloaded_cluster(data.cluster1, data.batch)
+        x, batch = max_pool_x(cluster, data.x, data.batch)
+
+        # FC
+        x = scatter_mean(x, batch, dim=0)
+        x = act(self.fc1(x))
+        x = self.fc2(x)
+        #x = F.dropout(x, training=self.training)
+
+        return x
+        # return F.relu(x)

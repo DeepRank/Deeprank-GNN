@@ -1,11 +1,19 @@
 import torch
 from torch.nn import Parameter
 import torch.nn.functional as F
+import torch.nn as nn
+
 from torch_scatter import scatter_add
+from torch_scatter import scatter_mean
+
 from torch_geometric.utils import remove_self_loops, add_self_loops, softmax
 
+# torch_geometric import
 from torch_geometric.nn.inits import uniform
-from torch_scatter import scatter_mean
+from torch_geometric.nn import max_pool_x
+
+# graphprot import
+from .community_pooling import get_preloaded_cluster, community_pooling
 
 
 def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
@@ -17,13 +25,13 @@ def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
     edge_index = torch.cat([edge_index, loop], dim=1)
 
     dtype, device = edge_attr.dtype, edge_attr.device
-    loop = torch.ones(num_nodes,dtype=dtype, device=device)
-    edge_attr = torch.cat([edge_attr,loop])
+    loop = torch.ones(num_nodes, dtype=dtype, device=device)
+    edge_attr = torch.cat([edge_attr, loop])
 
     return edge_index, edge_attr
 
 
-class GINet(torch.nn.Module):
+class GraphAttention(torch.nn.Module):
 
     """
     This is a new layer that is similar to the graph attention network but simpler
@@ -47,7 +55,7 @@ class GINet(torch.nn.Module):
                  out_channels,
                  bias=True):
 
-        super(GINet, self).__init__()
+        super(GraphAttention, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -73,20 +81,22 @@ class GINet(torch.nn.Module):
 
         row, col = edge_index
         num_node = len(x)
-        edge_attr = edge_attr.unsqueeze(-1) if edge_attr.dim() == 1 else edge_attr
+        edge_attr = edge_attr.unsqueeze(
+            -1) if edge_attr.dim() == 1 else edge_attr
 
         # create edge feature by concatenating node feature
         alpha = torch.cat([x[row], x[col]], dim=-1)
 
         # multiply the edge features with the fliter
-        alpha = torch.mm(alpha,self.weight)
+        alpha = torch.mm(alpha, self.weight)
 
         # multiply each edge features with the corresponding dist
         alpha = edge_attr*alpha
 
         # scatter the resulting edge feature to get node features
-        out = torch.zeros(num_node,self.out_channels).to(alpha.device)
-        out = scatter_mean(alpha,row,dim=0,out=out)
+        out = torch.zeros(
+            num_node, self.out_channels).to(alpha.device)
+        out = scatter_mean(alpha, row, dim=0, out=out)
 
         # if the graph is undirected and (i,j) and (j,i) are both in
         # the edge_index then we do not need to have that second line
@@ -101,5 +111,46 @@ class GINet(torch.nn.Module):
 
     def __repr__(self):
         return '{}({}, {})'.format(self.__class__.__name__,
-                                             self.in_channels,
-                                             self.out_channels)
+                                   self.in_channels,
+                                   self.out_channels)
+
+
+class GINet(torch.nn.Module):
+
+    def __init__(self, input_shape):
+        super(GINet, self).__init__()
+
+        self.conv1 = GraphAttention(input_shape, 16)
+        self.conv2 = GraphAttention(16, 32)
+
+        self.fc1 = torch.nn.Linear(32, 64)
+        self.fc2 = torch.nn.Linear(64, 1)
+
+        self.clustering = 'mcl'
+
+    def forward(self, data):
+
+        act = nn.Tanhshrink()
+        act = F.relu
+        #act = nn.LeakyReLU(0.25)
+
+        # first conv block
+        data.x = act(self.conv1(
+            data.x, data.edge_index, data.edge_attr))
+        cluster = get_preloaded_cluster(data.cluster0, data.batch)
+        data = community_pooling(cluster, data)
+
+        # second conv block
+        data.x = act(self.conv2(
+            data.x, data.edge_index, data.edge_attr))
+        cluster = get_preloaded_cluster(data.cluster1, data.batch)
+        x, batch = max_pool_x(cluster, data.x, data.batch)
+
+        # FC
+        x = scatter_mean(x, batch, dim=0)
+        x = act(self.fc1(x))
+        x = self.fc2(x)
+        #x = F.dropout(x, training=self.training)
+
+        return x
+        # return F.relu(x)

@@ -2,7 +2,7 @@
 *__pycache__*
 
 # distribution 
-deeprank.egg-info
+GraphProt.egg-info
 
 
 # datafile
@@ -14,3 +14,4 @@ deeprank.egg-info
 
 # hdf5
 *.hdf5
+*.tar
