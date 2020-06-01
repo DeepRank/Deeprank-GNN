@@ -1,21 +1,14 @@
 # GraphProt
 
-
 Use Graph CNN to rank conformations.
-
 
 ![alt-text](./graphprot.png)
 
 ## Installation
 
-The code is build so far on all the otjher tools developped in the DeepRank project. Hence you will need:
-  * deeprank: https://github.com/DeepRank/deeprank
-  * iScore : https://github.com/DeepRank/iScore
-
-You'll also need:
+You'll probably need to manually install pytorch geometric
   * pytorch_geometric : https://github.com/rusty1s/pytorch_geometric
-  * networkx : https://github.com/networkx/networkx
-
+  
 When all the dependencies are installed just clone the repo and install it with:
 
 ```
@@ -43,21 +36,6 @@ or
 python -i ResidueGraph.py
 ```
 
-## Line Graphs
-
-Since we are particualrly interested in the properties of the edges I though it would be interesting to study the line graphs since the convolution in graph CNN is done on the nodes and not the edges. We can easily generates line graphs with `networkx` as shown in the two scipts mentionned above
-
-
-```python
-from Graph import Graph
-from ResidueGraph import ResidueGraph
-
-pdb = 'data/pdb/1ATN.pdb'
-pssm = {'A':'./data/pssm/1ATN.A.pdb.pssm','B':'./data/pssm/1ATN.B.pdb.pssm'}
-graph = ResidueGraph(pdb,pssm)
-line_graph = Graph.get_line_graph(graph)
-```
-
 ## Generate Graphs
 
 All the graphs/line graphs of all the pdb/pssm stored in `data/pdb/` and `data/pssm/` with the `GenGraph.py` script. This will generate two hdf5 files `graph_residue.hdf5` and 'linegraph_residue.hdf5' that contains the graph of the different conformations.
@@ -74,24 +52,35 @@ GraphHDF5(pdb_path=pdb_path,ref_path=ref,pssm_path=pssm_path,
 	      graph_type='residue',outfile='graph_residue.hdf5')
 ```
 
-## Graph CNN
+## Graph Interaction Network
 
-We can then use do some deeplearning on the graphs using the `HDF5DataSet` class in `DataSet.py` and the model defined in 'model.py':
+Using the graph interaction network is rather simple :
+
 
 ```python
+from graphprot.NeuralNet import NeuralNet
+from graphprot.ginet import GINet
 
-import torch
-from torch.nn import MSELoss
-import torch.nn.functional as F
-from torch_scatter import scatter_mean
-from torch_geometric.datasets import MNISTSuperpixels
-import torch_geometric.transforms as T
-from torch_geometric.data import DataLoader
-from torch_geometric.utils import normalized_cut
-from torch_geometric.nn import SplineConv, graclus, max_pool, max_pool_x
+database = './hdf5/1ACB_residue.hdf5'
 
-from DataSet import HDF5DataSet
+NN = NeuralNet(database, GINet,
+               node_feature=['type', 'polarity', 'bsa',
+                             'depth', 'hse', 'ic', 'pssm'],
+               edge_feature=['dist'],
+               target='irmsd',
+               index=range(400),
+               batch_size=64,
+               percent=[0.8, 0.2])
 
+NN.train(nepoch=250, validate=False)
+NN.plot_scatter()
+```
+
+## Custom CNN
+
+It is also possible to define new network architecture and to specify the loss and optimizer to be used during the training. 
+
+```python
 train_dataset = HDF5DataSet(root='./',database='graph_residue.hdf5')
 train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 d = train_dataset.get(1)
@@ -103,7 +92,7 @@ def normalized_cut_2d(edge_index, pos):
     return normalized_cut(edge_index, edge_attr, num_nodes=pos.size(0))
 
 
-class Net(torch.nn.Module):
+class CustomNet(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = SplineConv(d.num_features, 32, dim=2, kernel_size=5)
@@ -129,29 +118,17 @@ class Net(torch.nn.Module):
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-loss = MSELoss()
+NN = NeuralNet(database, CustomNet,
+               node_feature=['type', 'polarity', 'bsa',
+                             'depth', 'hse', 'ic', 'pssm'],
+               edge_feature=['dist'],
+               target='irmsd',
+               index=range(400),
+               batch_size=64,
+               percent=[0.8, 0.2])
+molde.optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+model.loss = MSELoss()
 
-def train(epoch):
-    model.train()
-
-    if epoch == 16:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.001
-
-    if epoch == 26:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.0001
-
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        loss(model(data)[0], data.y).backward()
-        optimizer.step()
-
-for epoch in range(50):
-     train(epoch)
-     print('Epoch: {:02d}, Test: {:.4f}'.format(epoch, test_acc))
+model.train(nepoch=50)
 
 ```
