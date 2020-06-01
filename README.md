@@ -60,9 +60,6 @@ NN.plot_scatter()
 It is also possible to define new network architecture and to specify the loss and optimizer to be used during the training. 
 
 ```python
-train_dataset = HDF5DataSet(root='./',database='graph_residue.hdf5')
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-d = train_dataset.get(1)
 
 
 def normalized_cut_2d(edge_index, pos):
@@ -97,7 +94,7 @@ class CustomNet(torch.nn.Module):
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-NN = NeuralNet(database, CustomNet,
+model = NeuralNet(database, CustomNet,
                node_feature=['type', 'polarity', 'bsa',
                              'depth', 'hse', 'ic', 'pssm'],
                edge_feature=['dist'],
@@ -105,9 +102,15 @@ NN = NeuralNet(database, CustomNet,
                index=range(400),
                batch_size=64,
                percent=[0.8, 0.2])
-molde.optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+model.optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 model.loss = MSELoss()
 
 model.train(nepoch=50)
 
 ```
+
+## h5x support
+
+After installing  `h5xplorer`  (https://github.com/DeepRank/h5xplorer), you can execute the python file `graphprot/h5x/h5x.py` to explorer the connection graph used by GraphProt. The context menu (right click on the name of the structure) allows to automatically plot the graphs using `plotly` as shown below.
+
+![alt-text](./h5_graphprot.png)
