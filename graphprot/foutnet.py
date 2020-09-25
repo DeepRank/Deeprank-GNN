@@ -90,8 +90,8 @@ class FoutLayer(torch.nn.Module):
             index = edge_index[:, edge_index[0, :] == n][1, :]
             gamma[n, :] = torch.mean(beta[index, :], dim=0)
 
-        # alpha = alpha + beta
-        alpha = alpha + beta
+        # alpha = alpha + gamma
+        alpha = alpha + gamma
 
         # add the bias
         if self.bias is not None:
