@@ -108,15 +108,18 @@ class ResidueGraph(Graph):
 
         # create the interface edges
         for key, val in self.res_contact_pairs.items():
-            for v in val:
-                d = self._get_edge_distance(key, v, db)
-                self.nx.add_edge(key, v, dist=d, type=bytes(
-                    'interface', encoding='utf-8'))
+            if key in all_nodes :
+                for v in val:   
+                    if v in all_node :
+                        d = self._get_edge_distance(key, v, db)
+                        self.nx.add_edge(key, v, dist=d, type=bytes(
+                                    'interface', encoding='utf-8'))
 
         # get the internal edges
         edges, dist = self.get_internal_edges(db)
         for e, d in zip(edges, dist):
             e0, e1 = tuple(e[0]), tuple(e[1])
+            if e0 in all_nodes and e1 in all_nodes :
             self.nx.add_edge(e0, e1, dist=d, type=bytes(
                 'internal', encoding='utf-8'))
 
