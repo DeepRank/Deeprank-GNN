@@ -22,16 +22,27 @@ class NeuralNet(object):
     def __init__(self, database, Net,
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd',
-                 batch_size=32, percent=[0.8, 0.2], index=None):
+                 batch_size=32, percent=[0.8, 0.2], index=None, database_eval = None):
 
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=index,
                               node_feature=node_feature, edge_feature=edge_feature,
                               target=target)
+        PreCluster(dataset, method='mcl')
 
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
 
+        if database_eval is not None :
+            valid_dataset = HDF5DataSet(root='./', database=database_eval, index=index,
+                                        node_feature=node_feature, edge_feature=edge_feature,
+                                        target=target)
+            print('Independent validation set loaded')
+            PreCluster(dataset_eval, method='mcl')     
+        
+        else: 
+            print('No independent validation set loaded')
+            
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=batch_size, shuffle=False)
