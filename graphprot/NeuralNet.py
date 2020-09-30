@@ -55,16 +55,31 @@ class NeuralNet(object):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
 
-        # put the model
-        self.model = Net(dataset.get(0).num_features).to(self.device)
-        
         # parameters
         self.node_feature = node_feature
         self.edge_feature = edge_feature
         self.target = target
-        self.classes = classes
-        self.classes_idx = {i: idx for idx, i in enumerate(self.classes)}
+        self.task = task
+        self.class_weights = class_weights
 
+        # put the model
+        if self.task == 'reg' :
+            self.model = Net(dataset.get(0).num_features).to(self.device)
+            
+        elif self.task == 'class' :
+            self.classes = classes
+            self.classes_idx = {i: idx for idx, i in enumerate(self.classes)}
+            self.output_shape = len(self.classes)
+            try :
+                self.model = Net(dataset.get(0).num_features, self.output_shape).to(self.device)
+            except :
+                raise ValueError(
+                    f"The loaded model does not accept output_shape = {self.output_shape} argument \n\t"
+                    f"Check your input or adapt the model\n\t"
+                    f"Example :\n\t"
+                    f"def __init__(self, input_shape): --> def __init__(self, input_shape, output_shape) \n\t"
+                    f"self.fc2 = torch.nn.Linear(64, 1) --> self.fc2 = torch.nn.Linear(64, output_shape) \n\t")
+        
         # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=0.01)
@@ -92,12 +107,21 @@ class NeuralNet(object):
             if validate:
                 _, val_acc, val_loss = self.eval(self.valid_loader)
                 t = time() - t0
-             print('Epoch [%04d] : train loss %e | train accuracy %1.4e | valid loss %e | val accuracy %1.4e | time %1.2e sec.' % (
-                    epoch, loss, acc, val_loss, val_acc, t))
+                if acc is not None :
+                    print('Epoch [%04d] : train loss %e | train accuracy %1.4e | valid loss %e | val accuracy %1.4e | time %1.2e sec.' % (
+                        epoch, loss, acc, val_loss, val_acc, t))
+                else :
+                    print('Epoch [%04d] : train loss %e | valid loss %e | time %1.2e sec.' % (
+                        epoch, loss, val_loss, t))
+
             else:
                 t = time() - t0
-                print('Epoch [%04d] : train loss %e | accuracy %1.4e |time %1.2e sec. |' % (
+                if acc is not None :
+                    print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec. |' % (
                     epoch, loss, acc, t))
+                else :
+                    print('Epoch [%04d] : train loss %e | time %1.2e sec. |' % (
+                    epoch, loss, t))
 
 
     def calcAccuracy(self, prediction, target, reduce=True):
@@ -207,6 +231,6 @@ class NeuralNet(object):
 
         self.model.load_state_dict(state['model'])
         self.optimizer.load_state_dict(state['optimizer'])
-        self.node_feature = state['node_feature']
-        self.edge_feature = state[edge_feature]
-        self.target = target
+        self.node_feature = state['node']
+        self.edge_feature = state['edge']
+        self.target = state['target']
