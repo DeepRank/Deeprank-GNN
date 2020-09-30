@@ -33,13 +33,16 @@ class NeuralNet(object):
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
 
-        if database_eval :
+        if database_eval is not None :
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=index,
                                         node_feature=node_feature, edge_feature=edge_feature,
                                         target=target)
             print('Independent validation set loaded')
             PreCluster(dataset_eval, method='mcl')     
-
+        
+        else: 
+            print('No independent validation set loaded')
+            
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=batch_size, shuffle=False)
