@@ -22,7 +22,8 @@ class NeuralNet(object):
     def __init__(self, database, Net,
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd',
-                 batch_size=32, percent=[0.8, 0.2], index=None, database_eval = None):
+                 batch_size=32, percent=[0.8, 0.2], index=None, database_eval = None,
+                 class_weights = None, task = 'class', classes = [0,1]):
 
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=index,
@@ -33,6 +34,7 @@ class NeuralNet(object):
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
 
+        # independent validation dataset
         if database_eval is not None :
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=index,
                                         node_feature=node_feature, edge_feature=edge_feature,
@@ -55,59 +57,116 @@ class NeuralNet(object):
 
         # put the model
         self.model = Net(dataset.get(0).num_features).to(self.device)
-
-        # optimizer/loss/epoch
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=0.01)
-        self.loss = MSELoss()
-
+        
         # parameters
         self.node_feature = node_feature
         self.edge_feature = edge_feature
         self.target = target
+        self.classes = classes
+        self.classes_idx = {i: idx for idx, i in enumerate(self.classes)}
+
+        # optimizer
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=0.01)
+        
+        # loss 
+        if self.task == 'reg':
+            self.loss = MSELoss()
+
+        elif self.task == 'class':
+            self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')
+
+        else:
+            raise ValueError(
+                f"Task {self.task} not recognized. Options are:\n\t "
+                f"reg': regression \n\t 'class': classifiation\n")        
+
 
     def train(self, nepoch=1, validate=False):
 
         self.model.train()
         for epoch in range(1, nepoch+1):
             t0 = time()
-            loss = self._epoch(epoch)
+            acc, loss = self._epoch(epoch)
 
             if validate:
-                _, val_loss = self.eval(self.valid_loader)
+                _, val_acc, val_loss = self.eval(self.valid_loader)
                 t = time() - t0
-                print('Epoch [%04d] : train loss %e | valid loss %e | time %1.2e sec.' % (
-                    epoch, loss, val_loss, t))
+             print('Epoch [%04d] : train loss %e | train accuracy %1.4e | valid loss %e | val accuracy %1.4e | time %1.2e sec.' % (
+                    epoch, loss, acc, val_loss, val_acc, t))
             else:
                 t = time() - t0
-                print('Epoch [%04d] : train loss %e | time %1.2e sec.' % (
-                    epoch, loss, t))
+                print('Epoch [%04d] : train loss %e | accuracy %1.4e |time %1.2e sec. |' % (
+                    epoch, loss, acc, t))
+
+
+    def calcAccuracy(self, prediction, target, reduce=True):
+
+        overlap = (prediction.argmax(dim=1)==target).sum()
+        if reduce:
+            return overlap/float(target.size()[-1])
+
+        return overlap
+
 
     def eval(self, loader):
 
-        self.model.eval()
+        with self.model.eval():
 
-        loss_func, loss_val = self.loss, 0
-        out = []
-        for data in loader:
-            data = data.to(self.device)
-            pred = self.model(data).reshape(-1)
-            loss_val += loss_func(pred, data.y)
-            out += pred.reshape(-1).tolist()
-        return out, loss_val
+            loss_func, loss_val = self.loss, 0
+            out = []
+            acc = []
+            for data in loader:
+                data = data.to(self.device)
+                pred = self.model(data)
 
+                if self.task == 'class':
+                    pred = F.softmax(pred, dim=1)
+                    data.y = torch.tensor([self.classes_idx[int(x)] for x in data.y])
+                    acc.append(self.calcAccuracy(pred, data.y))
+
+                else :
+                    out = out.reshape(-1)
+                    acc = None
+
+                loss_val += loss_func(pred, data.y)
+                out += pred.reshape(-1).tolist()
+
+        if self.task == 'class':
+            return out, torch.mean(torch.stack(acc)), loss_val
+
+        else :
+            return out, acc, loss_val
+            
+            
     def _epoch(self, epoch):
 
         running_loss = 0
         for data in self.train_loader:
             data = data.to(self.device)
             self.optimizer.zero_grad()
-            out = self.model(data).reshape(-1)
+            out = self.model(data)
+
+            if self.task == 'class':
+                out = F.softmax(out, dim=1)
+                data.y = torch.tensor([self.classes_idx[int(x)] for x in data.y])
+                acc.append(self.calcAccuracy(out, data.y))
+
+            else :
+                out = out.reshape(-1)
+                acc = None
+
             loss = self.loss(out, data.y)
             running_loss += loss.data.item()
             loss.backward()
             self.optimizer.step()
-        return running_loss
+
+        if self.task == 'class':
+            return torch.mean(torch.stack(acc)), running_loss
+
+        else :
+            return acc, running_loss
+
 
     def plot_scatter(self):
 
