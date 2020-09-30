@@ -117,14 +117,14 @@ class GraphAttention(torch.nn.Module):
 
 class GINet(torch.nn.Module):
 
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, output_shape = 1):
         super(GINet, self).__init__()
 
         self.conv1 = GraphAttention(input_shape, 16)
         self.conv2 = GraphAttention(16, 32)
 
         self.fc1 = torch.nn.Linear(32, 64)
-        self.fc2 = torch.nn.Linear(64, 1)
+        self.fc2 = torch.nn.Linear(64, output_shape)
 
         self.clustering = 'mcl'
 
