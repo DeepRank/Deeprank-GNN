@@ -80,6 +80,11 @@ class NeuralNet(object):
                     f"def __init__(self, input_shape): --> def __init__(self, input_shape, output_shape) \n\t"
                     f"self.fc2 = torch.nn.Linear(64, 1) --> self.fc2 = torch.nn.Linear(64, output_shape) \n\t")
         
+        else:
+            raise ValueError(
+                f"Task {self.task} not recognized. Options are:\n\t "
+                f"reg': regression \n\t 'class': classifiation\n") 
+            
         # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=0.01)
@@ -89,12 +94,7 @@ class NeuralNet(object):
             self.loss = MSELoss()
 
         elif self.task == 'class':
-            self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')
-
-        else:
-            raise ValueError(
-                f"Task {self.task} not recognized. Options are:\n\t "
-                f"reg': regression \n\t 'class': classifiation\n")        
+            self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')       
 
 
     def train(self, nepoch=1, validate=False):
@@ -103,36 +103,75 @@ class NeuralNet(object):
         for epoch in range(1, nepoch+1):
             t0 = time()
             acc, loss = self._epoch(epoch)
-
+            t = time() - t0
+            if acc is not None:
+                print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, loss, acc, t))
+            else:
+                print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
+                          
             if validate:
                 _, val_acc, val_loss = self.eval(self.valid_loader)
                 t = time() - t0
                 if acc is not None :
-                    print('Epoch [%04d] : train loss %e | train accuracy %1.4e | valid loss %e | val accuracy %1.4e | time %1.2e sec.' % (
-                        epoch, loss, acc, val_loss, val_acc, t))
+                    print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (val_loss, val_acc, t))
                 else :
-                    print('Epoch [%04d] : train loss %e | valid loss %e | time %1.2e sec.' % (
-                        epoch, loss, val_loss, t))
-
-            else:
-                t = time() - t0
-                if acc is not None :
-                    print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec. |' % (
-                    epoch, loss, acc, t))
-                else :
-                    print('Epoch [%04d] : train loss %e | time %1.2e sec. |' % (
-                    epoch, loss, t))
+                    print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
 
 
-    def calcAccuracy(self, prediction, target, reduce=True):
+    def Accuracy(self, prediction, target, reduce=True):
+        '''
+        Computes the accuracy for classification tasks
+        
+        prediction : tensor of torch.Size([batch_size, number of classes])
+        The prediction tensor contains softmax activation function output
+        i.e. probabilities of all classes
+        Ex : tensor([[8.5442e-30, 1.0000e+00, 4.4564e-27, 1.4013e-45, 0.0000e+00],
+            [8.7185e-10, 3.6507e-08, 1.0244e-05, 5.2405e-10, 9.9999e-01],
+            [4.7920e-29, 1.0000e+00, 2.4772e-27, 0.0000e+00, 0.0000e+00],
+            [0.0000e+00, 1.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00]])
+        
+        target : tensor of torch.Size([number of classes])
+        Ex : tensor([1, 4, 0, 1])
+        
+        prediction.argmax(dim=1) returns the indices of the maximum values along the dim 1
+        e.i. the class with the highest probability
+        Ex : tensor([1, 4, 1, 1])
+        
+        (prediction.argmax(dim=1)==target) 
+        compares the content of the two tensors and returns a True/False tensor 
+        Ex : tensor([True, True, False, True])
 
+        overlap = (prediction.argmax(dim=1)==target).sum() 
+        counts the number of True booleans
+        
+        overlap/float(target.size()[-1])
+        divides the number of True booleans the number of data
+        and thus returns an accuracy value
+        Ex : tensor(0.7500)
+        '''
         overlap = (prediction.argmax(dim=1)==target).sum()
         if reduce:
             return overlap/float(target.size()[-1])
 
         return overlap
+   
 
+    def format_output(self, out, acc, target):
+        '''
+        Format the network output depending on the task (classification/regression)
+        '''
+        if self.task == 'class':
+            out = F.softmax(out, dim=1)
+            target = torch.tensor([self.classes_idx[int(x)] for x in target])
+            acc.append(self.Accuracy(out, target))
 
+        else :
+           out = out.reshape(-1)
+           acc = None
+        
+        return out, acc, target
+
+    
     def eval(self, loader):
 
         with self.model.eval():
@@ -143,15 +182,7 @@ class NeuralNet(object):
             for data in loader:
                 data = data.to(self.device)
                 pred = self.model(data)
-
-                if self.task == 'class':
-                    pred = F.softmax(pred, dim=1)
-                    data.y = torch.tensor([self.classes_idx[int(x)] for x in data.y])
-                    acc.append(self.calcAccuracy(pred, data.y))
-
-                else :
-                    out = out.reshape(-1)
-                    acc = None
+                pred, acc, data.y = self.format_output(pred, acc, data.y)
 
                 loss_val += loss_func(pred, data.y)
                 out += pred.reshape(-1).tolist()
@@ -164,21 +195,14 @@ class NeuralNet(object):
             
             
     def _epoch(self, epoch):
-
+        
         running_loss = 0
+        acc = []
         for data in self.train_loader:
             data = data.to(self.device)
             self.optimizer.zero_grad()
             out = self.model(data)
-
-            if self.task == 'class':
-                out = F.softmax(out, dim=1)
-                data.y = torch.tensor([self.classes_idx[int(x)] for x in data.y])
-                acc.append(self.calcAccuracy(out, data.y))
-
-            else :
-                out = out.reshape(-1)
-                acc = None
+            out, acc, data.y = self.format_output(out, acc, data.y)
 
             loss = self.loss(out, data.y)
             running_loss += loss.data.item()
