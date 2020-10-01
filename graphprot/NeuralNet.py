@@ -97,14 +97,22 @@ class NeuralNet(object):
             self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')       
 
 
-    def train(self, nepoch=1, validate=False):
+    def train(self, nepoch=1, validate=False, plot=False):
 
         self.model.train()
+        _train_acc = []
+        _train_loss = []
+        _valid_acc = []
+        _valid_loss = []
+
         for epoch in range(1, nepoch+1):
             t0 = time()
             acc, loss = self._epoch(epoch)
             t = time() - t0
+            _train_loss.append(loss)
+
             if acc is not None:
+                _train_acc.append(val_acc)
                 print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, loss, acc, t))
             else:
                 print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
@@ -112,10 +120,33 @@ class NeuralNet(object):
             if validate:
                 _, val_acc, val_loss = self.eval(self.valid_loader)
                 t = time() - t0
+                _valid_loss.append(val_loss)
+
                 if acc is not None :
+                    _valid_acc.append(acc)
+            
                     print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (val_loss, val_acc, t))
                 else :
                     print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
+
+        if plot is True :
+
+            import matplotlib.pyplot as plt
+            
+            if len(_valid_loss) > 1:
+                plt.plot(range(1,nepoch+1), _valid_loss, c='red')
+
+            if len(_train_loss) > 1:
+                plt.plot(range(1,nepoch+1), _train_loss, c='blue')
+                plt.savefig('loss_epoch.png') 
+
+            if len(_valid_acc) > 1:
+                plt.plot(range(1,nepoch+1), _valid_acc, c='red')
+
+            if len(_train_acc) > 1:
+                plt.plot(range(1,nepoch+1), _train_acc, c='blue')
+                plt.savefig('acc_epoch.png') 
+
 
 
     def Accuracy(self, prediction, target, reduce=True):
@@ -130,7 +161,7 @@ class NeuralNet(object):
             [4.7920e-29, 1.0000e+00, 2.4772e-27, 0.0000e+00, 0.0000e+00],
             [0.0000e+00, 1.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00]])
         
-        target : tensor of torch.Size([number of classes])
+        target : tensor of torch.Size([batch_size])
         Ex : tensor([1, 4, 0, 1])
         
         prediction.argmax(dim=1) returns the indices of the maximum values along the dim 1
@@ -145,7 +176,7 @@ class NeuralNet(object):
         counts the number of True booleans
         
         overlap/float(target.size()[-1])
-        divides the number of True booleans by the number of data
+        divides the number of True booleans by the batch size
         and thus returns an accuracy value
         Ex : tensor(0.7500)
         '''
