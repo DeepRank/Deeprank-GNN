@@ -145,7 +145,7 @@ class NeuralNet(object):
         counts the number of True booleans
         
         overlap/float(target.size()[-1])
-        divides the number of True booleans the number of data
+        divides the number of True booleans by the number of data
         and thus returns an accuracy value
         Ex : tensor(0.7500)
         '''
