@@ -112,7 +112,7 @@ class NeuralNet(object):
             _train_loss.append(loss)
 
             if acc is not None:
-                _train_acc.append(val_acc)
+                _train_acc.append(acc)
                 print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, loss, acc, t))
             else:
                 print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
@@ -123,11 +123,11 @@ class NeuralNet(object):
                 _valid_loss.append(val_loss)
 
                 if acc is not None :
-                    _valid_acc.append(acc)
+                    _valid_acc.append(val_acc)
             
                     print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (val_loss, val_acc, t))
                 else :
-                    print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
+                    print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, val_loss, t))
 
         if plot is True :
 
