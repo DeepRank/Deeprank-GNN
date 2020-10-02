@@ -117,7 +117,7 @@ class NeuralNet(object):
             else:
                 print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
                           
-            if validate:
+            if validate is True:
                 _, val_acc, val_loss = self.eval(self.valid_loader)
                 t = time() - t0
                 _valid_loss.append(val_loss)
@@ -125,7 +125,7 @@ class NeuralNet(object):
                 if acc is not None :
                     _valid_acc.append(val_acc)
             
-                    print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (val_loss, val_acc, t))
+                    print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, val_loss, val_acc, t))
                 else :
                     print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, val_loss, t))
 
@@ -134,19 +134,28 @@ class NeuralNet(object):
             import matplotlib.pyplot as plt
             
             if len(_valid_loss) > 1:
-                plt.plot(range(1,nepoch+1), _valid_loss, c='red')
+                plt.plot(range(1,nepoch+1), _valid_loss, c='red', label='valid')
 
             if len(_train_loss) > 1:
-                plt.plot(range(1,nepoch+1), _train_loss, c='blue')
-                plt.savefig('loss_epoch.png') 
-
+                plt.plot(range(1,nepoch+1), _train_loss, c='blue', label='train')
+                plt.title("Loss/ epoch")
+                plt.xlabel("Number of epoch")
+                plt.ylabel("Total loss")
+                plt.legend()
+                plt.savefig('loss_epoch.png')
+                plt.close()
+                
             if len(_valid_acc) > 1:
-                plt.plot(range(1,nepoch+1), _valid_acc, c='red')
+                plt.plot(range(1,nepoch+1), _valid_acc, c='red', label='valid')
 
             if len(_train_acc) > 1:
-                plt.plot(range(1,nepoch+1), _train_acc, c='blue')
-                plt.savefig('acc_epoch.png') 
-
+                plt.plot(range(1,nepoch+1), _train_acc, c='blue', label='train')
+                plt.title("Accuracy/ epoch")
+                plt.xlabel("Number of epoch")
+                plt.ylabel("Accuracy")
+                plt.legend()
+                plt.savefig('acc_epoch.png')
+                plt.close() 
 
 
     def Accuracy(self, prediction, target, reduce=True):
