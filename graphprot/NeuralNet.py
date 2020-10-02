@@ -98,14 +98,14 @@ class NeuralNet(object):
 
 
     def train(self, nepoch=1, validate=False, plot=False):
-
-        self.model.train()
+        
         _train_acc = []
         _train_loss = []
         _valid_acc = []
         _valid_loss = []
 
         for epoch in range(1, nepoch+1):
+            self.model.train()
             t0 = time()
             acc, loss = self._epoch(epoch)
             t = time() - t0
@@ -205,18 +205,18 @@ class NeuralNet(object):
     
     def eval(self, loader):
 
-        with self.model.eval():
+        self.model.eval()
 
-            loss_func, loss_val = self.loss, 0
-            out = []
-            acc = []
-            for data in loader:
-                data = data.to(self.device)
-                pred = self.model(data)
-                pred, acc, data.y = self.format_output(pred, acc, data.y)
+        loss_func, loss_val = self.loss, 0
+        out = []
+        acc = []
+        for data in loader:
+            data = data.to(self.device)
+            pred = self.model(data)
+            pred, acc, data.y = self.format_output(pred, acc, data.y)
 
-                loss_val += loss_func(pred, data.y)
-                out += pred.reshape(-1).tolist()
+            loss_val += loss_func(pred, data.y)
+            out += pred.reshape(-1).tolist()
 
         if self.task == 'class':
             return out, torch.mean(torch.stack(acc)), loss_val
