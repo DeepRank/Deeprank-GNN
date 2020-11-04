@@ -95,7 +95,40 @@ class NeuralNet(object):
 
         elif self.task == 'class':
             self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')       
+        
+        
+    def plot_loss(_train_loss, _valid_loss=[], nepoch):        
+    
+        import matplotlib.pyplot as plt
+            
+        if len(_valid_loss) > 1:
+            plt.plot(range(1,nepoch+1), _valid_loss, c='red', label='valid')
 
+        if len(_train_loss) > 1:
+            plt.plot(range(1,nepoch+1), _train_loss, c='blue', label='train')
+            plt.title("Loss/ epoch")
+            plt.xlabel("Number of epoch")
+            plt.ylabel("Total loss")
+            plt.legend()
+            plt.savefig('loss_epoch.png')
+            plt.close()
+            
+            
+    def plot_acc(_train_acc, _valid_acc=[], nepoch):  
+            
+            import matplotlib.pyplot as plt
+            
+            if len(_valid_acc) > 1:
+                plt.plot(range(1,nepoch+1), _valid_acc, c='red', label='valid')
+
+            if len(_train_acc) > 1:
+                plt.plot(range(1,nepoch+1), _train_acc, c='blue', label='train')
+                plt.title("Accuracy/ epoch")
+                plt.xlabel("Number of epoch")
+                plt.ylabel("Accuracy")
+                plt.legend()
+                plt.savefig('acc_epoch.png')
+                plt.close() 
 
     def train(self, nepoch=1, validate=False, plot=False):
         
@@ -130,34 +163,11 @@ class NeuralNet(object):
                     print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, val_loss, t))
 
         if plot is True :
-
-            import matplotlib.pyplot as plt
             
-            if len(_valid_loss) > 1:
-                plt.plot(range(1,nepoch+1), _valid_loss, c='red', label='valid')
+            plot_loss(_train_loss, _valid_loss, nepoch)
+            plot_acc(_train_acc, _valid_acc, nepoch)   
 
-            if len(_train_loss) > 1:
-                plt.plot(range(1,nepoch+1), _train_loss, c='blue', label='train')
-                plt.title("Loss/ epoch")
-                plt.xlabel("Number of epoch")
-                plt.ylabel("Total loss")
-                plt.legend()
-                plt.savefig('loss_epoch.png')
-                plt.close()
-                
-            if len(_valid_acc) > 1:
-                plt.plot(range(1,nepoch+1), _valid_acc, c='red', label='valid')
-
-            if len(_train_acc) > 1:
-                plt.plot(range(1,nepoch+1), _train_acc, c='blue', label='train')
-                plt.title("Accuracy/ epoch")
-                plt.xlabel("Number of epoch")
-                plt.ylabel("Accuracy")
-                plt.legend()
-                plt.savefig('acc_epoch.png')
-                plt.close() 
-
-
+            
     def Accuracy(self, prediction, target, reduce=True):
         '''
         Computes the accuracy for classification tasks
