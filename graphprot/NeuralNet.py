@@ -29,7 +29,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=index,
                               node_feature=node_feature, edge_feature=edge_feature,
                               target=target)
-        #PreCluster(dataset, method='mcl')
+        PreCluster(dataset, method='mcl')
 
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
@@ -41,7 +41,7 @@ class NeuralNet(object):
                                         target=target)
 
             print('Independent validation set loaded')
-            #PreCluster(valid_dataset, method='mcl')     
+            PreCluster(valid_dataset, method='mcl')     
         
         else: 
             print('No independent validation set loaded')
