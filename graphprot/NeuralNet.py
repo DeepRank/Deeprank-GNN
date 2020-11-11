@@ -95,29 +95,79 @@ class NeuralNet(object):
 
         elif self.task == 'class':
             self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')       
+        
+        
+    def plot_loss(nepoch, train_loss, valid_loss=[]):        
+    
+        import matplotlib.pyplot as plt
+            
+        if len(valid_loss) > 1:
+            plt.plot(range(1,nepoch+1), valid_loss, c='red', label='valid')
 
+        if len(train_loss) > 1:
+            plt.plot(range(1,nepoch+1), train_loss, c='blue', label='train')
+            plt.title("Loss/ epoch")
+            plt.xlabel("Number of epoch")
+            plt.ylabel("Total loss")
+            plt.legend()
+            plt.savefig('loss_epoch.png')
+            plt.close()
+            
+            
+    def plot_acc(nepoch, train_acc, valid_acc=[]):  
+            
+            import matplotlib.pyplot as plt
+            
+            if len(valid_acc) > 1:
+                plt.plot(range(1,nepoch+1), valid_acc, c='red', label='valid')
 
-    def train(self, nepoch=1, validate=False):
+            if len(train_acc) > 1:
+                plt.plot(range(1,nepoch+1), train_acc, c='blue', label='train')
+                plt.title("Accuracy/ epoch")
+                plt.xlabel("Number of epoch")
+                plt.ylabel("Accuracy")
+                plt.legend()
+                plt.savefig('acc_epoch.png')
+                plt.close() 
 
-        self.model.train()
+    def train(self, nepoch=1, validate=False, plot=False):
+        
+        train_acc = []
+        train_loss = []
+        valid_acc = []
+        valid_loss = []
+
         for epoch in range(1, nepoch+1):
+            self.model.train()
             t0 = time()
-            acc, loss = self._epoch(epoch)
+            _acc, _loss = self._epoch(epoch)
             t = time() - t0
+            train_loss.append(_loss)
+
             if acc is not None:
-                print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, loss, acc, t))
+                train_acc.append(_acc)
+                print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, _loss, _acc, t))
             else:
-                print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
+                print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, _loss, t))
                           
-            if validate:
-                _, val_acc, val_loss = self.eval(self.valid_loader)
+            if validate is True:
+                _, _val_acc, _val_loss = self.eval(self.valid_loader)
                 t = time() - t0
+                valid_loss.append(_val_loss)
+
                 if acc is not None :
-                    print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (val_loss, val_acc, t))
+                    valid_acc.append(_val_acc)
+            
+                    print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, _val_loss, _val_acc, t))
                 else :
-                    print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, loss, t))
+                    print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, _val_loss, t))
 
+        if plot is True :
+            
+            plot_loss(nepoch, train_loss, valid_loss)
+            plot_acc(nepoch, train_acc, valid_acc)   
 
+            
     def Accuracy(self, prediction, target, reduce=True):
         '''
         Computes the accuracy for classification tasks
@@ -130,7 +180,7 @@ class NeuralNet(object):
             [4.7920e-29, 1.0000e+00, 2.4772e-27, 0.0000e+00, 0.0000e+00],
             [0.0000e+00, 1.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00]])
         
-        target : tensor of torch.Size([number of classes])
+        target : tensor of torch.Size([batch_size])
         Ex : tensor([1, 4, 0, 1])
         
         prediction.argmax(dim=1) returns the indices of the maximum values along the dim 1
@@ -145,7 +195,7 @@ class NeuralNet(object):
         counts the number of True booleans
         
         overlap/float(target.size()[-1])
-        divides the number of True booleans by the number of data
+        divides the number of True booleans by the batch size
         and thus returns an accuracy value
         Ex : tensor(0.7500)
         '''
@@ -174,18 +224,18 @@ class NeuralNet(object):
     
     def eval(self, loader):
 
-        with self.model.eval():
+        self.model.eval()
 
-            loss_func, loss_val = self.loss, 0
-            out = []
-            acc = []
-            for data in loader:
-                data = data.to(self.device)
-                pred = self.model(data)
-                pred, acc, data.y = self.format_output(pred, acc, data.y)
+        loss_func, loss_val = self.loss, 0
+        out = []
+        acc = []
+        for data in loader:
+            data = data.to(self.device)
+            pred = self.model(data)
+            pred, acc, data.y = self.format_output(pred, acc, data.y)
 
-                loss_val += loss_func(pred, data.y)
-                out += pred.reshape(-1).tolist()
+            loss_val += loss_func(pred, data.y)
+            out += pred.reshape(-1).tolist()
 
         if self.task == 'class':
             return out, torch.mean(torch.stack(acc)), loss_val
