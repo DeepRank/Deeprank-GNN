@@ -14,7 +14,7 @@ from torch_geometric.data import DataLoader
 from torch_geometric.nn import max_pool_x
 
 # graphprot import
-from DataSet import HDF5DataSet, DivideDataSet, PreCluster
+from .DataSet import HDF5DataSet, DivideDataSet, PreCluster
 
 
 class NeuralNet(object):
@@ -29,7 +29,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=index,
                               node_feature=node_feature, edge_feature=edge_feature,
                               target=target)
-        PreCluster(dataset, method='mcl')
+        #PreCluster(dataset, method='mcl')
 
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
@@ -39,8 +39,9 @@ class NeuralNet(object):
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=index,
                                         node_feature=node_feature, edge_feature=edge_feature,
                                         target=target)
+
             print('Independent validation set loaded')
-            PreCluster(valid_dataset, method='mcl')     
+            #PreCluster(valid_dataset, method='mcl')     
         
         else: 
             print('No independent validation set loaded')
@@ -103,6 +104,7 @@ class NeuralNet(object):
         self.valid_out = []
         self.valid_y = []
 
+
     def plot_loss(self):
     
         import matplotlib.pyplot as plt
@@ -144,7 +146,35 @@ class NeuralNet(object):
                 plt.savefig('acc_epoch.png')
                 plt.close() 
 
+    def plot_hit_rate (self, threshold=4):
 
+        import matplotlib.pyplot as plt
+
+        if self.task == 'reg' :
+
+            pred = self.valid_out[0]
+            y = [x.item() for x in self.valid_y[0]]
+            
+            pred_sorted = [x for x, _ in sorted(zip(pred, y))]
+            y_sorted = [x for _, x in sorted(zip(pred, y))]
+            
+            nb_models = len(y_sorted)
+            X = range(1, nb_models + 1)
+
+            if self.target == 'fnat' :
+                hit_rate = [sum(pred_val > threshold for pred_val in y_sorted[0:i])/nb_models for i in X]
+            else :
+                hit_rate = [sum(pred_val < threshold for pred_val in y_sorted[0:i])/nb_models for i in X]
+            
+            plt.plot(X, hit_rate, c='blue', label='train')
+            plt.title("Hit rate")
+            plt.xlabel("Number of models")
+            plt.ylabel("Hit Rate")
+            plt.legend()
+            plt.savefig('hit_rate.png')
+            plt.close()
+
+        
     def train(self, nepoch=1, validate=False, plot=False):
         
         self.nepoch = nepoch
@@ -243,7 +273,7 @@ class NeuralNet(object):
             data = data.to(self.device)
             pred = self.model(data)
             pred, acc, data.y = self.format_output(pred, acc, data.y)
-            y += data.y.reshape(-1).tolist()
+            y += data.y
             loss_val += loss_func(pred, data.y)
             out += pred.reshape(-1).tolist()
 

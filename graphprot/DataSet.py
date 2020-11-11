@@ -8,7 +8,7 @@ from tqdm import tqdm
 import h5py
 import copy
 
-from community_pooling import community_detection, community_pooling
+from .community_pooling import community_detection, community_pooling
 
 def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
 
@@ -95,11 +95,11 @@ class HDF5DataSet(Dataset):
         self.clustering_method = clustering_method
 
         # check if the files are ok
-        self.check_hdf5_files()
+        #self.check_hdf5_files()
 
         # check the selection of features
-        self.check_node_feature()
-        self.check_edge_feature()
+        #self.check_node_feature()
+        #self.check_edge_feature()
 
         # create the indexing system
         # alows to associate each mol to an index
