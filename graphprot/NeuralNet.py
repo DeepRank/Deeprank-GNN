@@ -138,46 +138,64 @@ class NeuralNet(object):
 
     def train(self, nepoch=1, validate=False, plot=False):
 
-        train_acc = []
-        train_loss = []
-        valid_acc = []
-        valid_loss = []
+        train_acc, train_loss = [], []
+        valid_acc, valid_loss = [], []
 
         for epoch in range(1, nepoch+1):
+
             self.model.train()
+
             t0 = time()
             _acc, _loss = self._epoch(epoch)
             t = time() - t0
+
             train_loss.append(_loss)
 
             if _acc is not None:
                 train_acc.append(_acc)
-                print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (
-                    epoch, _loss, _acc, t))
-            else:
-                print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (
-                    epoch, _loss, t))
+
+            self.print_epoch_data('train', epoch, _loss, _acc, t)
 
             if validate is True:
+
+                t0 = time()
                 _, _val_acc, _val_loss = self.eval(self.valid_loader)
                 t = time() - t0
+
                 valid_loss.append(_val_loss)
 
                 if _val_acc is not None:
                     valid_acc.append(_val_acc)
 
-                    print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (
-                        epoch, _val_loss, _val_acc, t))
-                else:
-                    print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (
-                        epoch, _val_loss, t))
+                self.print_epoch_data(
+                    'valid', epoch, _val_loss, _val_acc, t)
 
         if plot is True:
 
             self.plot_loss(nepoch, train_loss, valid_loss)
             self.plot_acc(nepoch, train_acc, valid_acc)
 
-    def Accuracy(self, prediction, target, reduce=True):
+    @staticmethod
+    def print_epoch_data(stage, epoch, loss, acc, time):
+        """print the data of each epoch
+
+        Args:
+            stage (str): tain or valid
+            epoch (int): epoch number
+            loss (float): loss during that epoch
+            acc (float or None): accuracy
+            time (float): tiing of the epoch
+        """
+
+        if acc is None:
+            acc_str = 'None'
+        else:
+            acc_str = '%1.4e' % acc
+
+        print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
+                                                                             stage, loss, acc_str, time))
+
+    def get_accuracy(self, prediction, target, reduce=True):
         '''
         Computes the accuracy for classification tasks
 
@@ -196,11 +214,11 @@ class NeuralNet(object):
         e.i. the class with the highest probability
         Ex : tensor([1, 4, 1, 1])
 
-        (prediction.argmax(dim=1)==target) 
-        compares the content of the two tensors and returns a True/False tensor 
+        (prediction.argmax(dim=1)==target)
+        compares the content of the two tensors and returns a True/False tensor
         Ex : tensor([True, True, False, True])
 
-        overlap = (prediction.argmax(dim=1)==target).sum() 
+        overlap = (prediction.argmax(dim=1)==target).sum()
         counts the number of True booleans
 
         overlap/float(target.size()[-1])
@@ -222,7 +240,7 @@ class NeuralNet(object):
             out = F.softmax(out, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
-            acc.append(self.Accuracy(out, target))
+            acc.append(self.get_accuracy(out, target))
 
         else:
             out = out.reshape(-1)
@@ -256,6 +274,7 @@ class NeuralNet(object):
         running_loss = 0
         acc = []
         for data in self.train_loader:
+
             data = data.to(self.device)
             self.optimizer.zero_grad()
             out = self.model(data)
