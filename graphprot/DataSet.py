@@ -8,7 +8,7 @@ from tqdm import tqdm
 import h5py
 import copy
 
-from .community_pooling import community_detection, community_pooling
+from community_pooling import community_detection, community_pooling
 
 def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
 
@@ -38,11 +38,18 @@ def PreCluster(dataset, method):
 
         data = dataset.load_one_graph(fname, mol)
 
+        if data is None :
+            f5 = h5py.File(fname, 'w')
+            if f5.get(mol):
+                del f5[mol]
+            continue
+
         f5 = h5py.File(fname, 'a')
         grp = f5[mol]
+
         clust_grp = grp.require_group('clustering')
 
-        if method.lower() in grp:
+        if method.lower() in clust_grp:
             print('Deleting previous data for mol %s method %s' %
                   (mol, method))
             del clust_grp[method.lower()]
@@ -194,12 +201,17 @@ class HDF5DataSet(Dataset):
 
         # nodes
         data = ()
-        for feat in self.node_feature:
-            vals = grp['node_data/'+feat][()]
-            if vals.ndim == 1:
-                vals = vals.reshape(-1, 1)
-            data += (vals,)
-        x = torch.tensor(np.hstack(data), dtype=torch.float)
+        try : 
+            for feat in self.node_feature:
+                vals = grp['node_data/'+feat][()]
+                if vals.ndim == 1:
+                    vals = vals.reshape(-1, 1)
+                data += (vals,)
+            x = torch.tensor(np.hstack(data), dtype=torch.float)
+
+        except :
+            print('node attributes not found in the file', self.database[0])
+            return None
 
         # index ! we have to have all the edges i.e : (i,j) and (j,i)
         ind = grp['edge_index'][()]
