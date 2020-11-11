@@ -15,5 +15,5 @@ NN = NeuralNet(database, GINet,
                batch_size=64,
                percent=[0.8, 0.2])
 
-NN.train(nepoch=25, validate=False)
+NN.train(nepoch=250, validate=False)
 NN.plot_scatter()

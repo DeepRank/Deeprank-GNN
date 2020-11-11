@@ -166,4 +166,3 @@ if __name__ == '__main__':
 
     GraphHDF5(pdb_path=pdb_path, ref_path=ref, pssm_path=pssm_path,
               graph_type='residue', outfile='1AK4_residue.hdf5')
-

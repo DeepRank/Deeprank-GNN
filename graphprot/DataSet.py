@@ -43,6 +43,7 @@ def PreCluster(dataset, method):
             f5 = h5py.File(fname, 'w')
             if f5.get(mol):
                 del f5[mol]
+            f5.close()
             continue
 
         f5 = h5py.File(fname, 'a')
@@ -213,6 +214,7 @@ class HDF5DataSet(Dataset):
         except:
             print('node attributes not found in the file',
                   self.database[0])
+            f5.close()
             return None
 
         # index ! we have to have all the edges i.e : (i,j) and (j,i)
