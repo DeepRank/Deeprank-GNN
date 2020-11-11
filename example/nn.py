@@ -11,6 +11,7 @@ NN = NeuralNet(database, GINet,
                edge_feature=['dist'],
                target='irmsd',
                index=None,
+               task='reg',
                batch_size=64,
                percent=[0.8, 0.2])
 
