@@ -14,7 +14,7 @@ from torch_geometric.data import DataLoader
 from torch_geometric.nn import max_pool_x
 
 # graphprot import
-from .DataSet import HDF5DataSet, DivideDataSet
+from DataSet import HDF5DataSet, DivideDataSet, PreCluster
 
 
 class NeuralNet(object):
@@ -40,7 +40,7 @@ class NeuralNet(object):
                                         node_feature=node_feature, edge_feature=edge_feature,
                                         target=target)
             print('Independent validation set loaded')
-            PreCluster(dataset_eval, method='mcl')     
+            PreCluster(valid_dataset, method='mcl')     
         
         else: 
             print('No independent validation set loaded')
@@ -97,7 +97,7 @@ class NeuralNet(object):
             self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')       
         
         
-    def plot_loss(nepoch, train_loss, valid_loss=[]):        
+    def plot_loss(self, nepoch, train_loss, valid_loss=[]):        
     
         import matplotlib.pyplot as plt
             
@@ -114,7 +114,7 @@ class NeuralNet(object):
             plt.close()
             
             
-    def plot_acc(nepoch, train_acc, valid_acc=[]):  
+    def plot_acc(self, nepoch, train_acc, valid_acc=[]):  
             
             import matplotlib.pyplot as plt
             
@@ -144,7 +144,7 @@ class NeuralNet(object):
             t = time() - t0
             train_loss.append(_loss)
 
-            if acc is not None:
+            if _acc is not None:
                 train_acc.append(_acc)
                 print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, _loss, _acc, t))
             else:
@@ -155,7 +155,7 @@ class NeuralNet(object):
                 t = time() - t0
                 valid_loss.append(_val_loss)
 
-                if acc is not None :
+                if _val_acc is not None :
                     valid_acc.append(_val_acc)
             
                     print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, _val_loss, _val_acc, t))
@@ -164,8 +164,8 @@ class NeuralNet(object):
 
         if plot is True :
             
-            plot_loss(nepoch, train_loss, valid_loss)
-            plot_acc(nepoch, train_acc, valid_acc)   
+            self.plot_loss(nepoch, train_loss, valid_loss)
+            self.plot_acc(nepoch, train_acc, valid_acc)   
 
             
     def Accuracy(self, prediction, target, reduce=True):
