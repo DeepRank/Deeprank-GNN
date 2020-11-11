@@ -95,12 +95,22 @@ class NeuralNet(object):
 
         elif self.task == 'class':
             self.loss = nn.CrossEntropyLoss(weight = self.class_weights, reduction='mean')       
-        
-        
-    def plot_loss(self, nepoch, train_loss, valid_loss=[]):        
+
+        self.train_acc = []
+        self.train_loss = []
+        self.valid_acc = []
+        self.valid_loss = []
+        self.valid_out = []
+        self.valid_y = []
+
+    def plot_loss(self):
     
         import matplotlib.pyplot as plt
             
+        nepoch = self.nepoch
+        train_loss = self.train_loss
+        valid_loss = self.valid_loss
+        
         if len(valid_loss) > 1:
             plt.plot(range(1,nepoch+1), valid_loss, c='red', label='valid')
 
@@ -114,10 +124,14 @@ class NeuralNet(object):
             plt.close()
             
             
-    def plot_acc(self, nepoch, train_acc, valid_acc=[]):  
+    def plot_acc(self):
             
             import matplotlib.pyplot as plt
             
+            nepoch = self.nepoch
+            train_acc = self.train_acc
+            valid_acc = self.valid_acc
+
             if len(valid_acc) > 1:
                 plt.plot(range(1,nepoch+1), valid_acc, c='red', label='valid')
 
@@ -130,42 +144,37 @@ class NeuralNet(object):
                 plt.savefig('acc_epoch.png')
                 plt.close() 
 
+
     def train(self, nepoch=1, validate=False, plot=False):
         
-        train_acc = []
-        train_loss = []
-        valid_acc = []
-        valid_loss = []
+        self.nepoch = nepoch
 
         for epoch in range(1, nepoch+1):
             self.model.train()
             t0 = time()
             _acc, _loss = self._epoch(epoch)
             t = time() - t0
-            train_loss.append(_loss)
-
+            self.train_loss.append(_loss)
+            
             if _acc is not None:
-                train_acc.append(_acc)
+                self.train_acc.append(_acc)
                 print('Epoch [%04d] : train loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, _loss, _acc, t))
             else:
                 print('Epoch [%04d] : train loss %e | accuracy None | time %1.2e sec.' % (epoch, _loss, t))
                           
             if validate is True:
-                _, _val_acc, _val_loss = self.eval(self.valid_loader)
+                _out, _y, _val_acc, _val_loss = self.eval(self.valid_loader)
                 t = time() - t0
-                valid_loss.append(_val_loss)
+                self.valid_loss.append(_val_loss)
+                self.valid_out.append(_out)
+                self.valid_y.append(_y)
 
                 if _val_acc is not None :
-                    valid_acc.append(_val_acc)
+                    self.valid_acc.append(_val_acc)
             
                     print('Epoch [%04d] : valid loss %e | accuracy %1.4e | time %1.2e sec.' % (epoch, _val_loss, _val_acc, t))
                 else :
                     print('Epoch [%04d] : valid loss %e | accuracy None | time %1.2e sec.' % (epoch, _val_loss, t))
-
-        if plot is True :
-            
-            self.plot_loss(nepoch, train_loss, valid_loss)
-            self.plot_acc(nepoch, train_acc, valid_acc)   
 
             
     def Accuracy(self, prediction, target, reduce=True):
@@ -205,7 +214,7 @@ class NeuralNet(object):
 
         return overlap
    
-
+        
     def format_output(self, out, acc, target):
         '''
         Format the network output depending on the task (classification/regression)
@@ -228,20 +237,21 @@ class NeuralNet(object):
 
         loss_func, loss_val = self.loss, 0
         out = []
+        y = []
         acc = []
         for data in loader:
             data = data.to(self.device)
             pred = self.model(data)
             pred, acc, data.y = self.format_output(pred, acc, data.y)
-
+            y += data.y.reshape(-1).tolist()
             loss_val += loss_func(pred, data.y)
             out += pred.reshape(-1).tolist()
 
         if self.task == 'class':
-            return out, torch.mean(torch.stack(acc)), loss_val
+            return out, y, torch.mean(torch.stack(acc)), loss_val
 
         else :
-            return out, acc, loss_val
+            return out, y, acc, loss_val
             
             
     def _epoch(self, epoch):
@@ -263,8 +273,9 @@ class NeuralNet(object):
             return torch.mean(torch.stack(acc)), running_loss
 
         else :
+            
             return acc, running_loss
-
+            
 
     def plot_scatter(self):
 

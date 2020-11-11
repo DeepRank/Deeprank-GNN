@@ -110,7 +110,7 @@ class ResidueGraph(Graph):
         for key, val in self.res_contact_pairs.items():
             if key in all_nodes :
                 for v in val:   
-                    if v in all_node :
+                    if v in all_nodes :
                         d = self._get_edge_distance(key, v, db)
                         self.nx.add_edge(key, v, dist=d, type=bytes(
                                     'interface', encoding='utf-8'))
