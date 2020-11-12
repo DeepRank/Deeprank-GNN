@@ -1,0 +1,40 @@
+name: build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [3.7, 3.8]
+
+    steps:
+    - name: Cancel Previous Runs
+      uses: styfle/cancel-workflow-action@0.4.0
+      with:
+          access_token: ${{ github.token }}
+    - uses: actions/checkout@v2
+    - name: Setup conda
+      uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: true
+        python-version: ${{ matrix.version }}
+        conda-channels: anaconda
+    - run: conda --version
+    - run: which python
+    - run: conda install mpi4py h5py pytorch torchvision cpuonly -c pytorch -c conda-forge
+
+    - name: Install the package
+      run: pip install .[test]
+      env:
+        CONDA_PREFIX: /usr/share/miniconda
+
+    - name: Test with pytest
+      env:
+        CONDA_PREFIX: /usr/share/miniconda
+      run: |
+        pytest --cov-config setup.cfg
