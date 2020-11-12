@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.ba-throttle-debounce.min.js"></script>
+    <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="coverage_html.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(coverage.index_ready);
+    </script>
+</head>
+<body class="indexfile">
+<div id="header">
+    <div class="content">
+        <h1>Coverage report:
+            <span class="pc_cov">23%</span>
+        </h1>
+        <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
+        <form id="filter_container">
+            <input id="filter" type="text" value="" placeholder="filter..." />
+        </form>
+    </div>
+</div>
+<div class="help_panel">
+    <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
+    <p class="legend">Hot-keys on this page</p>
+    <div>
+    <p class="keyhelp">
+        <span class="key">n</span>
+        <span class="key">s</span>
+        <span class="key">m</span>
+        <span class="key">x</span>
+        <span class="key">b</span>
+        <span class="key">p</span>
+        <span class="key">c</span> &nbsp; change column sorting
+    </p>
+    </div>
+</div>
+<div id="index">
+    <table class="index">
+        <thead>
+            <tr class="tablehead" title="Click to sort">
+                <th class="name left headerSortDown shortkey_n">Module</th>
+                <th class="shortkey_s">statements</th>
+                <th class="shortkey_m">missing</th>
+                <th class="shortkey_x">excluded</th>
+                <th class="shortkey_b">branches</th>
+                <th class="shortkey_p">partial</th>
+                <th class="right shortkey_c">coverage</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr class="total">
+                <td class="name left">Total</td>
+                <td>2954</td>
+                <td>2207</td>
+                <td>0</td>
+                <td>1027</td>
+                <td>71</td>
+                <td class="right" data-ratio="934 3981">23%</td>
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_DataSet_py.html">graphprot/DataSet.py</a></td>
+                <td>222</td>
+                <td>70</td>
+                <td>0</td>
+                <td>86</td>
+                <td>22</td>
+                <td class="right" data-ratio="198 308">64%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_FeatureClass_py.html">graphprot/FeatureClass.py</a></td>
+                <td>57</td>
+                <td>57</td>
+                <td>0</td>
+                <td>42</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 99">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_Graph_py.html">graphprot/Graph.py</a></td>
+                <td>254</td>
+                <td>181</td>
+                <td>0</td>
+                <td>122</td>
+                <td>3</td>
+                <td class="right" data-ratio="94 376">25%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_GraphGen_py.html">graphprot/GraphGen.py</a></td>
+                <td>45</td>
+                <td>45</td>
+                <td>0</td>
+                <td>16</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 61">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_GraphGenMP_py.html">graphprot/GraphGenMP.py</a></td>
+                <td>104</td>
+                <td>43</td>
+                <td>0</td>
+                <td>46</td>
+                <td>10</td>
+                <td class="right" data-ratio="83 150">55%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_Metrics_py.html">graphprot/Metrics.py</a></td>
+                <td>46</td>
+                <td>35</td>
+                <td>0</td>
+                <td>10</td>
+                <td>0</td>
+                <td class="right" data-ratio="11 56">20%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_NeuralNet_py.html">graphprot/NeuralNet.py</a></td>
+                <td>192</td>
+                <td>113</td>
+                <td>0</td>
+                <td>54</td>
+                <td>8</td>
+                <td class="right" data-ratio="91 246">37%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_ResidueGraph_py.html">graphprot/ResidueGraph.py</a></td>
+                <td>183</td>
+                <td>33</td>
+                <td>0</td>
+                <td>78</td>
+                <td>14</td>
+                <td class="right" data-ratio="200 261">77%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot___init___py.html">graphprot/__init__.py</a></td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 0">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot___version___py.html">graphprot/__version__.py</a></td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 1">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_community_pooling_py.html">graphprot/community_pooling.py</a></td>
+                <td>116</td>
+                <td>71</td>
+                <td>0</td>
+                <td>50</td>
+                <td>8</td>
+                <td class="right" data-ratio="55 166">33%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_foutnet_py.html">graphprot/foutnet.py</a></td>
+                <td>71</td>
+                <td>53</td>
+                <td>0</td>
+                <td>6</td>
+                <td>0</td>
+                <td class="right" data-ratio="18 77">23%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_ginet_py.html">graphprot/ginet.py</a></td>
+                <td>69</td>
+                <td>11</td>
+                <td>0</td>
+                <td>4</td>
+                <td>2</td>
+                <td class="right" data-ratio="60 73">82%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_model_py.html">graphprot/model.py</a></td>
+                <td>95</td>
+                <td>95</td>
+                <td>0</td>
+                <td>18</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 113">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_AtomicFeature_py.html">graphprot/tools/AtomicFeature.py</a></td>
+                <td>418</td>
+                <td>418</td>
+                <td>0</td>
+                <td>145</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 563">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_BSA_py.html">graphprot/tools/BSA.py</a></td>
+                <td>51</td>
+                <td>10</td>
+                <td>0</td>
+                <td>12</td>
+                <td>2</td>
+                <td class="right" data-ratio="49 63">78%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_BioWrappers_py.html">graphprot/tools/BioWrappers.py</a></td>
+                <td>46</td>
+                <td>13</td>
+                <td>0</td>
+                <td>8</td>
+                <td>1</td>
+                <td class="right" data-ratio="38 54">70%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_PSSM_py.html">graphprot/tools/PSSM.py</a></td>
+                <td>27</td>
+                <td>3</td>
+                <td>0</td>
+                <td>14</td>
+                <td>1</td>
+                <td class="right" data-ratio="35 41">85%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_StructureSimilarity_py.html">graphprot/tools/StructureSimilarity.py</a></td>
+                <td>506</td>
+                <td>506</td>
+                <td>0</td>
+                <td>204</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 710">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools___init___py.html">graphprot/tools/__init__.py</a></td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 0">100%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_atomic_data_py.html">graphprot/tools/atomic_data.py</a></td>
+                <td>292</td>
+                <td>292</td>
+                <td>0</td>
+                <td>80</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 372">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_embedding_py.html">graphprot/tools/embedding.py</a></td>
+                <td>14</td>
+                <td>12</td>
+                <td>0</td>
+                <td>6</td>
+                <td>0</td>
+                <td class="right" data-ratio="2 20">10%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_tools_psaia_py.html">graphprot/tools/psaia.py</a></td>
+                <td>99</td>
+                <td>99</td>
+                <td>0</td>
+                <td>22</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 121">0%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="graphprot_wgat_conv_py.html">graphprot/wgat_conv.py</a></td>
+                <td>46</td>
+                <td>46</td>
+                <td>0</td>
+                <td>4</td>
+                <td>0</td>
+                <td class="right" data-ratio="0 50">0%</td>
+            </tr>
+        </tbody>
+    </table>
+    <p id="no_rows">
+        No items found using the specified filter.
+    </p>
+</div>
+<div id="footer">
+    <div class="content">
+        <p>
+            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.0.3</a>,
+            created at 2020-11-12 19:27
+        </p>
+    </div>
+</div>
+</body>
+</html>

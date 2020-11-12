@@ -6,7 +6,7 @@ import pkg_resources as pkg
 __all__ = ["PATH_GRAPHPROT", "PATH_TEST"]
 
 # Environment data
-PATH_QMCTORCH = Path(pkg.resource_filename('graphprot', ''))
+PATH_GRAPHPROT = Path(pkg.resource_filename('graphprot', ''))
 ROOT = PATH_GRAPHPROT.parent
 
 PATH_TEST = ROOT / "tests"
