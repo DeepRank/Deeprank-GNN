@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix
 def get_boolean(vals, threshold, target):
         
         if target == 'fnat' or target == 'bin':
-                vals_bool = [1 if x >= threshold else 0 for x in vals]
+                vals_bool = [1 if x > threshold else 0 for x in vals]
         else: 
                 vals_bool = [1 if x < threshold else 0 for x in vals]
         
