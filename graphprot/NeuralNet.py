@@ -15,7 +15,7 @@ from torch_geometric.nn import max_pool_x
 
 # graphprot import
 from .DataSet import HDF5DataSet, DivideDataSet, PreCluster
-
+from .Metrics import Metrics
 
 class NeuralNet(object):
 
@@ -29,7 +29,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=index,
                               node_feature=node_feature, edge_feature=edge_feature,
                               target=target)
-        PreCluster(dataset, method='mcl')
+        #PreCluster(dataset, method='mcl')
 
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
@@ -40,7 +40,7 @@ class NeuralNet(object):
                                         node_feature=node_feature, edge_feature=edge_feature,
                                         target=target)
             print('Independent validation set loaded')
-            PreCluster(valid_dataset, method='mcl')
+            #PreCluster(valid_dataset, method='mcl')
 
         else:
             print('No independent validation set loaded')
@@ -100,7 +100,18 @@ class NeuralNet(object):
             self.loss = nn.CrossEntropyLoss(
                 weight=self.class_weights, reduction='mean')
 
-    def plot_loss(self, nepoch, train_loss, valid_loss=[]):
+        self.train_acc = []
+        self.train_loss = []
+        self.valid_acc = []
+        self.valid_loss = []
+        self.valid_out = []
+        self.valid_y = []
+
+    def plot_loss(self):
+
+        nepoch = self.nepoch
+        train_loss = self.train_loss
+        valid_loss = self.valid_loss        
 
         import matplotlib.pyplot as plt
 
@@ -118,7 +129,11 @@ class NeuralNet(object):
             plt.savefig('loss_epoch.png')
             plt.close()
 
-    def plot_acc(self, nepoch, train_acc, valid_acc=[]):
+    def plot_acc(self): 
+
+        nepoch = self.nepoch
+        train_acc = self.train_acc
+        valid_acc = self.valid_acc
 
         import matplotlib.pyplot as plt
 
@@ -136,10 +151,43 @@ class NeuralNet(object):
             plt.savefig('acc_epoch.png')
             plt.close()
 
+    def plot_hit_rate(self, threshold=4, mode='percentage'):
+        '''
+        Plots the hitrate as a function of the models' rank
+        
+        - threshold (default = 4): defines the value to split into a hit (1) or a non-hit (0)
+        - mode : displays the hitrate as a number of hits ('count') or as a percentage ('percantage')
+        '''
+
+        import matplotlib.pyplot as plt
+            
+        #try :
+        pred = self.valid_out[0]
+        y = [x.item() for x in self.valid_y[0]]
+        
+        metrics = Metrics(pred, y, self.task, self.target, threshold)
+        hitrate = metrics.HitRate()
+        
+        nb_models = len(y)
+        X = range(1, nb_models + 1)
+        
+        if mode == 'percentage ' :
+            hitrate = [x/nb_models for x in hitrate]
+            
+        plt.plot(X, hitrate, c='blue', label='train')
+        plt.title("Hit rate")
+        plt.xlabel("Number of models")
+        plt.ylabel("Hit Rate")
+        plt.legend()
+        plt.savefig('hitrate.png')
+        plt.close()
+
+        #except : 
+        #    print ('No hit rate plot could be generated for you {} task'.format(self.task))
+
     def train(self, nepoch=1, validate=False, plot=False):
 
-        train_acc, train_loss = [], []
-        valid_acc, valid_loss = [], []
+        self.nepoch = nepoch
 
         for epoch in range(1, nepoch+1):
 
@@ -148,32 +196,30 @@ class NeuralNet(object):
             t0 = time()
             _acc, _loss = self._epoch(epoch)
             t = time() - t0
-
-            train_loss.append(_loss)
+            
+            self.train_loss.append(_loss)
 
             if _acc is not None:
-                train_acc.append(_acc)
+                self.train_acc.append(_acc)
 
             self.print_epoch_data('train', epoch, _loss, _acc, t)
 
             if validate is True:
 
                 t0 = time()
-                _, _val_acc, _val_loss = self.eval(self.valid_loader)
+                _out, _y, _val_acc, _val_loss = self.eval(self.valid_loader)
                 t = time() - t0
 
-                valid_loss.append(_val_loss)
+                self.valid_loss.append(_val_loss)
+                self.valid_out.append(_out)
+                self.valid_y.append(_y)
 
                 if _val_acc is not None:
-                    valid_acc.append(_val_acc)
+                    self.valid_acc.append(_val_acc)
 
                 self.print_epoch_data(
                     'valid', epoch, _val_loss, _val_acc, t)
 
-        if plot is True:
-
-            self.plot_loss(nepoch, train_loss, valid_loss)
-            self.plot_acc(nepoch, train_acc, valid_acc)
 
     @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
@@ -255,19 +301,21 @@ class NeuralNet(object):
         loss_func, loss_val = self.loss, 0
         out = []
         acc = []
+        y = []
         for data in loader:
             data = data.to(self.device)
             pred = self.model(data)
             pred, acc, data.y = self.format_output(pred, acc, data.y)
 
+            y += data.y
             loss_val += loss_func(pred, data.y)
             out += pred.reshape(-1).tolist()
 
         if self.task == 'class':
-            return out, torch.mean(torch.stack(acc)), loss_val
+            return out, y, torch.mean(torch.stack(acc)), loss_val
 
         else:
-            return out, acc, loss_val
+            return out, y, acc, loss_val
 
     def _epoch(self, epoch):
 
