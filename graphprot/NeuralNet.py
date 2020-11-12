@@ -172,7 +172,7 @@ class NeuralNet(object):
             nb_models = len(hitrate)
             X = range(1, nb_models + 1)
         
-            if mode == 'percentage ' :
+            if mode == 'percentage' :
                 hitrate = [x/nb_models for x in hitrate]
                 
             plt.plot(X, hitrate, c='blue', label='train')
@@ -256,7 +256,7 @@ class NeuralNet(object):
         return out, target
 
 
-    def test(self, database_test, threshold = self.threshold):
+    def test(self, database_test, threshold):
 
         test_dataset = HDF5DataSet(root='./', database=database_test, 
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,

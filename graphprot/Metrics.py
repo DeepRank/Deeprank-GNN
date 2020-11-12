@@ -15,9 +15,9 @@ def get_boolean(vals, threshold, target):
         return vals_bool
 
 
-def get_comparison(prediction, ground_truth, binary =True):
+def get_comparison(prediction, ground_truth, binary=True, classes=[0,1]):
         
-    CM = confusion_matrix(ground_truth, prediction)
+    CM = confusion_matrix(ground_truth, prediction, labels = classes)
     
     FP = CM.sum(axis=0) - np.diag(CM)
     FN = CM.sum(axis=1) - np.diag(CM)
@@ -55,8 +55,15 @@ class Metrics(object):
                         
                         self.y_pred = get_boolean(self.y_pred, self.threshold, self.target)
                         self.y_hat = get_boolean(self.y_hat, self.threshold, self.target)
+                        classes = [0,1]
+                
+                else: 
+                        if self.target == 'class':
+                                classes = [1,2,3,4,5]
+                        else:
+                                classes = [0,1]
                         
-                FP, FN, TP, TN = get_comparison(self.y_pred, self.y_hat, self.binary)
+                FP, FN, TP, TN = get_comparison(self.y_pred, self.y_hat, self.binary, classes=classes)
 
                 try:
                         # Sensitivity, hit rate, recall, or true positive rate
