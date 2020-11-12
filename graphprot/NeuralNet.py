@@ -23,7 +23,7 @@ class NeuralNet(object):
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd',
                  batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
-                 class_weights=None, task='class', classes=[0, 1]):
+                 class_weights=None, task='class', classes=[0, 1], threshold=4):
 
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=index,
@@ -53,7 +53,7 @@ class NeuralNet(object):
 
         # get the device
         self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu')
+           'cuda' if torch.cuda.is_available() else 'cpu')
 
         # parameters
         self.node_feature = node_feature
@@ -61,6 +61,7 @@ class NeuralNet(object):
         self.target = target
         self.task = task
         self.class_weights = class_weights
+        self.threshold = threshold
 
         # put the model
         if self.task == 'reg':
@@ -100,12 +101,13 @@ class NeuralNet(object):
             self.loss = nn.CrossEntropyLoss(
                 weight=self.class_weights, reduction='mean')
 
+        # init lists
         self.train_acc = []
         self.train_loss = []
+        
         self.valid_acc = []
         self.valid_loss = []
-        self.valid_out = []
-        self.valid_y = []
+
 
     def plot_loss(self):
 
@@ -129,6 +131,7 @@ class NeuralNet(object):
             plt.savefig('loss_epoch.png')
             plt.close()
 
+
     def plot_acc(self): 
 
         nepoch = self.nepoch
@@ -151,7 +154,8 @@ class NeuralNet(object):
             plt.savefig('acc_epoch.png')
             plt.close()
 
-    def plot_hit_rate(self, threshold=4, mode='percentage'):
+
+    def plot_hit_rate(self, data='eval', threshold=4, mode='percentage'):
         '''
         Plots the hitrate as a function of the models' rank
         
@@ -161,29 +165,27 @@ class NeuralNet(object):
 
         import matplotlib.pyplot as plt
             
-        #try :
-        pred = self.valid_out[0]
-        y = [x.item() for x in self.valid_y[0]]
-        
-        metrics = Metrics(pred, y, self.task, self.target, threshold)
-        hitrate = metrics.HitRate()
-        
-        nb_models = len(y)
-        X = range(1, nb_models + 1)
-        
-        if mode == 'percentage ' :
-            hitrate = [x/nb_models for x in hitrate]
-            
-        plt.plot(X, hitrate, c='blue', label='train')
-        plt.title("Hit rate")
-        plt.xlabel("Number of models")
-        plt.ylabel("Hit Rate")
-        plt.legend()
-        plt.savefig('hitrate.png')
-        plt.close()
+        try :
 
-        #except : 
-        #    print ('No hit rate plot could be generated for you {} task'.format(self.task))
+            hitrate = self.get_metrics(data, threshold).HitRate()
+            
+            nb_models = len(hitrate)
+            X = range(1, nb_models + 1)
+        
+            if mode == 'percentage ' :
+                hitrate = [x/nb_models for x in hitrate]
+                
+            plt.plot(X, hitrate, c='blue', label='train')
+            plt.title("Hit rate")
+            plt.xlabel("Number of models")
+            plt.ylabel("Hit Rate")
+            plt.legend()
+            plt.savefig('hitrate.png')
+            plt.close()
+
+        except : 
+            print ('No hit rate plot could be generated for you {} task'.format(self.task))
+
 
     def train(self, nepoch=1, validate=False, plot=False):
 
@@ -194,28 +196,26 @@ class NeuralNet(object):
             self.model.train()
 
             t0 = time()
-            _acc, _loss = self._epoch(epoch)
+            _out, _y, _loss = self._epoch(epoch)
             t = time() - t0
-            
             self.train_loss.append(_loss)
-
-            if _acc is not None:
-                self.train_acc.append(_acc)
+            self.train_out = _out
+            self.train_y = _y
+            _acc = self.get_metrics('train', self.threshold).ACC
+            self.train_acc.append(_acc)
 
             self.print_epoch_data('train', epoch, _loss, _acc, t)
 
             if validate is True:
-
                 t0 = time()
-                _out, _y, _val_acc, _val_loss = self.eval(self.valid_loader)
+                _out, _y, _val_loss = self.eval(self.valid_loader)
                 t = time() - t0
 
                 self.valid_loss.append(_val_loss)
-                self.valid_out.append(_out)
-                self.valid_y.append(_y)
-
-                if _val_acc is not None:
-                    self.valid_acc.append(_val_acc)
+                self.valid_out = _out
+                self.valid_y = _y
+                _val_acc = self.get_metrics('eval', self.threshold).ACC
+                self.valid_acc.append(_val_acc)
 
                 self.print_epoch_data(
                     'valid', epoch, _val_loss, _val_acc, t)
@@ -241,44 +241,7 @@ class NeuralNet(object):
         print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
                                                                              stage, loss, acc_str, time))
 
-    def get_accuracy(self, prediction, target, reduce=True):
-        '''
-        Computes the accuracy for classification tasks
-
-        prediction : tensor of torch.Size([batch_size, number of classes])
-        The prediction tensor contains softmax activation function output
-        i.e. probabilities of all classes
-        Ex : tensor([[8.5442e-30, 1.0000e+00, 4.4564e-27, 1.4013e-45, 0.0000e+00],
-            [8.7185e-10, 3.6507e-08, 1.0244e-05, 5.2405e-10, 9.9999e-01],
-            [4.7920e-29, 1.0000e+00, 2.4772e-27, 0.0000e+00, 0.0000e+00],
-            [0.0000e+00, 1.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00]])
-
-        target : tensor of torch.Size([batch_size])
-        Ex : tensor([1, 4, 0, 1])
-
-        prediction.argmax(dim=1) returns the indices of the maximum values along the dim 1
-        e.i. the class with the highest probability
-        Ex : tensor([1, 4, 1, 1])
-
-        (prediction.argmax(dim=1)==target)
-        compares the content of the two tensors and returns a True/False tensor
-        Ex : tensor([True, True, False, True])
-
-        overlap = (prediction.argmax(dim=1)==target).sum()
-        counts the number of True booleans
-
-        overlap/float(target.size()[-1])
-        divides the number of True booleans by the batch size
-        and thus returns an accuracy value
-        Ex : tensor(0.7500)
-        '''
-        overlap = (prediction.argmax(dim=1) == target).sum()
-        if reduce:
-            return overlap/float(target.size()[-1])
-
-        return overlap
-
-    def format_output(self, out, acc, target):
+    def format_output(self, out, target):
         '''
         Format the network output depending on the task (classification/regression)
         '''
@@ -286,13 +249,32 @@ class NeuralNet(object):
             out = F.softmax(out, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
-            acc.append(self.get_accuracy(out, target))
 
         else:
             out = out.reshape(-1)
-            acc = None
 
-        return out, acc, target
+        return out, target
+
+
+    def test(self, database_test, threshold = self.threshold):
+
+        test_dataset = HDF5DataSet(root='./', database=database_test, 
+                                        node_feature=self.node_feature, edge_feature=self.edge_feature,
+                                        target=self.target)
+        print('Test set loaded')
+        PreCluster(test_dataset, method='mcl')                                                                                                                                 
+
+        self.test_loader = DataLoader(
+            test_dataset)
+        
+        _out, _y, _test_loss = self.eval(self.test_loader)
+
+        self.test_out = _out
+        self.test_y = _y
+        _test_acc = self.get_metrics('test', threshold).ACC
+        self.test_acc = _test_acc
+        self.test_loss = _test_loss
+        
 
     def eval(self, loader):
 
@@ -305,40 +287,71 @@ class NeuralNet(object):
         for data in loader:
             data = data.to(self.device)
             pred = self.model(data)
-            pred, acc, data.y = self.format_output(pred, acc, data.y)
+            pred, data.y = self.format_output(pred, data.y)
 
             y += data.y
             loss_val += loss_func(pred, data.y)
             out += pred.reshape(-1).tolist()
 
         if self.task == 'class':
-            return out, y, torch.mean(torch.stack(acc)), loss_val
+            return out, y, loss_val
 
         else:
-            return out, y, acc, loss_val
+            return out, y, loss_val
+
 
     def _epoch(self, epoch):
 
         running_loss = 0
-        acc = []
+        out = []
+        y= []
         for data in self.train_loader:
 
             data = data.to(self.device)
             self.optimizer.zero_grad()
-            out = self.model(data)
-            out, acc, data.y = self.format_output(out, acc, data.y)
+            pred = self.model(data)
+            pred, data.y = self.format_output(pred, data.y)
 
-            loss = self.loss(out, data.y)
+            y += data.y
+            loss = self.loss(pred, data.y)
             running_loss += loss.data.item()
             loss.backward()
+            out += pred.reshape(-1).tolist()
             self.optimizer.step()
 
         if self.task == 'class':
-            return torch.mean(torch.stack(acc)), running_loss
+            return out, y, running_loss
 
         else:
-            return acc, running_loss
+            return out, y, running_loss
 
+            
+    def get_metrics(self, data='eval', threshold=4, binary=True):
+        
+        if data == 'eval' :
+            if len(self.valid_out) == 0:
+                print('No evaluation set has been provided')
+                
+            pred = self.valid_out
+            y = [x.item() for x in self.valid_y]
+            
+        elif data == 'train' :
+            if len(self.train_out) == 0:
+                print('No training set has been provided')
+            
+            pred = self.train_out
+            y = [x.item() for x in self.train_y]
+
+        elif data == 'test' :
+            if len(self.test_out) == 0:
+                print('No test set has been provided')
+            
+            pred = self.test_out
+            y = [x.item() for x in self.test_y]
+
+        return Metrics(pred, y, self.target, threshold, binary)
+
+        
     def plot_scatter(self):
 
         import matplotlib.pyplot as plt
