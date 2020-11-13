@@ -15,3 +15,8 @@ GraphProt.egg-info
 # hdf5
 *.hdf5
 *.tar
+
+# test
+htmlcov
+.coverage
+covergage.xml
