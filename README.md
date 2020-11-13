@@ -1,5 +1,7 @@
 # GraphProt
 
+[![Build Status](https://github.com/DeepRank/GraphProt/workflows/build/badge.svg)](https://github.com/DeepRank/GraphProt/actions)
+
 Use Graph CNN to rank conformations.
 
 ![alt-text](./graphprot.png)

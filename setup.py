@@ -21,7 +21,7 @@ setup(
     description='Graph Neural network Scoring of protein-protein conformations',
     long_description=readme + '\n\n',
     long_description_content_type='text/markdown',
-    author=["Nicolas Renaud"],
+    author=["Nicolas Renaud", "Manon Reau"],
     author_email='n.renaud@esciencecenter.nl',
     url='https://github.com/DeepRank/GraphProt',
     packages=find_packages(),
