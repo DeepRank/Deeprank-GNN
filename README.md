@@ -1,8 +1,9 @@
 # GraphProt
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3f98b2d1883493ead50e3acaa23f2cc)](https://app.codacy.com/gh/DeepRank/GraphProt?utm_source=github.com&utm_medium=referral&utm_content=DeepRank/GraphProt&utm_campaign=Badge_Grade)
-[![Build Status](https://github.com/DeepRank/GraphProt/workflows/build/badge.svg)](https://github.com/DeepRank/GraphProt/actions)
 
+[![Build Status](https://github.com/DeepRank/GraphProt/workflows/build/badge.svg)](https://github.com/DeepRank/GraphProt/actions)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3f98b2d1883493ead50e3acaa23f2cc)](https://app.codacy.com/gh/DeepRank/GraphProt?utm_source=github.com&utm_medium=referral&utm_content=DeepRank/GraphProt&utm_campaign=Badge_Grade)
+[![Coverage Status](https://coveralls.io/repos/github/DeepRank/GraphProt/badge.svg?branch=master)](https://coveralls.io/github/DeepRank/GraphProt?branch=master)
 Use Graph CNN to rank conformations.
 
 ![alt-text](./graphprot.png)
