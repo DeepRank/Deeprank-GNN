@@ -199,7 +199,11 @@ class HDF5DataSet(Dataset):
         #print('Load mol :', mol)
 
         f5 = h5py.File(fname, 'r')
-        grp = f5[mol]
+        try : 
+            grp = f5[mol]
+        except :
+            f5.close()
+            return None
 
         # nodes
         data = ()

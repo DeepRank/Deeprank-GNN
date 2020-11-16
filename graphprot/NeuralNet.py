@@ -29,7 +29,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=index,
                               node_feature=node_feature, edge_feature=edge_feature,
                               target=target)
-        #PreCluster(dataset, method='mcl')
+        PreCluster(dataset, method='mcl')
 
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=percent)
@@ -40,8 +40,8 @@ class NeuralNet(object):
                                         node_feature=node_feature, edge_feature=edge_feature,
                                         target=target)
             print('Independent validation set loaded')
-            #PreCluster(valid_dataset, method='mcl')
-
+            PreCluster(valid_dataset, method='mcl')
+            
         else:
             print('No independent validation set loaded')
 
@@ -282,7 +282,6 @@ class NeuralNet(object):
 
         loss_func, loss_val = self.loss, 0
         out = []
-        acc = []
         y = []
         for data in loader:
             data = data.to(self.device)
@@ -290,13 +289,9 @@ class NeuralNet(object):
             pred, data.y = self.format_output(pred, data.y)
 
             y += data.y
-            loss_val += loss_func(pred, data.y)
+            loss_val += loss_func(pred, data.y).detach().item()
             out += pred.reshape(-1).tolist()
 
-        if self.task == 'class':
-            return out, y, loss_val
-
-        else:
             return out, y, loss_val
 
 
@@ -314,15 +309,11 @@ class NeuralNet(object):
 
             y += data.y
             loss = self.loss(pred, data.y)
-            running_loss += loss.data.item()
+            running_loss += loss.detach().item()
             loss.backward()
             out += pred.reshape(-1).tolist()
             self.optimizer.step()
 
-        if self.task == 'class':
-            return out, y, running_loss
-
-        else:
             return out, y, running_loss
 
             
