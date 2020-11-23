@@ -110,6 +110,7 @@ class NeuralNet(object):
         self.valid_loss = []
 
     def plot_loss(self):
+        """Plot the loss of the model."""
 
         nepoch = self.nepoch
         train_loss = self.train_loss
@@ -132,6 +133,7 @@ class NeuralNet(object):
             plt.close()
 
     def plot_acc(self):
+        """Plot the accuracy of the model."""
 
         nepoch = self.nepoch
         train_acc = self.train_acc
@@ -154,12 +156,13 @@ class NeuralNet(object):
             plt.close()
 
     def plot_hit_rate(self, data='eval', threshold=4, mode='percentage'):
-        '''
-        Plots the hitrate as a function of the models' rank
+        """Plots the hitrate as a function of the models' rank
 
-        - threshold (default = 4): defines the value to split into a hit (1) or a non-hit (0)
-        - mode : displays the hitrate as a number of hits ('count') or as a percentage ('percantage')
-        '''
+        Args:
+            data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
+            threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
+            mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
+        """
 
         import matplotlib.pyplot as plt
 
@@ -186,6 +189,13 @@ class NeuralNet(object):
                 self.task))
 
     def train(self, nepoch=1, validate=False, plot=False):
+        """Train the model
+
+        Args:
+            nepoch (int, optional): number of epochs. Defaults to 1.
+            validate (bool, optional): perform validation. Defaults to False.
+            plot (bool, optional): plot the results. Defaults to False.
+        """
 
         self.nepoch = nepoch
 
@@ -240,9 +250,8 @@ class NeuralNet(object):
                                                                              stage, loss, acc_str, time))
 
     def format_output(self, out, target):
-        '''
-        Format the network output depending on the task (classification/regression)
-        '''
+        """Format the network output depending on the task (classification/regression)."""
+
         if self.task == 'class':
             out = F.softmax(out, dim=1)
             target = torch.tensor(
@@ -254,6 +263,12 @@ class NeuralNet(object):
         return out, target
 
     def test(self, database_test, threshold):
+        """Test the model
+
+        Args:
+            database_test ([type]): [description]
+            threshold ([type]): [description]
+        """
 
         test_dataset = HDF5DataSet(root='./', database=database_test,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
@@ -273,6 +288,14 @@ class NeuralNet(object):
         self.test_loss = _test_loss
 
     def eval(self, loader):
+        """Evaluate the model
+
+        Args:
+            loader (DataLoader): [description]
+
+        Returns:
+            (tuple): 
+        """
 
         self.model.eval()
 
@@ -295,7 +318,12 @@ class NeuralNet(object):
         else:
             return out, y, loss_val
 
-    def _epoch(self, epoch):
+    def _epoch(self):
+        """Run a single epoch
+
+        Returns:
+            tuple: prediction, ground truth, running loss
+        """
 
         running_loss = 0
         out = []
@@ -321,6 +349,16 @@ class NeuralNet(object):
             return out, y, running_loss
 
     def get_metrics(self, data='eval', threshold=4, binary=True):
+        """Compute the metrics needed
+
+        Args:
+            data (str, optional): [description]. Defaults to 'eval'.
+            threshold (int, optional): [description]. Defaults to 4.
+            binary (bool, optional): [description]. Defaults to True.
+
+        Returns:
+            [type]: [description]
+        """
 
         if data == 'eval':
             if len(self.valid_out) == 0:
@@ -346,7 +384,7 @@ class NeuralNet(object):
         return Metrics(pred, y, self.target, threshold, binary)
 
     def plot_scatter(self):
-
+        """Scatter plot of the results"""
         import matplotlib.pyplot as plt
 
         self.model.eval()
@@ -369,6 +407,11 @@ class NeuralNet(object):
         plt.show()
 
     def save_model(self, filename='model.pth.tar'):
+        """Save the model to a file
+
+        Args:
+            filename (str, optional): name of the file. Defaults to 'model.pth.tar'.
+        """
 
         state = {'model': self.model.state_dict(),
                  'optimizer': self.optimizer.state_dict(),
