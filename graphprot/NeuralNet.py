@@ -17,6 +17,7 @@ from torch_geometric.nn import max_pool_x
 from .DataSet import HDF5DataSet, DivideDataSet, PreCluster
 from .Metrics import Metrics
 
+
 class NeuralNet(object):
 
     def __init__(self, database, Net,
@@ -53,7 +54,7 @@ class NeuralNet(object):
 
         # get the device
         self.device = torch.device(
-           'cuda' if torch.cuda.is_available() else 'cpu')
+            'cuda' if torch.cuda.is_available() else 'cpu')
 
         # parameters
         self.node_feature = node_feature
@@ -104,16 +105,15 @@ class NeuralNet(object):
         # init lists
         self.train_acc = []
         self.train_loss = []
-        
+
         self.valid_acc = []
         self.valid_loss = []
-
 
     def plot_loss(self):
 
         nepoch = self.nepoch
         train_loss = self.train_loss
-        valid_loss = self.valid_loss        
+        valid_loss = self.valid_loss
 
         import matplotlib.pyplot as plt
 
@@ -131,8 +131,7 @@ class NeuralNet(object):
             plt.savefig('loss_epoch.png')
             plt.close()
 
-
-    def plot_acc(self): 
+    def plot_acc(self):
 
         nepoch = self.nepoch
         train_acc = self.train_acc
@@ -154,27 +153,26 @@ class NeuralNet(object):
             plt.savefig('acc_epoch.png')
             plt.close()
 
-
     def plot_hit_rate(self, data='eval', threshold=4, mode='percentage'):
         '''
         Plots the hitrate as a function of the models' rank
-        
+
         - threshold (default = 4): defines the value to split into a hit (1) or a non-hit (0)
         - mode : displays the hitrate as a number of hits ('count') or as a percentage ('percantage')
         '''
 
         import matplotlib.pyplot as plt
-            
-        try :
+
+        try:
 
             hitrate = self.get_metrics(data, threshold).HitRate()
-            
+
             nb_models = len(hitrate)
             X = range(1, nb_models + 1)
-        
-            if mode == 'percentage' :
+
+            if mode == 'percentage':
                 hitrate = [x/nb_models for x in hitrate]
-                
+
             plt.plot(X, hitrate, c='blue', label='train')
             plt.title("Hit rate")
             plt.xlabel("Number of models")
@@ -183,9 +181,9 @@ class NeuralNet(object):
             plt.savefig('hitrate.png')
             plt.close()
 
-        except : 
-            print ('No hit rate plot could be generated for you {} task'.format(self.task))
-
+        except:
+            print('No hit rate plot could be generated for you {} task'.format(
+                self.task))
 
     def train(self, nepoch=1, validate=False, plot=False):
 
@@ -214,12 +212,12 @@ class NeuralNet(object):
                 self.valid_loss.append(_val_loss)
                 self.valid_out = _out
                 self.valid_y = _y
-                _val_acc = self.get_metrics('eval', self.threshold).ACC
+                _val_acc = self.get_metrics(
+                    'eval', self.threshold).ACC
                 self.valid_acc.append(_val_acc)
 
                 self.print_epoch_data(
                     'valid', epoch, _val_loss, _val_acc, t)
-
 
     @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
@@ -255,18 +253,17 @@ class NeuralNet(object):
 
         return out, target
 
-
     def test(self, database_test, threshold):
 
-        test_dataset = HDF5DataSet(root='./', database=database_test, 
+        test_dataset = HDF5DataSet(root='./', database=database_test,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
         print('Test set loaded')
-        PreCluster(test_dataset, method='mcl')                                                                                                                                 
+        PreCluster(test_dataset, method='mcl')
 
         self.test_loader = DataLoader(
             test_dataset)
-        
+
         _out, _y, _test_loss = self.eval(self.test_loader)
 
         self.test_out = _out
@@ -274,7 +271,6 @@ class NeuralNet(object):
         _test_acc = self.get_metrics('test', threshold).ACC
         self.test_acc = _test_acc
         self.test_loss = _test_loss
-        
 
     def eval(self, loader):
 
@@ -299,12 +295,11 @@ class NeuralNet(object):
         else:
             return out, y, loss_val
 
-
     def _epoch(self, epoch):
 
         running_loss = 0
         out = []
-        y= []
+        y = []
         for data in self.train_loader:
 
             data = data.to(self.device)
@@ -325,33 +320,31 @@ class NeuralNet(object):
         else:
             return out, y, running_loss
 
-            
     def get_metrics(self, data='eval', threshold=4, binary=True):
-        
-        if data == 'eval' :
+
+        if data == 'eval':
             if len(self.valid_out) == 0:
                 print('No evaluation set has been provided')
-                
+
             pred = self.valid_out
             y = [x.item() for x in self.valid_y]
-            
-        elif data == 'train' :
+
+        elif data == 'train':
             if len(self.train_out) == 0:
                 print('No training set has been provided')
-            
+
             pred = self.train_out
             y = [x.item() for x in self.train_y]
 
-        elif data == 'test' :
+        elif data == 'test':
             if len(self.test_out) == 0:
                 print('No test set has been provided')
-            
+
             pred = self.test_out
             y = [x.item() for x in self.test_y]
 
         return Metrics(pred, y, self.target, threshold, binary)
 
-        
     def plot_scatter(self):
 
         import matplotlib.pyplot as plt
@@ -386,7 +379,12 @@ class NeuralNet(object):
         torch.save(state, filename)
 
     def load_model(self, filename):
+        """Load model from a saved file
 
+        Args:
+            filename (str): name of the file to be loaded
+        """
+        print('Loading file : %s' % filename)
         state = torch.load(filename)
 
         self.model.load_state_dict(state['model'])
