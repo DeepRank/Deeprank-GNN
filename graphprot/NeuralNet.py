@@ -24,9 +24,12 @@ class NeuralNet(object):
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd',
                  batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
-                 class_weights=None, task='class', classes=[0, 1], threshold=4, pretrained_model=None):
+                 class_weights=None, task='class', classes=[0, 1], threshold=4,
+                 pretrained_model=None, shuffle=False):
 
         # load the input data or a pretrained model
+        # each named arguments is stored in a member vairable
+        # i.e. self.node_feature = node_feature
         if pretrained_model is None:
             for k, v in dict(locals()).items():
                 if k not in ['self', 'database', 'Net', 'database_eval']:
@@ -47,7 +50,7 @@ class NeuralNet(object):
 
         # dataloader
         self.train_loader = DataLoader(
-            train_dataset, batch_size=self.batch_size, shuffle=False)
+            train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
 
         # independent validation dataset
         if database_eval is not None:
@@ -55,7 +58,7 @@ class NeuralNet(object):
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
             self.valid_loader = DataLoader(
-                valid_dataset, batch_size=self.batch_size, shuffle=False)
+                valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
             # PreCluster(valid_dataset, method='mcl')
 
@@ -180,7 +183,7 @@ class NeuralNet(object):
             X = range(1, nb_models + 1)
 
             if mode == 'percentage':
-                hitrate = [x/nb_models for x in hitrate]
+                hitrate /= hitrate.sum()
 
             plt.plot(X, hitrate, c='blue', label='train')
             plt.title("Hit rate")
@@ -430,6 +433,7 @@ class NeuralNet(object):
                  'batch_size': self.batch_size,
                  'percent': self.percent,
                  'index': self.index,
+                 'shuffle': self.shuffle,
                  'threshold': self.threshold}
 
         torch.save(state, filename)
@@ -456,5 +460,6 @@ class NeuralNet(object):
         self.task = state['task']
         self.classes = state['classes']
         self.threshold = state['threshold']
+        self.shuffle = state['shuffle']
 
         self.opt_loaded_state_dict = state['optimizer']
