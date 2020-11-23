@@ -44,6 +44,7 @@ class NeuralNet(object):
                               target=self.target)
         # PreCluster(dataset, method='mcl')
 
+
         # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=self.percent)
@@ -61,7 +62,7 @@ class NeuralNet(object):
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
             # PreCluster(valid_dataset, method='mcl')
-
+            
         else:
             print('No independent validation set loaded')
 
@@ -310,7 +311,6 @@ class NeuralNet(object):
 
         loss_func, loss_val = self.loss, 0
         out = []
-        acc = []
         y = []
         for data in loader:
             data = data.to(self.device)
@@ -318,13 +318,9 @@ class NeuralNet(object):
             pred, data.y = self.format_output(pred, data.y)
 
             y += data.y
-            loss_val += loss_func(pred, data.y)
+            loss_val += loss_func(pred, data.y).detach().item()
             out += pred.reshape(-1).tolist()
 
-        if self.task == 'class':
-            return out, y, loss_val
-
-        else:
             return out, y, loss_val
 
     def _epoch(self, epoch):
@@ -346,15 +342,11 @@ class NeuralNet(object):
 
             y += data.y
             loss = self.loss(pred, data.y)
-            running_loss += loss.data.item()
+            running_loss += loss.detach().item()
             loss.backward()
             out += pred.reshape(-1).tolist()
             self.optimizer.step()
 
-        if self.task == 'class':
-            return out, y, running_loss
-
-        else:
             return out, y, running_loss
 
     def get_metrics(self, data='eval', threshold=4, binary=True):
