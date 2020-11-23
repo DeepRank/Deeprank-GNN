@@ -45,22 +45,22 @@ class NeuralNet(object):
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=self.percent)
 
+        # dataloader
+        self.train_loader = DataLoader(
+            train_dataset, batch_size=self.batch_size, shuffle=False)
+
         # independent validation dataset
         if database_eval is not None:
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
+            self.valid_loader = DataLoader(
+                valid_dataset, batch_size=self.batch_size, shuffle=False)
             print('Independent validation set loaded')
             # PreCluster(valid_dataset, method='mcl')
 
         else:
             print('No independent validation set loaded')
-
-        # dataloader
-        self.train_loader = DataLoader(
-            train_dataset, batch_size=self.batch_size, shuffle=False)
-        self.valid_loader = DataLoader(
-            valid_dataset, batch_size=self.batch_size, shuffle=False)
 
         # get the device
         self.device = torch.device(
