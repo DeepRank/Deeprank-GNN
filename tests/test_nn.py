@@ -24,7 +24,16 @@ class TestNeuralNet(unittest.TestCase):
                        batch_size=64,
                        percent=[0.8, 0.2])
 
-        NN.train(nepoch=25, validate=False)
+        NN.train(nepoch=5, validate=False)
+
+        NN.save_model('test.pth.tar')
+
+        NN_cpy = NeuralNet(self.database, GINet,
+                           pretrained_model='test.pth.tar')
 
         if __PLOT__:
             NN.plot_scatter()
+
+
+if __name__ == "__main__":
+    unittest.main()
