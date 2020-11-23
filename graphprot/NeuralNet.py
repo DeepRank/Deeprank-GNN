@@ -26,26 +26,30 @@ class NeuralNet(object):
                  batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
                  class_weights=None, task='class', classes=[0, 1], threshold=4, pretrained_model=None):
 
-        # load a pretrained model
-        if pretrained_model is not None:
-            return self.load_model(database, Net, pretrained_model, database_eval=database_eval)
+        # load the input data or a pretrained model
+        if pretrained_model is None:
+            for k, v in dict(locals()).items():
+                if k not in ['self', 'database', 'Net', 'database_eval']:
+                    self.__setattr__(k, v)
+
+        else:
+            self.load_params(pretrained_model)
 
         # dataset
-        self.index = index
-        dataset = HDF5DataSet(root='./', database=database, index=index,
-                              node_feature=node_feature, edge_feature=edge_feature,
-                              target=target)
+        dataset = HDF5DataSet(root='./', database=database, index=self.index,
+                              node_feature=self.node_feature, edge_feature=self.edge_feature,
+                              target=self.target)
         # PreCluster(dataset, method='mcl')
 
-        self.percent = percent
+        # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
-            dataset, percent=percent)
+            dataset, percent=self.percent)
 
         # independent validation dataset
         if database_eval is not None:
-            valid_dataset = HDF5DataSet(root='./', database=database_eval, index=index,
-                                        node_feature=node_feature, edge_feature=edge_feature,
-                                        target=target)
+            valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
+                                        node_feature=self.node_feature, edge_feature=self.edge_feature,
+                                        target=self.target)
             print('Independent validation set loaded')
             # PreCluster(valid_dataset, method='mcl')
 
@@ -54,21 +58,13 @@ class NeuralNet(object):
 
         # dataloader
         self.train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=False)
+            train_dataset, batch_size=self.batch_size, shuffle=False)
         self.valid_loader = DataLoader(
-            valid_dataset, batch_size=batch_size, shuffle=False)
+            valid_dataset, batch_size=self.batch_size, shuffle=False)
 
         # get the device
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
-
-        # parameters
-        self.node_feature = node_feature
-        self.edge_feature = edge_feature
-        self.target = target
-        self.task = task
-        self.class_weights = class_weights
-        self.threshold = threshold
 
         # put the model
         if self.task == 'reg':
@@ -99,6 +95,10 @@ class NeuralNet(object):
         # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=0.01)
+
+        # laod the optimizer state if we have one
+        if pretrained_model is not None:
+            self.optimizer.load_state_dict(self.opt_loaded_state_dict)
 
         # loss
         if self.task == 'reg':
@@ -324,7 +324,7 @@ class NeuralNet(object):
         else:
             return out, y, loss_val
 
-    def _epoch(self):
+    def _epoch(self, epoch):
         """Run a single epoch
 
         Returns:
@@ -426,7 +426,7 @@ class NeuralNet(object):
                  'target': self.target,
                  'task': self.task,
                  'classes': self.classes,
-                 'class_weight': self.class_weight,
+                 'class_weight': self.class_weights,
                  'batch_size': self.batch_size,
                  'percent': self.percent,
                  'index': self.index,
@@ -434,34 +434,27 @@ class NeuralNet(object):
 
         torch.save(state, filename)
 
-    @classmethod
-    def load_model(cls, database, net, filename, database_eval=None):
-        """Creates a model from a pretrained file
+    def load_params(self, filename):
+        """Load the parameters of a rpetrained model
 
         Args:
-            database (str): path pf the database to use with the model
-            net (nn.module): network to use
-            filename (str): name of te file containing the pretrained model
-            database_eval (str, optional): if a given database needs to be used for validation. Defaults to None.
+            filename ([type]): [description]
 
         Returns:
             [type]: [description]
         """
-        print('Loading file : %s' % filename)
+
         state = torch.load(filename)
 
-        model = cls(database, net,
-                    node_feature=state['node'],
-                    edge_feature=state['edge'],
-                    target=state['target'],
-                    batch_size=state['batchsize'],
-                    percent=state['percent'],
-                    index=state['index'],
-                    database_eval=database_eval,
-                    class_weights=state['class_weight'],
-                    task=state['task'],
-                    classes=state['classes'],
-                    threshold=state['threshold'])
+        self.node_feature = state['node']
+        self.edge_feature = state['edge']
+        self.target = state['target']
+        self.batch_size = state['batch_size']
+        self.percent = state['percent']
+        self.index = state['index']
+        self.class_weights = state['class_weight']
+        self.task = state['task']
+        self.classes = state['classes']
+        self.threshold = state['threshold']
 
-        model.optimizer.load_state_dict(state['optimizer'])
-        return model
+        self.opt_loaded_state_dict = state['optimizer']
