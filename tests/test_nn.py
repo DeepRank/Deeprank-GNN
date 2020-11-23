@@ -29,16 +29,7 @@ class TestNeuralNet(unittest.TestCase):
         NN.save_model('test.pth.tar')
 
         NN_cpy = NeuralNet(self.database, GINet,
-                           node_feature=['type', 'polarity', 'bsa',
-                                         'depth', 'hse', 'ic', 'pssm'],
-                           edge_feature=['dist'],
-                           target='irmsd',
-                           index=None,
-                           task='reg',
-                           batch_size=64,
-                           percent=[0.8, 0.2])
-
-        NN_cpy.load_model('test.pth.tar')
+                           pretrained_model='test.pth.tar')
 
         if __PLOT__:
             NN.plot_scatter()
