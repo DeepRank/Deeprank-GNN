@@ -510,6 +510,7 @@ class NeuralNet(object):
                  'class_weight': self.class_weights,
                  'batch_size': self.batch_size,
                  'percent': self.percent,
+                 'lr': self.lr,
                  'index': self.index,
                  'shuffle': self.shuffle,
                  'threshold': self.threshold}
@@ -533,6 +534,7 @@ class NeuralNet(object):
         self.target = state['target']
         self.batch_size = state['batch_size']
         self.percent = state['percent']
+        self.lr = state['lr']
         self.index = state['index']
         self.class_weights = state['class_weight']
         self.task = state['task']
@@ -558,7 +560,6 @@ class NeuralNet(object):
 
         grp.attrs['task'] = self.task
         grp.attrs['target'] = self.target
-        grp.attrs['lr'] = self.lr
         grp.attrs['batch_size'] = self.batch_size
 
         # loop over the pass_type : train/valid/test
