@@ -287,6 +287,9 @@ class HDF5DataSet(Dataset):
         data.internal_edge_index = internal_edge_index
         data.internal_edge_attr = internal_edge_attr
 
+        # mol name
+        data.mol = mol
+
         # cluster
         if 'clustering' in grp.keys():
             if self.clustering_method in grp['clustering'].keys():
