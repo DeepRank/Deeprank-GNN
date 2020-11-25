@@ -594,6 +594,7 @@ class NeuralNet(object):
                     # mol name is a bit different
                     # since there are strings
                     if data_name == 'mol':
+                        data_value = np.string_(data_value)
                         string_dt = h5py.special_dtype(vlen=str)
                         sg.create_dataset(
                             data_name, data=data_value, dtype=string_dt)
@@ -603,4 +604,4 @@ class NeuralNet(object):
                         sg.create_dataset(data_name, data=data_value)
 
             except TypeError:
-                logger.exception("Error in export epoch to hdf5")
+                raise ValueError("Error in export epoch to hdf5")
