@@ -200,18 +200,31 @@ class NeuralNet(object):
             print('No hit rate plot could be generated for you {} task'.format(
                 self.task))
 
-    def train(self, nepoch=1, validate=False, plot=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate'):
+    def train(self, nepoch=1, validate=False, plot=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """Train the model
 
         Args:
             nepoch (int, optional): number of epochs. Defaults to 1.
             validate (bool, optional): perform validation. Defaults to False.
             plot (bool, optional): plot the results. Defaults to False.
-            savemodel (last, best): save the model. Defaults to 'last' 
+            save_model (last, best, optional): save the model. Defaults to 'last' 
+            hdf5 (str, optional): hdf5 output file
+            save_epoch (all, intermediate, optional)
+            save_every (int, optional): save data every n epoch if save_epoch == 'intermediate'. Defaults to 5
         """
 
         # Output file 
         fname = os.path.join(self.outdir, hdf5)
+        
+        # If file exists, change its name with a number 
+        count = 0
+        while os.path.exists(fname) : 
+            count += 1
+            hdf5 = hdf5.split('.')[0]
+            hdf5 = '{}_{:03d}'.format(hdf5, count)
+            fname = os.path.join(self.outdir, hdf5)
+        
+        # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
 
         # Number of epochs
@@ -276,7 +289,7 @@ class NeuralNet(object):
             if (save_epoch == 'all') or (epoch == nepoch) :
                 self._export_epoch_hdf5(epoch, self.data)
             
-            elif (save_epoch == 'intermediate') and (epoch%5 == 0) :
+            elif (save_epoch == 'intermediate') and (epoch%save_every == 0) :
                 self._export_epoch_hdf5(epoch, self.data)
 
         # Save the last model 
@@ -328,8 +341,18 @@ class NeuralNet(object):
             threshold ([type]): [description]
         """
 
-        # Output file                                                                                                                                               
+        # Output file 
         fname = os.path.join(self.outdir, hdf5)
+        
+        # If file exists, change its name with a number 
+        count = 0
+        while os.path.exists(fname) : 
+            count += 1
+            hdf5 = hdf5.split('.')[0]
+            hdf5 = '{}_{:03d}'.format(hdf5, count)
+            fname = os.path.join(self.outdir, hdf5)
+        
+        # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
 
         # Load the test set
@@ -344,7 +367,7 @@ class NeuralNet(object):
 
         self.data = {}
 
-        # run test
+        # Run test
         _out, _y, _test_loss, self.data['test'] = self.eval(self.test_loader)
 
         self.test_out = _out
