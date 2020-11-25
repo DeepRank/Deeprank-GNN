@@ -385,7 +385,7 @@ class NeuralNet(object):
             out += pred.reshape(-1).tolist()
 
             # get the outputs for export
-            data['outputs'] += out
+            data['outputs'] += pred.reshape(-1).tolist()
             data['targets'] += d.y.numpy().tolist()
 
             # get the data
