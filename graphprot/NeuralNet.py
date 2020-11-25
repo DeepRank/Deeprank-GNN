@@ -389,10 +389,7 @@ class NeuralNet(object):
             data['targets'] += d.y.numpy().tolist()
 
             # get the data
-            mol = d['mol']
-            fname, molname = mol[0], mol[1]
-            data['mol'] += [(f, m) for f, m in zip(fname, molname)]
-            data['mol'] = np.array(data['mol'], dtype=object)
+            data['mol'] += d['mol']
 
         return out, y, loss_val, data
 
@@ -427,12 +424,9 @@ class NeuralNet(object):
             data['targets'] += d.y.numpy().tolist()
 
             # get the data
-            mol = d['mol']
-            fname, molname = mol[0], mol[1]
-            data['mol'] += [(f, m) for f, m in zip(fname, molname)]
-            data['mol'] = np.array(data['mol'], dtype=object)
-            
-            return out, y, running_loss, data
+            data['mol'] += d['mol']
+
+        return out, y, running_loss, data
 
     def get_metrics(self, data='eval', threshold=4, binary=True):
         """Compute the metrics needed
