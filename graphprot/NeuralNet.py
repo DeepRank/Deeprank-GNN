@@ -221,7 +221,7 @@ class NeuralNet(object):
         while os.path.exists(fname) : 
             count += 1
             hdf5 = hdf5.split('.')[0]
-            hdf5 = '{}_{:03d}'.format(hdf5, count)
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5, count)
             fname = os.path.join(self.outdir, hdf5)
         
         # Open output file for writting
@@ -349,7 +349,7 @@ class NeuralNet(object):
         while os.path.exists(fname) : 
             count += 1
             hdf5 = hdf5.split('.')[0]
-            hdf5 = '{}_{:03d}'.format(hdf5, count)
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5, count)
             fname = os.path.join(self.outdir, hdf5)
         
         # Open output file for writting
