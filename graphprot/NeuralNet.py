@@ -376,8 +376,7 @@ class NeuralNet(object):
         self.test_acc = _test_acc
         self.test_loss = _test_loss
 
-        if save_prediction :
-            self._export_epoch_hdf5(0, self.data)
+        self._export_epoch_hdf5(0, self.data)
             
         self.f5.close()
 
