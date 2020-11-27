@@ -218,10 +218,10 @@ class NeuralNet(object):
         
         # If file exists, change its name with a number 
         count = 0
+        hdf5_name = hdf5.split('.')[0]
         while os.path.exists(fname) : 
             count += 1
-            hdf5 = hdf5.split('.')[0]
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5, count)
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
             fname = os.path.join(self.outdir, hdf5)
         
         # Open output file for writting
@@ -346,10 +346,10 @@ class NeuralNet(object):
         
         # If file exists, change its name with a number 
         count = 0
+        hdf5_name = hdf5.split('.')[0]
         while os.path.exists(fname) : 
             count += 1
-            hdf5 = hdf5.split('.')[0]
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5, count)
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
             fname = os.path.join(self.outdir, hdf5)
         
         # Open output file for writting
