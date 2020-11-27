@@ -39,7 +39,7 @@ class NeuralNet(object):
 
         else:
             self.load_params(pretrained_model)
-
+            self.outdir = outdir
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
