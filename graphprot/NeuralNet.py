@@ -200,6 +200,26 @@ class NeuralNet(object):
             print('No hit rate plot could be generated for you {} task'.format(
                 self.task))
 
+    def update_name(hdf5):
+        """Check if the file already exists
+        if so, update the name
+        ex. 1: train.hdf5 -> train_001.hdf5
+        ex. 2: train_001.hdf5 -> train_002.hdf5 
+        """
+
+        fname = os.path.join(self.outdir, hdf5)
+
+        count = 0
+        hdf5_name = hdf5.split('.')[0]
+
+        # If file exists, change its name with a number                                                                                               
+        while os.path.exists(name) : 
+            count += 1
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
+            fname = os.path.join(self.outdir, hdf5)
+
+        return fname
+
     def train(self, nepoch=1, validate=False, plot=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """Train the model
 
@@ -213,16 +233,8 @@ class NeuralNet(object):
             save_every (int, optional): save data every n epoch if save_epoch == 'intermediate'. Defaults to 5
         """
 
-        # Output file 
-        fname = os.path.join(self.outdir, hdf5)
-        
-        # If file exists, change its name with a number 
-        count = 0
-        hdf5_name = hdf5.split('.')[0]
-        while os.path.exists(fname) : 
-            count += 1
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
-            fname = os.path.join(self.outdir, hdf5)
+        # Output file name
+        fname = update_name(hdf5)
         
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
@@ -342,15 +354,8 @@ class NeuralNet(object):
         """
 
         # Output file 
-        fname = os.path.join(self.outdir, hdf5)
-        
-        # If file exists, change its name with a number 
-        count = 0
-        hdf5_name = hdf5.split('.')[0]
-        while os.path.exists(fname) : 
-            count += 1
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
-            fname = os.path.join(self.outdir, hdf5)
+        # Output file name
+        fname = update_name(hdf5)
         
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
