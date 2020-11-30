@@ -39,7 +39,7 @@ class NeuralNet(object):
 
         else:
             self.load_params(pretrained_model)
-
+            self.outdir = outdir
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
@@ -218,10 +218,10 @@ class NeuralNet(object):
         
         # If file exists, change its name with a number 
         count = 0
+        hdf5_name = hdf5.split('.')[0]
         while os.path.exists(fname) : 
             count += 1
-            hdf5 = hdf5.split('.')[0]
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5, count)
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
             fname = os.path.join(self.outdir, hdf5)
         
         # Open output file for writting
@@ -346,10 +346,10 @@ class NeuralNet(object):
         
         # If file exists, change its name with a number 
         count = 0
+        hdf5_name = hdf5.split('.')[0]
         while os.path.exists(fname) : 
             count += 1
-            hdf5 = hdf5.split('.')[0]
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5, count)
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
             fname = os.path.join(self.outdir, hdf5)
         
         # Open output file for writting
@@ -376,8 +376,7 @@ class NeuralNet(object):
         self.test_acc = _test_acc
         self.test_loss = _test_loss
 
-        if save_prediction :
-            self._export_epoch_hdf5(0, self.data)
+        self._export_epoch_hdf5(0, self.data)
             
         self.f5.close()
 
@@ -594,6 +593,7 @@ class NeuralNet(object):
                     # mol name is a bit different
                     # since there are strings
                     if data_name == 'mol':
+                        data_value = np.string_(data_value)
                         string_dt = h5py.special_dtype(vlen=str)
                         sg.create_dataset(
                             data_name, data=data_value, dtype=string_dt)
@@ -603,4 +603,4 @@ class NeuralNet(object):
                         sg.create_dataset(data_name, data=data_value)
 
             except TypeError:
-                logger.exception("Error in export epoch to hdf5")
+                raise ValueError("Error in export epoch to hdf5")
