@@ -199,8 +199,9 @@ class NeuralNet(object):
         except:
             print('No hit rate plot could be generated for you {} task'.format(
                 self.task))
-
-    def update_name(self, hdf5):
+            
+    @staticmethod
+    def update_name(hdf5):
         """Check if the file already exists
         if so, update the name
         ex. 1: train.hdf5 -> train_001.hdf5
@@ -355,7 +356,7 @@ class NeuralNet(object):
 
         # Output file 
         # Output file name
-        fname = update_name(hdf5)
+        fname = self.update_name(hdf5)
         
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
