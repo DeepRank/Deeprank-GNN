@@ -217,7 +217,7 @@ class NeuralNet(object):
         while os.path.exists(name) : 
             count += 1
             hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
-            fname = os.path.join(self.outdir, hdf5)
+            fname = os.path.join(outdir, hdf5)
 
         return fname
 
