@@ -201,14 +201,14 @@ class NeuralNet(object):
                 self.task))
             
     @staticmethod
-    def update_name(hdf5):
+    def update_name(hdf5, outdir):
         """Check if the file already exists
         if so, update the name
         ex. 1: train.hdf5 -> train_001.hdf5
         ex. 2: train_001.hdf5 -> train_002.hdf5 
         """
 
-        fname = os.path.join(self.outdir, hdf5)
+        fname = os.path.join(outdir, hdf5)
 
         count = 0
         hdf5_name = hdf5.split('.')[0]
@@ -235,7 +235,7 @@ class NeuralNet(object):
         """
 
         # Output file name
-        fname = self.update_name(hdf5)
+        fname = self.update_name(hdf5, self.outdir)
         
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
@@ -356,7 +356,7 @@ class NeuralNet(object):
 
         # Output file 
         # Output file name
-        fname = self.update_name(hdf5)
+        fname = self.update_name(hdf5, self.outdir)
         
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
