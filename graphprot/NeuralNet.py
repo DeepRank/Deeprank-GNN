@@ -214,7 +214,7 @@ class NeuralNet(object):
         hdf5_name = hdf5.split('.')[0]
 
         # If file exists, change its name with a number                                                                                               
-        while os.path.exists(name) : 
+        while os.path.exists(fname) : 
             count += 1
             hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
             fname = os.path.join(outdir, hdf5)
