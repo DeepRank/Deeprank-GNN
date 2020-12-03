@@ -199,6 +199,7 @@ class NeuralNet(object):
         except:
             print('No hit rate plot could be generated for you {} task'.format(
                 self.task))
+
     @staticmethod
     def update_name(hdf5, outdir):
         """Check if the file already exists
