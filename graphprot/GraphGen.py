@@ -52,8 +52,8 @@ class GraphHDF5(object):
     @staticmethod
     def _get_pssm(pssm_path, mol_name, base_name):
 
-        pssmA = os.path.join(pssm_path, mol_name+'.A.pssm')
-        pssmB = os.path.join(pssm_path, mol_name+'.B.pssm')
+        pssmA = os.path.join(pssm_path, mol_name+'.A.pdb.pssm')
+        pssmB = os.path.join(pssm_path, mol_name+'.B.pdb.pssm')
 
         # check if the pssms exists
         if os.path.isfile(pssmA) and os.path.isfile(pssmB):
