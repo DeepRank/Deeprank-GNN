@@ -38,29 +38,29 @@ class GraphHDF5(object):
                 graph = ResidueGraph(pdb=pdbfile, pssm=pssm)
 
             # get the score
-            ref = os.path.join(ref_path, base_name+'.pdb')
+            ref = os.path.join(ref_path, base_name+'_refe.pdb')
             graph.get_score(ref)
 
             # export
-            try:
-                graph.nx2h5(f5)
-            except:
-                print('WARNING: No graph generated for {}'.format(name))
+            #try:
+            graph.nx2h5(f5)
+            #except:
+            #    print('WARNING: No graph generated for {}'.format(name))
 
         f5.close()
 
     @staticmethod
     def _get_pssm(pssm_path, mol_name, base_name):
 
-        pssmA = os.path.join(pssm_path, mol_name+'.A.pdb.pssm')
-        pssmB = os.path.join(pssm_path, mol_name+'.B.pdb.pssm')
+        pssmA = os.path.join(pssm_path, mol_name+'.A.pssm')
+        pssmB = os.path.join(pssm_path, mol_name+'.B.pssm')
 
         # check if the pssms exists
         if os.path.isfile(pssmA) and os.path.isfile(pssmB):
             pssm = {'A': pssmA, 'B': pssmB}
         else:
-            pssmA = os.path.join(pssm_path, base_name+'.A.pdb.pssm')
-            pssmB = os.path.join(pssm_path, base_name+'.B.pdb.pssm')
+            pssmA = os.path.join(pssm_path, base_name+'.A.pssm')
+            pssmB = os.path.join(pssm_path, base_name+'.B.pssm')
             if os.path.isfile(pssmA) and os.path.isfile(pssmB):
                 pssm = {'A': pssmA, 'B': pssmB}
             else:

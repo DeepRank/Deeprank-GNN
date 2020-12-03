@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import shutil
-
+import torch 
 from time import time
 import networkx as nx
 
@@ -38,25 +38,25 @@ class ResidueGraph(Graph):
 
         self.residue_names = {'CYS': 0, 'HIS': 1, 'ASN': 2, 'GLN': 3, 'SER': 4, 'THR': 5, 'TYR': 6, 'TRP': 7,
                               'ALA': 8, 'PHE': 9, 'GLY': 10, 'ILE': 11, 'VAL': 12, 'MET': 13, 'PRO': 14, 'LEU': 15,
-                              'GLU': 16, 'ASP': 17, 'LYS': 18, 'ARG': 20}
+                              'GLU': 16, 'ASP': 17, 'LYS': 18, 'ARG': 19}
 
         self.residue_polarity = {'CYS': 'polar', 'HIS': 'polar', 'ASN': 'polar', 'GLN': 'polar', 'SER': 'polar', 'THR': 'polar', 'TYR': 'polar', 'TRP': 'polar',
                                  'ALA': 'apolar', 'PHE': 'apolar', 'GLY': 'apolar', 'ILE': 'apolar', 'VAL': 'apolar', 'MET': 'apolar', 'PRO': 'apolar', 'LEU': 'apolar',
-                                 'GLU': 'charged', 'ASP': 'charged', 'LYS': 'charged', 'ARG': 'charged'}
+                                 'GLU': 'neg_charged', 'ASP': 'neg_charged', 'LYS': 'neg_charged', 'ARG': 'pos_charged'}
 
         self.pssm_pos = {'CYS': 4, 'HIS': 8, 'ASN': 2, 'GLN': 5, 'SER': 15, 'THR': 16, 'TYR': 18, 'TRP': 17,
                          'ALA': 0, 'PHE': 13, 'GLY': 7, 'ILE': 9, 'VAL': 19, 'MET': 12, 'PRO': 14, 'LEU': 10,
                          'GLU': 6, 'ASP': 3, 'LYS': 11, 'ARG': 1}
 
         self.polarity_encoding = {
-            'apolar': 0, 'polar': -1, 'charged': 1}
-        self.edge_polarity_encoding, iencod = {}, 0
-        for k1, v1 in self.polarity_encoding.items():
-            for k2, v2 in self.polarity_encoding.items():
-                key = tuple(np.sort([v1, v2]))
-                if key not in self.edge_polarity_encoding:
-                    self.edge_polarity_encoding[key] = iencod
-                    iencod += 1
+            'apolar': 0, 'polar': 1, 'neg_charged': 2, 'pos_charged': 3}
+        #self.edge_polarity_encoding, iencod = {}, 0
+        ##for k1, v1 in self.polarity_encoding.items():
+        ##for k2, v2 in self.polarity_encoding.items():
+        ##key = tuple(np.sort([v1, v2]))
+        ##if key not in self.edge_polarity_encoding:
+        ##self.edge_polarity_encoding[key] = iencod
+        #iencod += 1
 
         # check if external execs are installed
         self.check_execs()
@@ -226,12 +226,14 @@ class ResidueGraph(Graph):
 
             self.nx.nodes[node_key]['chain'] = {
                 'A': 0, 'B': 1}[chainID]
-            self.nx.nodes[node_key]['type'] = self.residue_names[resName]
             self.nx.nodes[node_key]['pos'] = np.mean(
                 db.get('x,y,z', chainID=chainID, resSeq=resSeq), 0)
+            self.nx.nodes[node_key]['type'] = self.onehot(
+                self.residue_names[resName], len(self.residue_names))
 
             self.nx.nodes[node_key]['charge'] = self.residue_charge[resName]
-            self.nx.nodes[node_key]['polarity'] = self.polarity_encoding[self.residue_polarity[resName]]
+            self.nx.nodes[node_key]['polarity'] = self.onehot(
+                self.polarity_encoding[self.residue_polarity[resName]], len(self.polarity_encoding))
 
             self.nx.nodes[node_key]['bsa'] = bsa_data[node_key]
 
@@ -253,8 +255,8 @@ class ResidueGraph(Graph):
 
         for e in self.nx.edges:
             node1, node2 = e
-            self.nx.edges[node1, node2]['polarity'] = self._get_edge_polarity(
-                node1, node2)
+            #self.nx.edges[node1, node2]['polarity'] = self._get_edge_polarity(
+            #    node1, node2)
             self.nx.edge_index.append(
                 [node_keys.index(node1), node_keys.index(node2)])
 
@@ -336,3 +338,10 @@ class ResidueGraph(Graph):
         d2 = -2*np.dot(xyz1, xyz2.T) + np.sum(xyz1**2,
                                               axis=1)[:, None] + np.sum(xyz2**2, axis=1)
         return np.sqrt(np.min(d2))
+
+
+    def onehot(self, idx, size):
+        onehot = torch.zeros(size)
+        # Fill the one-hot encoded sequence with 1 at the corresponding idx
+        onehot[idx] = 1
+        return np.array(onehot)

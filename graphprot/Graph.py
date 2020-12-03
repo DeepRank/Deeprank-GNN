@@ -17,22 +17,41 @@ class Graph(object):
         self.type = None
         self.name = None
         self.nx = None
-        self.score = {'irmsd': None, 'lrmsd': None,
+        self.score = {'irmsd': None, 'lrmsd': None, 'class': None,
                       'fnat': None, 'dockQ': None, 'binclass': None}
 
     def get_score(self, ref):
 
         ref_name = os.path.splitext(os.path.basename(ref))[0]
+        # MODIFIED - mreau - print added + add zone_files
+        print (ref_name)
+        mol_name = ref_name.split('_')[0]
+        zone_files = '/projects/0/deeprank/BM5/zones/{}'.format(mol_name)
+        print (self.pdb, ref)
         sim = StructureSimilarity(self.pdb, ref)
-
+        
         self.score['lrmsd'] = sim.compute_lrmsd_fast(
-            method='svd', lzone=ref_name+'.lzone')
+            method='svd', lzone=zone_files+'.lzone') 
         self.score['irmsd'] = sim.compute_irmsd_fast(
-            method='svd', izone=ref_name+'.izone')
+            method='svd', izone=zone_files+'.izone') 
         self.score['fnat'] = sim.compute_fnat_fast()
         self.score['dockQ'] = sim.compute_DockQScore(
             self.score['fnat'], self.score['lrmsd'], self.score['irmsd'])
         self.score['binclass'] = self.score['irmsd'] < 4.0
+        
+        if self.score['irmsd'] < 1.0 :
+            _class = 1
+        elif self.score['irmsd'] < 2.0 :
+            _class = 2
+        elif self.score['irmsd'] < 4.0 :
+            _class = 3
+        elif self.score['irmsd'] < 6.0 :
+            _class = 4
+        else :
+            _class = 5
+        
+        self.score['class'] = _class
+        
 
     def nx2h5(self, f5):
 
