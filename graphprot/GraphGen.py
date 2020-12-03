@@ -38,7 +38,7 @@ class GraphHDF5(object):
                 graph = ResidueGraph(pdb=pdbfile, pssm=pssm)
 
             # get the score
-            ref = os.path.join(ref_path, base_name+'_refe.pdb')
+            ref = os.path.join(ref_path, base_name+'.pdb')
             graph.get_score(ref)
 
             # export
