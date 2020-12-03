@@ -42,10 +42,10 @@ class GraphHDF5(object):
             graph.get_score(ref)
 
             # export
-            #try:
-            graph.nx2h5(f5)
-            #except:
-            #    print('WARNING: No graph generated for {}'.format(name))
+            try:
+                graph.nx2h5(f5)
+            except:
+                print('WARNING: No graph generated for {}'.format(name))
 
         f5.close()
 
