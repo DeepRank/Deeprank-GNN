@@ -23,17 +23,12 @@ class Graph(object):
     def get_score(self, ref):
 
         ref_name = os.path.splitext(os.path.basename(ref))[0]
-        # MODIFIED - mreau - print added + add zone_files
-        print (ref_name)
-        mol_name = ref_name.split('_')[0]
-        zone_files = '/projects/0/deeprank/BM5/zones/{}'.format(mol_name)
-        print (self.pdb, ref)
         sim = StructureSimilarity(self.pdb, ref)
         
         self.score['lrmsd'] = sim.compute_lrmsd_fast(
-            method='svd', lzone=zone_files+'.lzone') 
+            method='svd', lzone=ref_name+'.lzone') 
         self.score['irmsd'] = sim.compute_irmsd_fast(
-            method='svd', izone=zone_files+'.izone') 
+            method='svd', izone=ref_name+'.izone') 
         self.score['fnat'] = sim.compute_fnat_fast()
         self.score['dockQ'] = sim.compute_DockQScore(
             self.score['fnat'], self.score['lrmsd'], self.score['irmsd'])
