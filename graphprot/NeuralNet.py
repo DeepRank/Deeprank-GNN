@@ -556,7 +556,7 @@ class NeuralNet(object):
         self.target = state['target']
         self.batch_size = state['batch_size']
         self.percent = state['percent']
-        self.lr = 0.001
+        self.lr = state['lr']
         self.index = state['index']
         self.class_weights = state['class_weight']
         self.task = state['task']
