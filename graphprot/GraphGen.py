@@ -59,8 +59,8 @@ class GraphHDF5(object):
         if os.path.isfile(pssmA) and os.path.isfile(pssmB):
             pssm = {'A': pssmA, 'B': pssmB}
         else:
-            pssmA = os.path.join(pssm_path, base_name+'.A.pdb.pssm')
-            pssmB = os.path.join(pssm_path, base_name+'.B.pdb.pssm')
+            pssmA = os.path.join(pssm_path, base_name+'.A.pssm')
+            pssmB = os.path.join(pssm_path, base_name+'.B.pssm')
             if os.path.isfile(pssmA) and os.path.isfile(pssmB):
                 pssm = {'A': pssmA, 'B': pssmB}
             else:
