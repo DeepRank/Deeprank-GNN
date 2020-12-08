@@ -10,7 +10,7 @@ from .Graph import Graph
 
 class GraphHDF5(object):
 
-    def __init__(self, pdb_path, ref_path, graph_type='residue', pssm_path=None,
+    def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
                  select=None, outfile='graph.hdf5'):
 
         # get the list of PDB names
@@ -38,8 +38,9 @@ class GraphHDF5(object):
                 graph = ResidueGraph(pdb=pdbfile, pssm=pssm)
 
             # get the score
-            ref = os.path.join(ref_path, base_name+'.pdb')
-            graph.get_score(ref)
+            if ref_path is not None:
+                ref = os.path.join(ref_path, base_name+'.pdb')
+                graph.get_score(ref)
 
             # export
             try:
