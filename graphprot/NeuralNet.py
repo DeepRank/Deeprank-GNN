@@ -325,7 +325,7 @@ class NeuralNet(object):
     def format_output(self, out, target):
         """Format the network output depending on the task (classification/regression)."""
 
-        if self.task == 'class' :
+        if self.task == 'class':
             out = F.softmax(out, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
@@ -374,7 +374,6 @@ class NeuralNet(object):
 
         self.test_out = _out
         self.test_y = _y
-        print(_out, _y)
         _test_acc = self.get_metrics('test', threshold).ACC
         self.test_acc = _test_acc
         self.test_loss = _test_loss
