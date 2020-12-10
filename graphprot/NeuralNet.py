@@ -40,11 +40,12 @@ class NeuralNet(object):
         else:
             self.load_params(pretrained_model)
             self.outdir = outdir
+
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        # PreCluster(dataset, method='mcl')
+        #PreCluster(dataset, method='mcl')
 
 
         # divide the dataset
@@ -63,7 +64,7 @@ class NeuralNet(object):
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
-            # PreCluster(valid_dataset, method='mcl')
+            #PreCluster(valid_dataset, method='mcl')
             
         else:
             print('No independent validation set loaded')
@@ -102,10 +103,11 @@ class NeuralNet(object):
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr)
 
-        # laod the optimizer state if we have one
+        # laod the model and the optimizer state if we have one
         if pretrained_model is not None:
             self.optimizer.load_state_dict(self.opt_loaded_state_dict)
-
+            self.model.load_state_dict(self.model_load_state_dict)
+            
         # loss
         if self.task == 'reg':
             self.loss = MSELoss()
@@ -272,8 +274,8 @@ class NeuralNet(object):
                 if save_model == 'best' :
                     
                     if min(self.valid_loss) == _val_loss :
-                        self.save_model(filename='t{}_y{}_b{}_e{}_lr{}.pth.tar'.format(
-                            self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr)))
+                        self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
+                            self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
 
             else :
                 # if no validation set, saves the best performing model on the traing set 
@@ -282,8 +284,8 @@ class NeuralNet(object):
                         print ('WARNING: The training set is used both for learning and model selection.')
                         print('this may lead to training set data overfitting.')
                         print('We advice you to use an external validation set.')
-                        self.save_model(filename='t{}_y{}_b{}_e{}_lr{}.pth.tar'.format(
-                            self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr)))
+                        self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
+                            self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
 
             # Save epoch data
             if (save_epoch == 'all') or (epoch == nepoch) :
@@ -323,7 +325,7 @@ class NeuralNet(object):
     def format_output(self, out, target):
         """Format the network output depending on the task (classification/regression)."""
 
-        if self.task == 'class':
+        if self.task == 'class' :
             out = F.softmax(out, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
@@ -360,7 +362,7 @@ class NeuralNet(object):
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
         print('Test set loaded')
-        PreCluster(test_dataset, method='mcl')
+        #PreCluster(test_dataset, method='mcl')
 
         self.test_loader = DataLoader(
             test_dataset)
@@ -372,6 +374,7 @@ class NeuralNet(object):
 
         self.test_out = _out
         self.test_y = _y
+        print(_out, _y)
         _test_acc = self.get_metrics('test', threshold).ACC
         self.test_acc = _test_acc
         self.test_loss = _test_loss
@@ -559,7 +562,9 @@ class NeuralNet(object):
         self.shuffle = state['shuffle']
 
         self.opt_loaded_state_dict = state['optimizer']
+        self.model_load_state_dict = state['model']
 
+        
     def _export_epoch_hdf5(self, epoch, data):
         """Export the epoch data to the hdf5 file.
         Export the data of a given epoch in train/valid/test group.

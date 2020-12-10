@@ -54,20 +54,23 @@ class Metrics(object):
 
         if self.binary == True:
 
-            self.y_pred = get_boolean(
+            y_pred_CM = get_boolean(
                 self.y_pred, self.threshold, self.target)
-            self.y_hat = get_boolean(
+            y_hat_CM = get_boolean(
                 self.y_hat, self.threshold, self.target)
             classes = [0, 1]
 
+            FP, FN, TP, TN = get_comparison(
+                y_pred_CM, y_hat_CM, self.binary, classes=classes)
+            
         else:
             if self.target == 'class':
                 classes = [1, 2, 3, 4, 5]
             else:
                 classes = [0, 1]
 
-        FP, FN, TP, TN = get_comparison(
-            self.y_pred, self.y_hat, self.binary, classes=classes)
+            FP, FN, TP, TN = get_comparison(
+                self.y_pred, self.y_hat, self.binary, classes=classes)
 
         try:
             # Sensitivity, hit rate, recall, or true positive rate
