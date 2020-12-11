@@ -182,7 +182,7 @@ class NeuralNet(object):
 
         try:
 
-            hitrate = self.get_metrics(data, threshold).HitRate()
+            hitrate = self.get_metrics(data, threshold).hitrate()
 
             nb_models = len(hitrate)
             X = range(1, nb_models + 1)
@@ -258,7 +258,7 @@ class NeuralNet(object):
             self.train_loss.append(_loss)
             self.train_out = _out
             self.train_y = _y
-            _acc = self.get_metrics('train', self.threshold).ACC
+            _acc = self.get_metrics('train', self.threshold).accuracy
             self.train_acc.append(_acc)
 
             # Print the loss and accuracy (training set)
@@ -276,7 +276,7 @@ class NeuralNet(object):
                 self.valid_out = _out
                 self.valid_y = _y
                 _val_acc = self.get_metrics(
-                    'eval', self.threshold).ACC
+                    'eval', self.threshold).accuracy
                 self.valid_acc.append(_val_acc)
 
                 # Print loss and accuracy (validation set)
@@ -338,7 +338,7 @@ class NeuralNet(object):
     def format_output(self, out, target):
         """Format the network output depending on the task (classification/regression)."""
 
-        if self.task == 'class' :
+        if self.task == 'class':
             out = F.softmax(out, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
@@ -380,8 +380,7 @@ class NeuralNet(object):
 
         self.test_out = _out
         self.test_y = _y
-        print(_out, _y)
-        _test_acc = self.get_metrics('test', threshold).ACC
+        _test_acc = self.get_metrics('test', threshold).accuracy
         self.test_acc = _test_acc
         self.test_loss = _test_loss
 
