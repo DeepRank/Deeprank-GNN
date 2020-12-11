@@ -79,7 +79,6 @@ class NeuralNet(object):
                 0).num_features).to(self.device)
 
         elif self.task == 'class':
-            self.classes = classes
             self.classes_idx = {i: idx for idx,
                                 i in enumerate(self.classes)}
             self.output_shape = len(self.classes)
@@ -182,7 +181,7 @@ class NeuralNet(object):
 
         try:
 
-            hitrate = self.get_metrics(data, threshold).HitRate()
+            hitrate = self.get_metrics(data, threshold).hitrate()
 
             nb_models = len(hitrate)
             X = range(1, nb_models + 1)
@@ -245,7 +244,7 @@ class NeuralNet(object):
             self.train_loss.append(_loss)
             self.train_out = _out
             self.train_y = _y
-            _acc = self.get_metrics('train', self.threshold).ACC
+            _acc = self.get_metrics('train', self.threshold).accuracy
             self.train_acc.append(_acc)
 
             # Print the loss and accuracy (training set)
@@ -263,7 +262,7 @@ class NeuralNet(object):
                 self.valid_out = _out
                 self.valid_y = _y
                 _val_acc = self.get_metrics(
-                    'eval', self.threshold).ACC
+                    'eval', self.threshold).accuracy
                 self.valid_acc.append(_val_acc)
 
                 # Print loss and accuracy (validation set)
@@ -322,19 +321,20 @@ class NeuralNet(object):
         print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
                                                                              stage, loss, acc_str, time))
 
-    def format_output(self, out, target):
+    def format_output(self, pred, target):
         """Format the network output depending on the task (classification/regression)."""
 
         if self.task == 'class' :
-            out = F.softmax(out, dim=1)
+            pred = F.softmax(out, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
 
         else:
-            out = out.reshape(-1)
+            pred = pred.reshape(-1)
+            
+        return pred, target
 
-        return out, target
-
+    
     def test(self, database_test, threshold=4, hdf5='test_data.hdf5'):
         """Test the model
 
@@ -374,8 +374,8 @@ class NeuralNet(object):
 
         self.test_out = _out
         self.test_y = _y
-        print(_out, _y)
-        _test_acc = self.get_metrics('test', threshold).ACC
+
+        _test_acc = self.get_metrics('test', threshold).accuracy
         self.test_acc = _test_acc
         self.test_loss = _test_loss
 
@@ -407,17 +407,23 @@ class NeuralNet(object):
 
             y += d.y
             loss_val += loss_func(pred, d.y).detach().item()
-            out += pred.reshape(-1).tolist()
 
             # get the outputs for export
-            data['outputs'] += pred.reshape(-1).tolist()
+            if self.task == 'class':
+                pred = np.argmax(pred.detach(), axis=1)
+            else:
+                pred = pred.detach().reshape(-1)
+
+            out += pred
             data['targets'] += d.y.numpy().tolist()
+            data['outputs'] += pred.tolist()
 
             # get the data
             data['mol'] += d['mol']
 
         return out, y, loss_val, data
 
+    
     def _epoch(self, epoch):
         """Run a single epoch
 
@@ -441,13 +447,18 @@ class NeuralNet(object):
             loss = self.loss(pred, d.y)
             running_loss += loss.detach().item()
             loss.backward()
-            out += pred.reshape(-1).tolist()
             self.optimizer.step()
 
             # get the outputs for export
-            data['outputs'] += pred.reshape(-1).tolist()
-            data['targets'] += d.y.numpy().tolist()
+            if self.task == 'class':
+                pred = np.argmax(pred.detach(), axis=1)
+            else:
+                pred = pred.detach().reshape(-1)
 
+            out += pred
+            data['targets'] += d.y.numpy().tolist()
+            data['outputs'] += pred.tolist()
+            
             # get the data
             data['mol'] += d['mol']
 

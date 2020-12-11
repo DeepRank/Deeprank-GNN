@@ -6,46 +6,46 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 
 
-def get_boolean(vals, threshold, target):
+def get_boolean(values, threshold, target):
 
     if target == 'fnat' or target == 'bin':
-        vals_bool = [1 if x > threshold else 0 for x in vals]
+        values_bool = [1 if x > threshold else 0 for x in values]
     else:
-        vals_bool = [1 if x < threshold else 0 for x in vals]
+        values_bool = [1 if x < threshold else 0 for x in values]
 
-    return vals_bool
+    return values_bool
 
 
 def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
 
     CM = confusion_matrix(ground_truth, prediction, labels=classes)
 
-    FP = CM.sum(axis=0) - np.diag(CM)
-    FN = CM.sum(axis=1) - np.diag(CM)
-    TP = np.diag(CM)
-    TN = CM.sum() - (FP + FN + TP)
+    false_positive = CM.sum(axis=0) - np.diag(CM)
+    false_negative = CM.sum(axis=1) - np.diag(CM)
+    true_positive = np.diag(CM)
+    true_negative = CM.sum() - (false_positive + false_negative + true_positive)
 
     if binary == True:
-        return FP[1], FN[1], TP[1], TN[1]
+        return false_positive[1], false_negative[1], true_positive[1], true_negative[1]
 
     else:
-        return FP, FN, TP, TN
+        return false_positive, false_negative, true_positive, true_negative
 
 
 class Metrics(object):
 
-    def __init__(self, y_pred, y_hat, target, threshold=4, binary=True):
+    def __init__(self, prediction, y, target, threshold=4, binary=True):
         '''Master class from which all the other metrics are computed
         Arguments
-        y_pred:      predicted values
-        y_hat:       ground truth
+        prediction:  predicted values
+        y:           ground truth
         target:      irmsd, fnat, class, bin
         threshold:   threshold used to split the data into a binary vector
         binary:      transform the data in binary vectors
         '''
 
-        self.y_pred = y_pred
-        self.y_hat = y_hat
+        self.prediction = prediction
+        self.y = y
         self.binary = binary
         self.target = target
         self.threshold = threshold
@@ -54,14 +54,14 @@ class Metrics(object):
 
         if self.binary == True:
 
-            y_pred_CM = get_boolean(
-                self.y_pred, self.threshold, self.target)
-            y_hat_CM = get_boolean(
-                self.y_hat, self.threshold, self.target)
+            prediction_bool = get_boolean(
+                self.prediction, self.threshold, self.target)
+            y_bool = get_boolean(
+                self.y, self.threshold, self.target)
             classes = [0, 1]
 
-            FP, FN, TP, TN = get_comparison(
-                y_pred_CM, y_hat_CM, self.binary, classes=classes)
+            false_positive, false_negative, true_positive, true_negative = get_comparison(
+                prediction_bool, y_bool, self.binary, classes=classes)
             
         else:
             if self.target == 'class':
@@ -69,64 +69,63 @@ class Metrics(object):
             else:
                 classes = [0, 1]
 
-            FP, FN, TP, TN = get_comparison(
-                self.y_pred, self.y_hat, self.binary, classes=classes)
+            false_positive, false_negative, true_positive, true_negative = get_comparison(
+                self.prediction, self.y, self.binary, classes=classes)
 
         try:
             # Sensitivity, hit rate, recall, or true positive rate
-            self.TPR = TP/(TP+FN)
+            self.sensitivity = true_positive/(true_positive+false_negative)
         except:
-            self.TPR = None
+            self.sensitivity = None
 
         try:
             # Specificity or true negative rate
-            self.TNR = TN/(TN+FP)
+            self.specificity = true_negative/(true_negative+false_positive)
         except:
-            self.TNR = None
+            self.specificity = None
 
         try:
             # Precision or positive predictive value
-            self.PPV = TP/(TP+FP)
+            self.precision = true_positive/(true_positive+false_positive)
         except:
-            self.PPV = None
+            self.precision = None
 
         try:
             # Negative predictive value
-            self.NPV = TN/(TN+FN)
+            self.NPV = true_negative/(true_negative+false_negative)
         except:
             self.NPV = None
 
         try:
             # Fall out or false positive rate
-            self.FPR = FP/(FP+TN)
+            self.FPR = false_positive/(false_positive+true_negative)
         except:
             self.FPR = None
 
         try:
             # False negative rate
-            self.FNR = FN/(TP+FN)
+            self.FNR = false_negative/(true_positive+false_negative)
         except:
             self.FNR = None
 
         try:
             # False discovery rate
-            self.FDR = FP/(TP+FP)
+            self.FDR = false_positive/(true_positive+false_positive)
         except:
             self.FDR = None
 
-        self.ACC = (TP+TN)/(TP+FP+FN+TN)
+        self.accuracy = (true_positive+true_negative)/(true_positive+false_positive+false_negative+true_negative)
 
-    def HitRate(self):
+    def hitrate(self):
 
-        idx = np.argsort(self.y_pred)
+        idx = np.argsort(self.prediction)
 
         if self.target == 'fnat' or self.target == 'bin':
             idx = idx[::-1]
 
         ground_truth_bool = get_boolean(
-            self.y_hat, self.threshold, self.target)
+            self.y, self.threshold, self.target)
         ground_truth_bool = np.array(ground_truth_bool)
 
         hitrate = np.cumsum(ground_truth_bool[idx])
-
         return hitrate
