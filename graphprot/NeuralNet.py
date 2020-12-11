@@ -325,7 +325,7 @@ class NeuralNet(object):
         """Format the network output depending on the task (classification/regression)."""
 
         if self.task == 'class' :
-            pred = F.softmax(out, dim=1)
+            pred = F.softmax(pred, dim=1)
             target = torch.tensor(
                 [self.classes_idx[int(x)] for x in target])
 
