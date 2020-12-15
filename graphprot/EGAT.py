@@ -23,7 +23,8 @@ class EGAT(torch.nn.Module):
 
     def __init__(self,
                  in_channels,
-                 out_channels,
+                 out_channels, 
+                 number_edge_features=1,
                  bias=False):
 
         super(EGAT, self).__init__()
@@ -32,11 +33,11 @@ class EGAT(torch.nn.Module):
         self.out_channels = out_channels
 
         self.fc = nn.Linear(self.in_channels, self.out_channels, bias=bias)
-        self.fc_edge_attr = nn.Linear(1, 3, bias=bias)
+        self.fc_edge_attr = nn.Linear(number_edge_features, 3, bias=bias)
         self.fc_attention = nn.Linear(2 * self.out_channels + 3, 1, bias=bias)
-        self.reset_parameters()
+        self.initialize_parameters()
         
-    def reset_parameters(self):
+    def initialize_parameters(self):
         size = self.in_channels
         uniform(size, self.fc.weight)
         uniform(size, self.fc_attention.weight)
@@ -54,15 +55,15 @@ class EGAT(torch.nn.Module):
         
         ed = self.fc_edge_attr(edge_attr)
         # create edge feature by concatenating node feature
-        a = torch.cat([xrow, xcol, ed], dim=1)
-        a = self.fc_attention(a)
-        e = F.leaky_relu(a)
+        alpha = torch.cat([xrow, xcol, ed], dim=1)
+        alpha = self.fc_attention(alpha)
+        alpha = F.leaky_relu(alpha)
         
-        alpha = F.softmax(e, dim=1)
+        alpha = F.softmax(alpha, dim=1)
         h = alpha * xcol 
         
         out = torch.zeros(
-            num_node, self.out_channels).to(alpha.device)
+            num_node, self.out_channels).to(h.device)
         z = scatter_sum(h, row, dim=0, out=out)
         
         return z

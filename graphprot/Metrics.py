@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix
 
 def get_boolean(values, threshold, target):
 
-    inverse = ['fnat', 'bin']
+    inverse = ['fnat', 'bin'] 
     if target in inverse:
         values_bool = [1 if x > threshold else 0 for x in values]
     else:
