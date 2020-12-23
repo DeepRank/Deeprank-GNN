@@ -120,30 +120,54 @@ class Metrics(object):
         # regression metrics
         if target == 'fnat' or target == 'irmsd' or target == 'lrmsd':
             
-            # Explained variance regression score function
-            self.explained_variance = metrics.explained_variance_score(self.y, self.prediction)
-
-            # Max_error metric calculates the maximum residual error
-            self.max_error = metrics.max_error(self.y, self.prediction)
-
-            # Mean absolute error regression loss
-            self.mean_absolute_error = metrics.mean_absolute_error(self.y, self.prediction)
-
-            # Mean squared error regression loss
-            self.mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = True)
-
-            # Root mean squared error regression loss
-            self.root_mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = False)
+            try:
+                # Explained variance regression score function
+                self.explained_variance = metrics.explained_variance_score(self.y, self.prediction)
+            except: 
+                self.explained_variance = None
+                
+            try :
+                # Max_error metric calculates the maximum residual error
+                self.max_error = metrics.max_error(self.y, self.prediction)
+            except:
+                self.max_error = None
+              
+            try:
+                # Mean absolute error regression loss
+                self.mean_absolute_error = metrics.mean_absolute_error(self.y, self.prediction)
+            except:
+                self.mean_absolute_error = None
+                
+            try:    
+                # Mean squared error regression loss
+                self.mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = True)
+            except:
+                self.mean_squared_error = None
             
-            # Mean squared logarithmic error regression loss
-            self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
-
-            # Median absolute error regression loss
-            self.median_squared_log_error = metrics.median_absolute_error(self.y, self.prediction)
-
-            # R^2 (coefficient of determination) regression score function
-            self.r2_score = metrics.r2_score(self.y, self.prediction)
-    
+            try:
+                # Root mean squared error regression loss
+                self.root_mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = False)
+            except:
+                self.root_mean_squared_error = None
+            
+            try:
+                # Mean squared logarithmic error regression loss
+                self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
+            except:
+                self.mean_squared_log_error = None
+             
+            try:
+                # Median absolute error regression loss
+                self.median_squared_log_error = metrics.median_absolute_error(self.y, self.prediction)
+            except: 
+                self.median_squared_log_error = None
+            
+            try: 
+                # R^2 (coefficient of determination) regression score function
+                self.r2_score = metrics.r2_score(self.y, self.prediction)
+            except:
+                self.r2_score = None
+                
         else: 
             self.explained_variance = None
             self.max_error =  None
