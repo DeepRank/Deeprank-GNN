@@ -8,7 +8,8 @@ from sklearn.metrics import confusion_matrix
 
 def get_boolean(values, threshold, target):
 
-    if target == 'fnat' or target == 'bin':
+    inverse = ['fnat', 'bin'] 
+    if target in inverse:
         values_bool = [1 if x > threshold else 0 for x in values]
     else:
         values_bool = [1 if x < threshold else 0 for x in values]
@@ -120,7 +121,8 @@ class Metrics(object):
 
         idx = np.argsort(self.prediction)
 
-        if self.target == 'fnat' or self.target == 'bin':
+        inverse = ['fnat', 'bin']
+        if self.target in inverse:   
             idx = idx[::-1]
 
         ground_truth_bool = get_boolean(
@@ -128,5 +130,4 @@ class Metrics(object):
         ground_truth_bool = np.array(ground_truth_bool)
 
         hitrate = np.cumsum(ground_truth_bool[idx])
-
         return hitrate
