@@ -143,9 +143,12 @@ class Metrics(object):
 
             # Root mean squared error regression loss
             self.root_mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = False)
-            
-            # Mean squared logarithmic error regression loss
-            self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
+
+            try:
+                # Mean squared logarithmic error regression loss
+                self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
+            raise ValueError("Mean Squared Logarithmic Error cannot be used when "
+                            "targets contain negative values.")  
             
             # Median absolute error regression loss
             self.median_squared_log_error = metrics.median_absolute_error(self.y, self.prediction)
