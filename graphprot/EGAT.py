@@ -10,7 +10,7 @@ class EGAT(torch.nn.Module):
     1) Create edges feature by concatenating node feature
     $e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j])$
     
-    2) Apply softmax function, in order to learns to ignore some edges
+    2) Apply softmax function, in order to learn to ignore some edges
     $\alpha_{ij}  = softmax(e_{ij})$
     
     3) Sum over the nodes (no averaging here !)

@@ -9,7 +9,8 @@ from sklearn.metrics import roc_auc_score
 
 def get_boolean(values, threshold, target):
 
-    if target == 'fnat' or target == 'bin':
+    inverse = ['fnat', 'bin'] 
+    if target in inverse:
         values_bool = [1 if x > threshold else 0 for x in values]
     else:
         values_bool = [1 if x < threshold else 0 for x in values]
@@ -168,23 +169,22 @@ class Metrics(object):
 
         idx = np.argsort(self.prediction)
 
-        if self.target == 'fnat' or self.target == 'bin':
+        inverse = ['fnat', 'bin']
+        if self.target in inverse:   
             idx = idx[::-1]
                 
         ground_truth_bool = get_boolean(
             self.y, self.threshold, self.target)
         ground_truth_bool = np.array(ground_truth_bool)
-
         return idx, ground_truth_bool
+      
 
     def hitrate(self):
 
         idx, ground_truth_bool = self.format_score()
-        
         return np.cumsum(ground_truth_bool[idx])
 
     def auc(self):
         
         idx, ground_truth_bool = self.format_score()
         return roc_auc_score(ground_truth_bool, idx)
-
