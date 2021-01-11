@@ -3,8 +3,9 @@ import os
 import torch
 import numpy as np
 
+from sklearn import metrics
 from sklearn.metrics import confusion_matrix
-
+from sklearn.metrics import roc_auc_score
 
 def get_boolean(values, threshold, target):
 
@@ -117,17 +118,73 @@ class Metrics(object):
 
         self.accuracy = (true_positive+true_negative)/(true_positive+false_positive+false_negative+true_negative)
 
-    def hitrate(self):
+        # regression metrics
+        self.explained_variance = None
+        self.max_error =  None
+        self.mean_abolute_error = None
+        self.mean_squared_error = None
+        self.root_mean_squared_error = None
+        self.mean_squared_log_error = None
+        self.median_squared_log_error = None
+        self.r2_score = None
+        
+        if target in ['fnat', 'irmsd', 'lrmsd']:
+
+            # Explained variance regression score function
+            self.explained_variance = metrics.explained_variance_score(self.y, self.prediction)
+            
+            # Max_error metric calculates the maximum residual error
+            self.max_error = metrics.max_error(self.y, self.prediction)
+
+            # Mean absolute error regression loss
+            self.mean_absolute_error = metrics.mean_absolute_error(self.y, self.prediction)
+            
+            # Mean squared error regression loss
+            self.mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = True)
+
+            # Root mean squared error regression loss
+            self.root_mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = False)
+
+            try:
+                # Mean squared logarithmic error regression loss
+                self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
+            except ValueError:
+                print ("WARNING: Mean Squared Logarithmic Error cannot be used when "
+                            "targets contain negative values.")  
+            
+            # Median absolute error regression loss
+            self.median_squared_log_error = metrics.median_absolute_error(self.y, self.prediction)
+
+            # R^2 (coefficient of determination) regression score function
+            self.r2_score = metrics.r2_score(self.y, self.prediction)
+            
+            
+    def format_score(self):
+        
+        '''
+        output : 
+        - idx: value rank 
+        - ground_truth_bool: binary y values
+        '''
 
         idx = np.argsort(self.prediction)
 
         inverse = ['fnat', 'bin']
         if self.target in inverse:   
             idx = idx[::-1]
-
+                
         ground_truth_bool = get_boolean(
             self.y, self.threshold, self.target)
         ground_truth_bool = np.array(ground_truth_bool)
+        return idx, ground_truth_bool
+      
 
-        hitrate = np.cumsum(ground_truth_bool[idx])
-        return hitrate
+    def hitrate(self):
+
+        idx, ground_truth_bool = self.format_score()
+        return np.cumsum(ground_truth_bool[idx])
+
+    def auc(self):
+        
+        idx, ground_truth_bool = self.format_score()
+        return roc_auc_score(ground_truth_bool, idx)
