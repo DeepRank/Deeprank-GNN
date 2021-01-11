@@ -8,7 +8,18 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_auc_score
 
 def get_boolean(values, threshold, target):
-
+    '''
+    Transform continuous or multiclass values into boolean values (0/1)
+    
+    Arguments
+    values: vector of the target values
+    threshold: threshold used to assign a boolean value. 
+               0 is assigned to 'bad' values
+               1 is assigned to 'good' values
+    target: target (y). 
+               if target is fnat or bin: target value > threshold = 1 
+               else:                     target value > threshold = 0 
+    '''
     inverse = ['fnat', 'bin'] 
     if target in inverse:
         values_bool = [1 if x > threshold else 0 for x in values]
@@ -19,7 +30,21 @@ def get_boolean(values, threshold, target):
 
 
 def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
-
+    '''
+    Compute the confusion matrix to compute the number of: 
+    - false positive (FP)
+    - false negative (FN)
+    - true positive (TP)
+    - true negative (TN)
+    
+    Arguments
+    prediction: value predicted
+    ground truth: target value
+    binary: If binary is True, the function will return a single value for each FP/FN/TP/TN variable.
+            If binary is False, the function will return a vector of n values for each FP/FN/TP/TN
+            variable, n being the total number of classes
+            Defaults is set to True
+    '''
     CM = confusion_matrix(ground_truth, prediction, labels=classes)
 
     false_positive = CM.sum(axis=0) - np.diag(CM)
@@ -38,12 +63,39 @@ class Metrics(object):
 
     def __init__(self, prediction, y, target, threshold=4, binary=True):
         '''Master class from which all the other metrics are computed
+        
         Arguments
         prediction:  predicted values
         y:           ground truth
         target:      irmsd, fnat, class, bin
         threshold:   threshold used to split the data into a binary vector
         binary:      transform the data in binary vectors
+        
+        Computed metrics:
+        
+        Classification metrics: 
+        - self.sensitivity: Sensitivity, hit rate, recall, or true positive rate
+        - self.specificity: Specificity or true negative rate
+        - self.precision: Precision or positive predictive value
+        - self.NPV: Negative predictive value
+        - self.FPR: Fall out or false positive rate
+        - self.FNR: False negative rate
+        - self.FDR: False discovery rate
+        - self.accuracy: Accuracy
+        
+        - self.auc(): AUC
+        - self.hitrate(): Hit rate
+       
+        Regression metrics:
+        - self.explained_variance: Explained variance regression score function
+        - self.max_error: Max_error metric calculates the maximum residual error
+        - self.mean_abolute_error: Mean absolute error regression loss
+        - self.mean_squared_error: Mean squared error regression loss
+        - self.root_mean_squared_error: Root mean squared error regression loss
+        - self.mean_squared_log_error: Mean squared logarithmic error regression loss
+        - self.median_squared_log_error: Median absolute error regression loss
+        - self.r2_score: R^2 (coefficient of determination) regression score function
+
         '''
 
         self.prediction = prediction
@@ -160,11 +212,17 @@ class Metrics(object):
             
             
     def format_score(self):
-        
         '''
+        Sorts the predicted values depending on the target:
+        - if target is fnat or bin, the highest the better ranked
+        - else: the lowest the better ranked    
+        
+        Returns the ranks of the predicted values and 
+        the corresponding boolean (0/1) target values
+        
         output : 
-        - idx: value rank 
-        - ground_truth_bool: binary y values
+        - idx: ranks of the predicted values
+        - ground_truth_bool: boolean y values
         '''
 
         idx = np.argsort(self.prediction)
@@ -177,14 +235,19 @@ class Metrics(object):
             self.y, self.threshold, self.target)
         ground_truth_bool = np.array(ground_truth_bool)
         return idx, ground_truth_bool
-      
 
     def hitrate(self):
-
+        '''
+        Sorts the target boolean values (0/1) according to the ranks of predicted values
+        Returns the cumulative sum of hits (1) 
+        '''
+        
         idx, ground_truth_bool = self.format_score()
         return np.cumsum(ground_truth_bool[idx])
 
     def auc(self):
-        
+        '''
+        Returns the Receiver Operating Characteristic (ROC) area under the curve (AUC)
+        '''
         idx, ground_truth_bool = self.format_score()
         return roc_auc_score(ground_truth_bool, idx)
