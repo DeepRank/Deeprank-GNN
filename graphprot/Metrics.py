@@ -147,7 +147,7 @@ class Metrics(object):
             try:
                 # Mean squared logarithmic error regression loss
                 self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
-            except:
+            except ValueError:
                 print ("WARNING: Mean Squared Logarithmic Error cannot be used when "
                             "targets contain negative values.")  
             
