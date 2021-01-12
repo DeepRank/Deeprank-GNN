@@ -24,11 +24,11 @@ def get_binary(values, threshold, target):
     """
     inverse = ['fnat', 'binclass'] 
     if target in inverse:
-        values_bool = [1 if x > threshold else 0 for x in values]
+        values_binary = [1 if x > threshold else 0 for x in values]
     else:
-        values_bool = [1 if x < threshold else 0 for x in values]
+        values_binary = [1 if x < threshold else 0 for x in values]
 
-    return values_bool
+    return values_binary
 
 
 def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
@@ -66,7 +66,7 @@ def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
 
 class Metrics(object):
 
-    def __init__(self, prediction, y, target, binary=True, threshold=4):
+    def __init__(self, prediction, y, target, threshold=4, binary=True):
         """Master class from which all the other metrics are computed
         
         Computed metrics:
@@ -111,22 +111,19 @@ class Metrics(object):
         print('Threshold set to {}'.format(self.threshold))
 
         if self.binary == True:
-
-            prediction_bool = get_binary(
+            prediction_binary = get_binary(
                 self.prediction, self.threshold, self.target)
-            y_bool = get_binary(
+            y_binary = get_binary(
                 self.y, self.threshold, self.target)
             classes = [0, 1]
-
             false_positive, false_negative, true_positive, true_negative = get_comparison(
-                prediction_bool, y_bool, self.binary, classes=classes)
+                prediction_binary, y_binary, self.binary, classes=classes)
             
         else:
-            if self.target == 'class':
+            if self.target == 'capri_class':
                 classes = [1, 2, 3, 4, 5]
-            else:
+            if self.target == 'binclass':
                 classes = [0, 1]
-
             false_positive, false_negative, true_positive, true_negative = get_comparison(
                 self.prediction, self.y, self.binary, classes=classes)
 
