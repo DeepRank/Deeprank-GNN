@@ -221,12 +221,6 @@ class NeuralNet(object):
             str: update hdf5 name
         """
 
-        heck if the file already exists
-        if so, update the name
-        ex. 1: train.hdf5 -> train_001.hdf5
-        ex. 2: train_001.hdf5 -> train_002.hdf5 
-        
-
         fname = os.path.join(outdir, hdf5)
 
         count = 0
