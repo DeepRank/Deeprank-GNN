@@ -49,6 +49,7 @@ def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
     Returns:
         int: false_positive, false_negative, true_positive, true_negative
     """
+    
     CM = confusion_matrix(ground_truth, prediction, labels=classes)
 
     false_positive = CM.sum(axis=0) - np.diag(CM)
@@ -65,7 +66,7 @@ def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
 
 class Metrics(object):
 
-    def __init__(self, prediction, y, target, binary=True, threshold=4,):
+    def __init__(self, prediction, y, target, binary=True, threshold=4):
         """Master class from which all the other metrics are computed
         
         Computed metrics:
