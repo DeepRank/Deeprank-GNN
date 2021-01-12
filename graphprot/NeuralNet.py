@@ -123,7 +123,11 @@ class NeuralNet(object):
         self.valid_loss = []
 
     def plot_loss(self, name=''):
-        """Plot the loss of the model."""
+        """Plot the loss of the model
+
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
 
         nepoch = self.nepoch
         train_loss = self.train_loss
@@ -146,8 +150,12 @@ class NeuralNet(object):
             plt.close()
 
     def plot_acc(self, name=''):
-        """Plot the accuracy of the model."""
+        """Plot the accuracy of the model.
 
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
+        
         nepoch = self.nepoch
         train_acc = self.train_acc
         valid_acc = self.valid_acc
@@ -203,11 +211,21 @@ class NeuralNet(object):
 
     @staticmethod
     def update_name(hdf5, outdir):
-        """Check if the file already exists
+        """Check if the file already exists, if so, update the name
+
+        Args:
+            hdf5 (str): hdf5 file
+            outdir (str): output directory
+
+        Returns:
+            str: update hdf5 name
+        """
+
+        heck if the file already exists
         if so, update the name
         ex. 1: train.hdf5 -> train_001.hdf5
         ex. 2: train_001.hdf5 -> train_002.hdf5 
-        """
+        
 
         fname = os.path.join(outdir, hdf5)
 
@@ -316,7 +334,7 @@ class NeuralNet(object):
 
     @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
-        """print the data of each epoch
+        """Prints the data of each epoch
 
         Args:
             stage (str): tain or valid
@@ -350,11 +368,12 @@ class NeuralNet(object):
 
     
     def test(self, database_test, threshold=4, hdf5='test_data.hdf5'):
-        """Test the model
+        """Tests the model 
 
         Args:
-            database_test ([type]): [description]
-            threshold ([type]): [description]
+            database_test ([type]): test database
+            threshold (int, optional): threshold use to tranform data into binary values. Defaults to 4.
+            hdf5 (str, optional): output hdf5 file. Defaults to 'test_data.hdf5'.
         """
 
         # Output file 
@@ -508,7 +527,8 @@ class NeuralNet(object):
 
 
     def plot_scatter(self):
-        """Scatter plot of the results"""
+        """Scatter plot of the results
+        """
         import matplotlib.pyplot as plt
 
         self.model.eval()
@@ -588,6 +608,7 @@ class NeuralNet(object):
         Export the data of a given epoch in train/valid/test group.
         In each group are stored the predcited values (outputs),
         ground truth (targets) and molecule name (mol).
+
         Args:
             epoch (int): index of the epoch
             data (dict): data of the epoch

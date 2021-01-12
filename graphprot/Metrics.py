@@ -7,9 +7,22 @@ from sklearn import metrics
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_auc_score
 
-def get_boolean(values, threshold, target):
+def get_binary(values, threshold, target):
+    """Transform continuous or multiclass values into binary values (0/1)
 
-    inverse = ['fnat', 'bin'] 
+    Args:
+        values (list): vector of the target values
+        threshold (int or float): threshold used to assign a binary value
+                                0 is assigned to 'bad' values; 
+                                1 is assigned to 'good' values
+        target (string): target (y)
+                        if target is 'fnat' or 'binclass': target value > threshold = 1 
+                        esle: target value > threshold = 0 
+
+    Returns:
+        list: list of binary values
+    """
+    inverse = ['fnat', 'binclass'] 
     if target in inverse:
         values_bool = [1 if x > threshold else 0 for x in values]
     else:
@@ -19,7 +32,23 @@ def get_boolean(values, threshold, target):
 
 
 def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
+    """Compute the confusion matrix to get the number of: 
+    - false positive (FP)
+    - false negative (FN)
+    - true positive (TP)
+    - true negative (TN)
 
+    Args:
+        prediction (list): list of predicted values
+        ground_truth (list): list of target values (y)
+        binary (bool, optional): If binary is True, the function will return a single value for each FP/FN/TP/TN variable.
+                                 If binary is False, the function will return a vector of n values for each FP/FN/TP/TN
+                                 Defaults to True.
+        classes (list, optional): Array-like of shape (n_classes). Defaults to [0, 1].
+
+    Returns:
+        int: false_positive, false_negative, true_positive, true_negative
+    """
     CM = confusion_matrix(ground_truth, prediction, labels=classes)
 
     false_positive = CM.sum(axis=0) - np.diag(CM)
@@ -36,15 +65,41 @@ def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
 
 class Metrics(object):
 
-    def __init__(self, prediction, y, target, threshold=4, binary=True):
-        '''Master class from which all the other metrics are computed
-        Arguments
-        prediction:  predicted values
-        y:           ground truth
-        target:      irmsd, fnat, class, bin
-        threshold:   threshold used to split the data into a binary vector
-        binary:      transform the data in binary vectors
-        '''
+    def __init__(self, prediction, y, target, binary=True, threshold=4,):
+        """Master class from which all the other metrics are computed
+        
+        Computed metrics:
+        
+        Classification metrics: 
+        - self.sensitivity: Sensitivity, hit rate, recall, or true positive rate
+        - self.specificity: Specificity or true negative rate
+        - self.precision: Precision or positive predictive value
+        - self.NPV: Negative predictive value
+        - self.FPR: Fall out or false positive rate
+        - self.FNR: False negative rate
+        - self.FDR: False discovery rate
+        - self.accuracy: Accuracy
+        
+        - self.auc(): AUC
+        - self.hitrate(): Hit rate
+       
+        Regression metrics:
+        - self.explained_variance: Explained variance regression score function
+        - self.max_error: Max_error metric calculates the maximum residual error
+        - self.mean_abolute_error: Mean absolute error regression loss
+        - self.mean_squared_error: Mean squared error regression loss
+        - self.root_mean_squared_error: Root mean squared error regression loss
+        - self.mean_squared_log_error: Mean squared logarithmic error regression loss
+        - self.median_squared_log_error: Median absolute error regression loss
+        - self.r2_score: R^2 (coefficient of determination) regression score function
+
+        Args:
+            prediction (list): predicted values
+            y (list): list of target values
+            target (string): irmsd, fnat, capri_class, binclass
+            binary (bool, optional): transform the data in binary vectors. Defaults to True.
+            threshold (int, optional): threshold used to split the data into a binary vector. Defaults to 4.
+        """
 
         self.prediction = prediction
         self.y = y
@@ -56,9 +111,9 @@ class Metrics(object):
 
         if self.binary == True:
 
-            prediction_bool = get_boolean(
+            prediction_bool = get_binary(
                 self.prediction, self.threshold, self.target)
-            y_bool = get_boolean(
+            y_bool = get_binary(
                 self.y, self.threshold, self.target)
             classes = [0, 1]
 
@@ -160,31 +215,41 @@ class Metrics(object):
             
             
     def format_score(self):
-        
-        '''
-        output : 
-        - idx: value rank 
-        - ground_truth_bool: binary y values
-        '''
+        """Sorts the predicted values depending on the target:
+        - if target is fnat or binclass: the highest value the better ranked
+        - else: the lowest value the better ranked  
 
+        Returns:
+            lists: ranks of the predicted values and 
+                    the corresponding binary (0/1) target values
+
+        """
         idx = np.argsort(self.prediction)
 
-        inverse = ['fnat', 'bin']
+        inverse = ['fnat', 'binclass']
         if self.target in inverse:   
             idx = idx[::-1]
                 
-        ground_truth_bool = get_boolean(
+        ground_truth_bool = get_binary(
             self.y, self.threshold, self.target)
         ground_truth_bool = np.array(ground_truth_bool)
         return idx, ground_truth_bool
       
 
     def hitrate(self):
+        """Sorts the target boolean values (0/1) according to the ranks of predicted values
 
+        Returns:
+            list: the cumulative sum of hits (1) 
+        """
         idx, ground_truth_bool = self.format_score()
         return np.cumsum(ground_truth_bool[idx])
 
     def auc(self):
-        
+        """the Receiver Operating Characteristic (ROC) area under the curve (AUC)
+
+        Returns:
+            [type]: [description]
+        """
         idx, ground_truth_bool = self.format_score()
         return roc_auc_score(ground_truth_bool, idx)
