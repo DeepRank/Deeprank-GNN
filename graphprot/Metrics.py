@@ -249,7 +249,7 @@ class Metrics(object):
         """the Receiver Operating Characteristic (ROC) area under the curve (AUC)
 
         Returns:
-            [type]: [description]
+            float: AUC of the ROC curve
         """
         idx, ground_truth_bool = self.format_score()
         return roc_auc_score(ground_truth_bool, idx)
