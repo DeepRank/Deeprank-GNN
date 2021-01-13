@@ -24,7 +24,7 @@ class NeuralNet(object):
 
     def __init__(self, database, Net,
                  node_feature=['type', 'polarity', 'bsa'],
-                 edge_feature=['dist'], target=None, lr=0.01,
+                 edge_feature=['dist'], target='irmsd', lr=0.01,
                  batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
                  class_weights=None, task='class', classes=[0, 1], threshold=4,
                  pretrained_model=None, shuffle=False, outdir='./'):
