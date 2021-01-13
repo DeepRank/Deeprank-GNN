@@ -16,13 +16,13 @@ def get_binary(values, threshold, target):
                                 0 is assigned to 'bad' values; 
                                 1 is assigned to 'good' values
         target (string): target (y)
-                        if target is 'fnat' or 'binclass': target value > threshold = 1 
+                        if target is 'fnat' or 'bin_class': target value > threshold = 1 
                         esle: target value > threshold = 0 
 
     Returns:
         list: list of binary values
     """
-    inverse = ['fnat', 'binclass'] 
+    inverse = ['fnat', 'bin_class'] 
     if target in inverse:
         values_binary = [1 if x > threshold else 0 for x in values]
     else:
@@ -97,7 +97,7 @@ class Metrics(object):
         Args:
             prediction (list): predicted values
             y (list): list of target values
-            target (string): irmsd, fnat, capri_class, binclass
+            target (string): irmsd, fnat, capri_class, bin_class
             binary (bool, optional): transform the data in binary vectors. Defaults to True.
             threshold (int, optional): threshold used to split the data into a binary vector. Defaults to 4.
         """
@@ -120,10 +120,12 @@ class Metrics(object):
                 prediction_binary, y_binary, self.binary, classes=classes)
             
         else:
-            if self.target == 'capri_class':
+            if target == 'capri_class':
                 classes = [1, 2, 3, 4, 5]
-            if self.target == 'binclass':
+            elif target == 'bin_class':
                 classes = [0, 1]
+            else:
+                raise ValueError('target must be capri_class on bin_class')
             false_positive, false_negative, true_positive, true_negative = get_comparison(
                 self.prediction, self.y, self.binary, classes=classes)
 
@@ -214,7 +216,7 @@ class Metrics(object):
             
     def format_score(self):
         """Sorts the predicted values depending on the target:
-        - if target is fnat or binclass: the highest value the better ranked
+        - if target is fnat or bin_class: the highest value the better ranked
         - else: the lowest value the better ranked  
 
         Returns:
@@ -224,7 +226,7 @@ class Metrics(object):
         """
         idx = np.argsort(self.prediction)
 
-        inverse = ['fnat', 'binclass']
+        inverse = ['fnat', 'bin_class']
         if self.target in inverse:   
             idx = idx[::-1]
                 
