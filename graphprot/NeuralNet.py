@@ -24,7 +24,7 @@ class NeuralNet(object):
 
     def __init__(self, database, Net,
                  node_feature=['type', 'polarity', 'bsa'],
-                 edge_feature=['dist'], target='irmsd', lr=0.01,
+                 edge_feature=['dist'], target=None, lr=0.01,
                  batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
                  class_weights=None, task='class', classes=[0, 1], threshold=4,
                  pretrained_model=None, shuffle=False, outdir='./'):
@@ -123,7 +123,7 @@ class NeuralNet(object):
         self.valid_loss = []
 
     def plot_loss(self, name=''):
-        """Plot the loss of the model
+        """Plot the loss of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
@@ -150,7 +150,7 @@ class NeuralNet(object):
             plt.close()
 
     def plot_acc(self, name=''):
-        """Plot the accuracy of the model.
+        """Plot the accuracy of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
@@ -346,14 +346,15 @@ class NeuralNet(object):
         print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
                                                                              stage, loss, acc_str, time))
 
-    def format_output(self, pred, target):
+    def format_output(self, pred, target=None):
         """Format the network output depending on the task (classification/regression)."""
 
 
         if self.task == 'class' :
             pred = F.softmax(pred, dim=1)
-            target = torch.tensor(
-                [self.classes_idx[int(x)] for x in target])
+            if target is not None: 
+                target = torch.tensor(  
+                    [self.classes_idx[int(x)] for x in target])
 
         else:
             pred = pred.reshape(-1)
@@ -393,12 +394,16 @@ class NeuralNet(object):
         _out, _y, _test_loss, self.data['test'] = self.eval(self.test_loader)
 
         self.test_out = _out
-        self.test_y = _y
         
-        _test_acc = self.get_metrics('test', threshold).accuracy
-        self.test_acc = _test_acc
+        if len(_y) == 0 :
+            self.test_y = None
+            self.test_acc = None
+        else:
+            self.test_y = _y
+            _test_acc = self.get_metrics('test', threshold).accuracy
+            self.test_acc = _test_acc
+            
         self.test_loss = _test_loss
-
         self._export_epoch_hdf5(0, self.data)
             
         self.f5.close()
@@ -425,7 +430,9 @@ class NeuralNet(object):
             pred = self.model(d)
             pred, d.y = self.format_output(pred, d.y)
 
-            y += d.y
+            if d.y is not None: 
+                y += d.y
+                
             loss_val += loss_func(pred, d.y).detach().item()
 
             # get the outputs for export
@@ -500,22 +507,28 @@ class NeuralNet(object):
             if len(self.valid_out) == 0:
                 print('No evaluation set has been provided')
 
-            pred = self.valid_out
-            y = [x.item() for x in self.valid_y]
+            else: 
+                pred = self.valid_out
+                y = [x.item() for x in self.valid_y]
 
         elif data == 'train':
             if len(self.train_out) == 0:
                 print('No training set has been provided')
-
-            pred = self.train_out
-            y = [x.item() for x in self.train_y]
+            
+            else: 
+                pred = self.train_out
+                y = [x.item() for x in self.train_y]
 
         elif data == 'test':
             if len(self.test_out) == 0:
                 print('No test set has been provided')
 
-            pred = self.test_out
-            y = [x.item() for x in self.test_y]
+            if self.test_y == None    
+                print('You must provide ground truth target values to compute the metrics')
+                
+            else: 
+                pred = self.test_out
+                y = [x.item() for x in self.test_y]
 
         return Metrics(pred, y, self.target, threshold, binary)
 
