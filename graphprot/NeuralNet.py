@@ -523,7 +523,7 @@ class NeuralNet(object):
             if len(self.test_out) == 0:
                 print('No test set has been provided')
 
-            if self.test_y == None    
+            if self.test_y == None:   
                 print('You must provide ground truth target values to compute the metrics')
                 
             else: 
