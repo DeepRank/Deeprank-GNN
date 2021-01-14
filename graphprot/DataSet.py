@@ -271,7 +271,7 @@ class HDF5DataSet(Dataset):
             y = None
         
         else:
-            if grp['score/'+self.target][()]] is not None:
+            if grp['score/'+self.target][()] is not None:
                 y = torch.tensor(
                     [grp['score/'+self.target][()]], dtype=torch.float).contiguous()
             else:
