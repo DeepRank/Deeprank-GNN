@@ -424,15 +424,15 @@ class NeuralNet(object):
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}
 
-        for d in loader:
-            d = d.to(self.device)
-            pred = self.model(d)
-            pred, d.y = self.format_output(pred, d.y)
+        for data_batch in loader:
+            data_batch = data_batch.to(self.device)
+            pred = self.model(data_batch)
+            pred, data_batch.y = self.format_output(pred, data_batch.y)
 
-            if d.y is not None: 
-                y += d.y
-                
-            loss_val += loss_func(pred, d.y).detach().item()
+            if data_batch.y is not None: 
+                y += data_batch.y                
+                loss_val += loss_func(pred, data_batch.y).detach().item()
+                data['targets'] += data_batch.y.numpy().tolist()
 
             # get the outputs for export
             if self.task == 'class':
@@ -441,11 +441,10 @@ class NeuralNet(object):
                 pred = pred.detach().reshape(-1)
 
             out += pred
-            data['targets'] += d.y.numpy().tolist()
             data['outputs'] += pred.tolist()
 
             # get the data
-            data['mol'] += d['mol']
+            data['mol'] += data_batch['mol']
 
         return out, y, loss_val, data
 
@@ -462,15 +461,19 @@ class NeuralNet(object):
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}        
 
-        for d in self.train_loader:
+        for data_batch in self.train_loader:
 
-            d = d.to(self.device)
+            data_batch = data_batch.to(self.device)
             self.optimizer.zero_grad()
-            pred = self.model(d)
-            pred, d.y = self.format_output(pred, d.y)
+            pred = self.model(data_batch)
+            pred, data_batch.y = self.format_output(pred, data_batch.y)
 
-            y += d.y
-            loss = self.loss(pred, d.y)
+            try : 
+                y += data_batch.y
+            except ValueError:
+                print ("You must provide target values (y) for the evaluation set")
+                            
+            loss = self.loss(pred, data_batch.y)
             running_loss += loss.detach().item()
             loss.backward()
             self.optimizer.step()
@@ -482,11 +485,11 @@ class NeuralNet(object):
                 pred = pred.detach().reshape(-1)
 
             out += pred
-            data['targets'] += d.y.numpy().tolist()
+            data['targets'] += data_batch.y.numpy().tolist()
             data['outputs'] += pred.tolist()
             
             # get the data
-            data['mol'] += d['mol']
+            data['mol'] += data_batch['mol']
 
         return out, y, running_loss, data
 
