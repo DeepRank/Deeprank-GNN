@@ -5,7 +5,6 @@ import torch.nn as nn
 
 
 class EGAT(torch.nn.Module):
-
     """
     1) Create edges feature by concatenating node feature
     $e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j])$
@@ -18,7 +17,6 @@ class EGAT(torch.nn.Module):
     
     Herein, we add the edge feature to the step 1)
     $e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j || We * edge_{attr} ])$
-    
     """
 
     def __init__(self,

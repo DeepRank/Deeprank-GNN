@@ -123,7 +123,11 @@ class NeuralNet(object):
         self.valid_loss = []
 
     def plot_loss(self, name=''):
-        """Plot the loss of the model."""
+        """Plot the loss of the model as a function of the epoch
+
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
 
         nepoch = self.nepoch
         train_loss = self.train_loss
@@ -146,8 +150,12 @@ class NeuralNet(object):
             plt.close()
 
     def plot_acc(self, name=''):
-        """Plot the accuracy of the model."""
+        """Plot the accuracy of the model as a function of the epoch
 
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
+        
         nepoch = self.nepoch
         train_acc = self.train_acc
         valid_acc = self.valid_acc
@@ -203,10 +211,14 @@ class NeuralNet(object):
 
     @staticmethod
     def update_name(hdf5, outdir):
-        """Check if the file already exists
-        if so, update the name
-        ex. 1: train.hdf5 -> train_001.hdf5
-        ex. 2: train_001.hdf5 -> train_002.hdf5 
+        """Check if the file already exists, if so, update the name
+
+        Args:
+            hdf5 (str): hdf5 file
+            outdir (str): output directory
+
+        Returns:
+            str: update hdf5 name
         """
 
         fname = os.path.join(outdir, hdf5)
@@ -222,13 +234,12 @@ class NeuralNet(object):
 
         return fname
 
-    def train(self, nepoch=1, validate=False, plot=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
+    def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """Train the model
 
         Args:
             nepoch (int, optional): number of epochs. Defaults to 1.
             validate (bool, optional): perform validation. Defaults to False.
-            plot (bool, optional): plot the results. Defaults to False.
             save_model (last, best, optional): save the model. Defaults to 'last' 
             hdf5 (str, optional): hdf5 output file
             save_epoch (all, intermediate, optional)
@@ -316,7 +327,7 @@ class NeuralNet(object):
 
     @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
-        """print the data of each epoch
+        """Prints the data of each epoch
 
         Args:
             stage (str): tain or valid
@@ -334,14 +345,15 @@ class NeuralNet(object):
         print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
                                                                              stage, loss, acc_str, time))
 
-    def format_output(self, pred, target):
+    def format_output(self, pred, target=None):
         """Format the network output depending on the task (classification/regression)."""
 
 
         if self.task == 'class' :
             pred = F.softmax(pred, dim=1)
-            target = torch.tensor(
-                [self.classes_idx[int(x)] for x in target])
+            if target is not None: 
+                target = torch.tensor(  
+                    [self.classes_idx[int(x)] for x in target])
 
         else:
             pred = pred.reshape(-1)
@@ -350,11 +362,12 @@ class NeuralNet(object):
 
     
     def test(self, database_test, threshold=4, hdf5='test_data.hdf5'):
-        """Test the model
+        """Tests the model 
 
         Args:
-            database_test ([type]): [description]
-            threshold ([type]): [description]
+            database_test ([type]): test database
+            threshold (int, optional): threshold use to tranform data into binary values. Defaults to 4.
+            hdf5 (str, optional): output hdf5 file. Defaults to 'test_data.hdf5'.
         """
 
         # Output file 
@@ -380,12 +393,16 @@ class NeuralNet(object):
         _out, _y, _test_loss, self.data['test'] = self.eval(self.test_loader)
 
         self.test_out = _out
-        self.test_y = _y
         
-        _test_acc = self.get_metrics('test', threshold).accuracy
-        self.test_acc = _test_acc
+        if len(_y) == 0 :
+            self.test_y = None
+            self.test_acc = None
+        else:
+            self.test_y = _y
+            _test_acc = self.get_metrics('test', threshold).accuracy
+            self.test_acc = _test_acc
+            
         self.test_loss = _test_loss
-
         self._export_epoch_hdf5(0, self.data)
             
         self.f5.close()
@@ -407,13 +424,15 @@ class NeuralNet(object):
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}
 
-        for d in loader:
-            d = d.to(self.device)
-            pred = self.model(d)
-            pred, d.y = self.format_output(pred, d.y)
+        for data_batch in loader:
+            data_batch = data_batch.to(self.device)
+            pred = self.model(data_batch)
+            pred, data_batch.y = self.format_output(pred, data_batch.y)
 
-            y += d.y
-            loss_val += loss_func(pred, d.y).detach().item()
+            if data_batch.y is not None: 
+                y += data_batch.y                
+                loss_val += loss_func(pred, data_batch.y).detach().item()
+                data['targets'] += data_batch.y.numpy().tolist()
 
             # get the outputs for export
             if self.task == 'class':
@@ -422,11 +441,10 @@ class NeuralNet(object):
                 pred = pred.detach().reshape(-1)
 
             out += pred
-            data['targets'] += d.y.numpy().tolist()
             data['outputs'] += pred.tolist()
 
             # get the data
-            data['mol'] += d['mol']
+            data['mol'] += data_batch['mol']
 
         return out, y, loss_val, data
 
@@ -443,15 +461,19 @@ class NeuralNet(object):
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}        
 
-        for d in self.train_loader:
+        for data_batch in self.train_loader:
 
-            d = d.to(self.device)
+            data_batch = data_batch.to(self.device)
             self.optimizer.zero_grad()
-            pred = self.model(d)
-            pred, d.y = self.format_output(pred, d.y)
+            pred = self.model(data_batch)
+            pred, data_batch.y = self.format_output(pred, data_batch.y)
 
-            y += d.y
-            loss = self.loss(pred, d.y)
+            try : 
+                y += data_batch.y
+            except ValueError:
+                print ("You must provide target values (y) for the evaluation set")
+                            
+            loss = self.loss(pred, data_batch.y)
             running_loss += loss.detach().item()
             loss.backward()
             self.optimizer.step()
@@ -463,11 +485,11 @@ class NeuralNet(object):
                 pred = pred.detach().reshape(-1)
 
             out += pred
-            data['targets'] += d.y.numpy().tolist()
+            data['targets'] += data_batch.y.numpy().tolist()
             data['outputs'] += pred.tolist()
             
             # get the data
-            data['mol'] += d['mol']
+            data['mol'] += data_batch['mol']
 
         return out, y, running_loss, data
 
@@ -487,28 +509,35 @@ class NeuralNet(object):
             if len(self.valid_out) == 0:
                 print('No evaluation set has been provided')
 
-            pred = self.valid_out
-            y = [x.item() for x in self.valid_y]
+            else: 
+                pred = self.valid_out
+                y = [x.item() for x in self.valid_y]
 
         elif data == 'train':
             if len(self.train_out) == 0:
                 print('No training set has been provided')
-
-            pred = self.train_out
-            y = [x.item() for x in self.train_y]
+            
+            else: 
+                pred = self.train_out
+                y = [x.item() for x in self.train_y]
 
         elif data == 'test':
             if len(self.test_out) == 0:
                 print('No test set has been provided')
 
-            pred = self.test_out
-            y = [x.item() for x in self.test_y]
+            if self.test_y == None:   
+                print('You must provide ground truth target values to compute the metrics')
+                
+            else: 
+                pred = self.test_out
+                y = [x.item() for x in self.test_y]
 
         return Metrics(pred, y, self.target, threshold, binary)
 
 
     def plot_scatter(self):
-        """Scatter plot of the results"""
+        """Scatter plot of the results
+        """
         import matplotlib.pyplot as plt
 
         self.model.eval()
@@ -588,6 +617,7 @@ class NeuralNet(object):
         Export the data of a given epoch in train/valid/test group.
         In each group are stored the predcited values (outputs),
         ground truth (targets) and molecule name (mol).
+
         Args:
             epoch (int): index of the epoch
             data (dict): data of the epoch
