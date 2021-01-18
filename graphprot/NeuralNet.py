@@ -234,13 +234,12 @@ class NeuralNet(object):
 
         return fname
 
-    def train(self, nepoch=1, validate=False, plot=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
+    def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """Train the model
 
         Args:
             nepoch (int, optional): number of epochs. Defaults to 1.
             validate (bool, optional): perform validation. Defaults to False.
-            plot (bool, optional): plot the results. Defaults to False.
             save_model (last, best, optional): save the model. Defaults to 'last' 
             hdf5 (str, optional): hdf5 output file
             save_epoch (all, intermediate, optional)
