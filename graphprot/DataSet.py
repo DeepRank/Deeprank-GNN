@@ -40,7 +40,7 @@ def PreCluster(dataset, method):
         data = dataset.load_one_graph(fname, mol)
 
         if data is None:
-            f5 = h5py.File(fname, 'w')
+            f5 = h5py.File(fname, 'a')
             if f5.get(mol):
                 del f5[mol]
             f5.close()
