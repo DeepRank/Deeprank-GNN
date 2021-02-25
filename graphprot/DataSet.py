@@ -221,51 +221,52 @@ class HDF5DataSet(Dataset):
             f5.close()
             return None
 
-        # index ! we have to have all the edges i.e : (i,j) and (j,i)
-        ind = grp['edge_index'][()]
-        ind = np.vstack((ind, np.flip(ind, 1))).T
-        edge_index = torch.tensor(ind, dtype=torch.long).contiguous()
+        try:
+            # index ! we have to have all the edges i.e : (i,j) and (j,i)
+            ind = grp['edge_index'][()]
+            ind = np.vstack((ind, np.flip(ind, 1))).T
+            edge_index = torch.tensor(ind, dtype=torch.long).contiguous()
 
-        # edge feature (same issue than above)
-        data = ()
-        if self.edge_feature is not None:
-            for feat in self.edge_feature:
-                vals = grp['edge_data/'+feat][()]
-                if vals.ndim == 1:
-                    vals = vals.reshape(-1, 1)
-                data += (vals,)
-            data = np.hstack(data)
-            data = np.vstack((data, data))
-            data = self.edge_feature_transform(data)
-            edge_attr = torch.tensor(
-                data, dtype=torch.float).contiguous()
+            # edge feature (same issue than above)
+            data = ()
+            if self.edge_feature is not None:
+                for feat in self.edge_feature:
+                    vals = grp['edge_data/'+feat][()]
+                    if vals.ndim == 1:
+                        vals = vals.reshape(-1, 1)
+                    data += (vals,)
+                data = np.hstack(data)
+                data = np.vstack((data, data))
+                data = self.edge_feature_transform(data)
+                edge_attr = torch.tensor(
+                    data, dtype=torch.float).contiguous()
+            else:
+                edge_attr = None
 
-        else:
-            edge_attr = None
+            # internal edges
+            ind = grp['internal_edge_index'][()]
+            ind = np.vstack((ind, np.flip(ind, 1))).T
+            internal_edge_index = torch.tensor(
+                ind, dtype=torch.long).contiguous()
 
-        # internal edges
-        ind = grp['internal_edge_index'][()]
-        ind = np.vstack((ind, np.flip(ind, 1))).T
-        internal_edge_index = torch.tensor(
-            ind, dtype=torch.long).contiguous()
-
-        # internal edge feature
-        data = ()
-        if self.edge_feature is not None:
-            for feat in self.edge_feature:
-                vals = grp['internal_edge_data/'+feat][()]
-                if vals.ndim == 1:
-                    vals = vals.reshape(-1, 1)
-                data += (vals,)
-            data = np.hstack(data)
-            data = np.vstack((data, data))
-            data = self.edge_feature_transform(data)
-            internal_edge_attr = torch.tensor(
-                data, dtype=torch.float).contiguous()
-
-        else:
-            internal_edge_attr = None
-
+            # internal edge feature
+            data = ()
+            if self.edge_feature is not None:
+                for feat in self.edge_feature:
+                    vals = grp['internal_edge_data/'+feat][()]
+                    if vals.ndim == 1:
+                        vals = vals.reshape(-1, 1)
+                    data += (vals,)
+                data = np.hstack(data)
+                data = np.vstack((data, data))
+                data = self.edge_feature_transform(data)
+                internal_edge_attr = torch.tensor(
+                    data, dtype=torch.float).contiguous()
+            else:
+                internal_edge_attr = None
+        except:
+            return None
+        
         # target
         if self.target is None:
             y = None
