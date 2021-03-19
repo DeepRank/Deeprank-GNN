@@ -50,7 +50,6 @@ jobs:
       run: |
         pytest --cov=graphprot --cov-report xml:coverage.xml
     - name: Coveralls
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls --service=github
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
