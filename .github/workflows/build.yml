@@ -48,7 +48,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov=graphprot --cov-report xml:coverage.xml
+        pytest --cov=graphprot --cov-config setup.cfg
 
     - name: Coveralls
       run: coveralls --service=github
