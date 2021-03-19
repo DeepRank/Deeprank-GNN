@@ -48,19 +48,13 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest tests --cov-config setup.cfg
+        pytest --cov=graphprot --cov-report xml:coverage.xml
 
     - name: Coveralls
-      run: coveralls --service=github
       env:
         GITHUB_TOKEN: ${{ secrets.github_token }}
         COVERALLS_FLAG_NAME: python-${{ matrix.version }}
+      run: |
+        coveralls --service=github
 
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
+
