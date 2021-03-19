@@ -41,8 +41,11 @@ def PreCluster(dataset, method):
 
         if data is None:
             f5 = h5py.File(fname, 'a')
-            if f5.get(mol):
+            try:
+                print('deleting {}'.format(mol))
                 del f5[mol]
+            except:
+                print('{} not found'.format(mol))
             f5.close()
             continue
 
@@ -265,6 +268,9 @@ class HDF5DataSet(Dataset):
             else:
                 internal_edge_attr = None
         except:
+            print('edge features not found in the file',
+                self.database[0])
+            f5.close()
             return None
         
         # target
