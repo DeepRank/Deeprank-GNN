@@ -28,7 +28,7 @@ class NeuralNet(object):
                 batch_size=32, percent=[0.8, 0.2],  
                 database_eval=None, index=None, class_weights=None, task='class', 
                 classes=[0, 1], threshold=4.0,
-                pretrained_model=None, shuffle=True, outdir='./'):
+                pretrained_model=None, shuffle=True, outdir='./', cluster_nodes = True):
         """[summary]
 
         Args:
@@ -59,7 +59,6 @@ class NeuralNet(object):
 
         """
 
-
         # load the input data or a pretrained model
         # each named arguments is stored in a member vairable
         # i.e. self.node_feature = node_feature
@@ -76,7 +75,8 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        PreCluster(dataset, method='mcl')
+        if cluster_nodes == True :
+            PreCluster(dataset, method='mcl')
 
 
         # divide the dataset
@@ -95,7 +95,8 @@ class NeuralNet(object):
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
-            PreCluster(valid_dataset, method='mcl')
+            if cluster_nodes == True :
+                PreCluster(valid_dataset, method='mcl')
             
         else:
             print('No independent validation set loaded')
@@ -156,17 +157,7 @@ class NeuralNet(object):
 
             # Automatic definition base on the classes proportions in the input training set
             elif self.class_weights == True :
-                targets_all = []
-                
-                for batch in self.train_loader:
-                    targets_all.append(batch.y)  
-                
-                targets_all = torch.cat(targets_all).squeeze().tolist()
-                self.weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
-                print('class occurences: {}'.format(self.weights))
-                self.weights = 1.0 / self.weights
-                self.weights = self.weights / self.weights.sum()
-                print('class weights: {}'.format(self.weights))
+                self.weights = self.compute_class_weights()
 
             self.loss = nn.CrossEntropyLoss(
                 weight=self.weights, reduction='mean')
@@ -178,6 +169,20 @@ class NeuralNet(object):
         self.valid_acc = []
         self.valid_loss = []
 
+    def compute_class_weights(self):
+        
+        targets_all = []
+        for batch in self.train_loader:
+            targets_all.append(batch.y)  
+
+        targets_all = torch.cat(targets_all).squeeze().tolist()
+        weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
+        print('class occurences: {}'.format(weights))
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        print('class weights: {}'.format(weights))
+        return weights
+                    
     def plot_loss(self, name=''):
         """Plot the loss of the model as a function of the epoch
 
