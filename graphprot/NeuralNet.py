@@ -27,7 +27,7 @@ class NeuralNet(object):
                  edge_feature=['dist'], target='irmsd', lr=0.01,
                  batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
                  class_weights=None, task='class', classes=[0, 1], threshold=4,
-                 pretrained_model=None, shuffle=False, outdir='./'):
+                 pretrained_model=None, shuffle=False, outdir='./', cluster_nodes = True):
 
         # load the input data or a pretrained model
         # each named arguments is stored in a member vairable
@@ -45,7 +45,8 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        #PreCluster(dataset, method='mcl')
+        if cluster_nodes == True :
+            PreCluster(dataset, method='mcl')
 
 
         # divide the dataset
@@ -64,7 +65,8 @@ class NeuralNet(object):
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
-            #PreCluster(valid_dataset, method='mcl')
+            if cluster_nodes == True :
+                PreCluster(valid_dataset, method='mcl')
             
         else:
             print('No independent validation set loaded')
@@ -79,7 +81,9 @@ class NeuralNet(object):
                 0).num_features).to(self.device)
 
         elif self.task == 'class':
-            self.classes_idx = {i: idx for idx,
+            self.classes_to_idx = {i: idx for idx,
+                                i in enumerate(self.classes)}
+            self.idx_to_classes = {idx: i for idx,
                                 i in enumerate(self.classes)}
             self.output_shape = len(self.classes)
             try:
@@ -112,8 +116,19 @@ class NeuralNet(object):
             self.loss = MSELoss()
 
         elif self.task == 'class':
+            self.weights=None
+
+            # assign weights to each class in case of unbalanced dataset
+            # User weights definition
+            if type(self.class_weights) == list :
+                self.weights = self.class_weights
+
+            # Automatic definition base on the classes proportions in the input training set
+            elif self.class_weights == True :
+                self.weights = self.compute_class_weights()
+
             self.loss = nn.CrossEntropyLoss(
-                weight=self.class_weights, reduction='mean')
+                weight=self.weights, reduction='mean')
 
         # init lists
         self.train_acc = []
@@ -122,6 +137,20 @@ class NeuralNet(object):
         self.valid_acc = []
         self.valid_loss = []
 
+    def compute_class_weights(self):
+        
+        targets_all = []
+        for batch in self.train_loader:
+            targets_all.append(batch.y)  
+
+        targets_all = torch.cat(targets_all).squeeze().tolist()
+        weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
+        print('class occurences: {}'.format(weights))
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        print('class weights: {}'.format(weights))
+        return weights
+                    
     def plot_loss(self, name=''):
         """Plot the loss of the model as a function of the epoch
 
@@ -353,7 +382,7 @@ class NeuralNet(object):
             pred = F.softmax(pred, dim=1)
             if target is not None: 
                 target = torch.tensor(  
-                    [self.classes_idx[int(x)] for x in target])
+                    [self.classes_to_idx[int(x)] for x in target])
 
         else:
             pred = pred.reshape(-1)
@@ -370,7 +399,6 @@ class NeuralNet(object):
             hdf5 (str, optional): output hdf5 file. Defaults to 'test_data.hdf5'.
         """
 
-        # Output file 
         # Output file name
         fname = self.update_name(hdf5, self.outdir)
         
@@ -382,7 +410,7 @@ class NeuralNet(object):
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
         print('Test set loaded')
-        #PreCluster(test_dataset, method='mcl')
+        PreCluster(test_dataset, method='mcl')
 
         self.test_loader = DataLoader(
             test_dataset)
@@ -429,18 +457,31 @@ class NeuralNet(object):
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(pred, data_batch.y)
 
+            # Check if a target value was provided (i.e. benchmarck scenario)
             if data_batch.y is not None: 
                 y += data_batch.y                
                 loss_val += loss_func(pred, data_batch.y).detach().item()
-                data['targets'] += data_batch.y.numpy().tolist()
+                # Save targets
+                if self.task == 'class':
+                    data['targets'] += [self.idx_to_classes(x) for x in data_batch.y.numpy().tolist()]
+                else: 
+                    data['targets'] += data_batch.y.numpy().tolist()
 
-            # get the outputs for export
+            # Get the outputs for export
             if self.task == 'class':
                 pred = np.argmax(pred.detach(), axis=1)
             else:
                 pred = pred.detach().reshape(-1)
 
             out += pred
+            
+            # Save predictions
+            if self.task == 'class':
+                data['outputs'] += [self.idx_to_classes(x) for x in pred.tolist()]
+            else: 
+                data['outputs'] += pred.tolist()
+
+
             data['outputs'] += pred.tolist()
 
             # get the data
@@ -471,7 +512,7 @@ class NeuralNet(object):
             try : 
                 y += data_batch.y
             except ValueError:
-                print ("You must provide target values (y) for the evaluation set")
+                print ("You must provide target values (y) for the training set")
                             
             loss = self.loss(pred, data_batch.y)
             running_loss += loss.detach().item()
@@ -485,8 +526,14 @@ class NeuralNet(object):
                 pred = pred.detach().reshape(-1)
 
             out += pred
-            data['targets'] += data_batch.y.numpy().tolist()
-            data['outputs'] += pred.tolist()
+
+            # save targets and predictions
+            if self.task == 'class':
+                data['targets'] += [self.idx_to_classes(x) for x in data_batch.y.numpy().tolist()]
+                data['outputs'] += [self.idx_to_classes(x) for x in pred.tolist()]
+            else: 
+                data['targets'] += data_batch.y.numpy().tolist()
+                data['outputs'] += pred.tolist()
             
             # get the data
             data['mol'] += data_batch['mol']
@@ -504,6 +551,9 @@ class NeuralNet(object):
         Returns:
             [type]: [description]
         """
+
+        if self.task ==  'class':
+            threshold = self.classes_to_idx[threshold]
 
         if data == 'eval':
             if len(self.valid_out) == 0:

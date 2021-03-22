@@ -26,7 +26,20 @@ jobs:
         conda-channels: anaconda
     - run: conda --version
     - run: which python
-    - run: conda install mpi4py h5py pytorch torchvision cpuonly -c pytorch -c conda-forge
+    - name: install conda dependenies
+      env:
+        TORCH: "1.8"
+      run: conda install scipy mpi4py h5py pytorch==${TORCH} torchvision cpuonly -c pytorch -c conda-forge
+
+    - name: install torch geometric
+      env:
+        TORCH_GEO: "1.8.0"
+      run: |
+        pip install --no-index torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install --no-index torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install --no-index torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install --no-index torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install torch-geometric
 
     - name: Install the package
       run: pip install .[test]
@@ -34,7 +47,14 @@ jobs:
         CONDA_PREFIX: /usr/share/miniconda
 
     - name: Test with pytest
-      env:
-        CONDA_PREFIX: /usr/share/miniconda
       run: |
-        pytest --cov-config setup.cfg
+        pytest --cov=graphprot --cov-report xml:coverage.xml
+
+    - name: Coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.github_token }}
+        COVERALLS_FLAG_NAME: python-${{ matrix.version }}
+      run: |
+        coveralls --service=github
+
+

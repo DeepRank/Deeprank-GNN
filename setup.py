@@ -14,7 +14,6 @@ with open(os.path.join(here, 'graphprot', '__version__.py')) as f:
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-
 setup(
     name='GraphProt',
     version=version['__version__'],
@@ -34,23 +33,21 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3.7',
+        'Natural Language :: English', 'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Chemistry'
     ],
     test_suite='tests',
 
     # not sure if the install of torhc-geometric will work ..
-    install_requires=['numpy >= 1.13', 'scipy', 'h5py', 'torch>=1.5.0',
-                      'networkx', 'pdb2sql', 'sklearn', 'chart-studio',
-                      'BioPython', 'python-louvain', 'markov-clustering',
-                      'torch-sparse', 'torch-scatter', 'torch-cluster',
-                      'torch-spline-conv', 'torch-geometric'],
-
+    install_requires=[
+        'numpy >= 1.13', 'scipy', 'h5py', 'torch>=1.5.0', 'networkx',
+        'pdb2sql', 'sklearn', 'chart-studio', 'BioPython', 'python-louvain',
+        'markov-clustering', 'torch-sparse', 'torch-scatter', 'torch-cluster',
+        'torch-spline-conv', 'torch-geometric'
+    ],
     extras_require={
         'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],
         'doc': ['recommonmark', 'sphinx', 'sphinx_rtd_theme'],
-        'test': ['coverage', 'pycodestyle', 'pytest', 'pytest-cov',
-                 'pytest-runner'],
-    }
-)
+        'test':
+        ['coverage', 'pycodestyle', 'pytest', 'pytest-cov', 'pytest-runner', 'coveralls'],
+    })
