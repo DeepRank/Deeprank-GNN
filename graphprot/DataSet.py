@@ -308,6 +308,12 @@ class HDF5DataSet(Dataset):
 
             else:
                 internal_edge_attr = None
+        
+        except:
+            print('edge features not found in the file',
+                  self.database[0])
+            f5.close()
+            return None
 
         # target
         if self.target is None:

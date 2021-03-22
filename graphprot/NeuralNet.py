@@ -59,6 +59,7 @@ class NeuralNet(object):
 
         """
 
+
         # load the input data or a pretrained model
         # each named arguments is stored in a member vairable
         # i.e. self.node_feature = node_feature
@@ -156,11 +157,20 @@ class NeuralNet(object):
                 self.weights = self.class_weights
 
             # Automatic definition base on the classes proportions in the input training set
+        elif self.task == 'class':
+            self.weights=None
+
+            # assign weights to each class in case of unbalanced dataset
+            # User weights definition
+            if type(self.class_weights) == list :
+                self.weights = self.class_weights
+
+            # Automatic definition base on the classes proportions in the input training set
             elif self.class_weights == True :
                 self.weights = self.compute_class_weights()
-
+ 
             self.loss = nn.CrossEntropyLoss(
-                weight=self.weights, reduction='mean')
+                weight=self.weights, reduction='mean')               
 
         # init lists
         self.train_acc = []
@@ -169,131 +179,6 @@ class NeuralNet(object):
         self.valid_acc = []
         self.valid_loss = []
 
-    def compute_class_weights(self):
-        
-        targets_all = []
-        for batch in self.train_loader:
-            targets_all.append(batch.y)  
-
-        targets_all = torch.cat(targets_all).squeeze().tolist()
-        weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
-        print('class occurences: {}'.format(weights))
-        weights = 1.0 / weights
-        weights = weights / weights.sum()
-        print('class weights: {}'.format(weights))
-        return weights
-                    
-    def plot_loss(self, name=''):
-        """Plot the loss of the model as a function of the epoch
-
-        Args:
-            name (str, optional): name of the output file. Defaults to ''.
-        """
-
-        nepoch = self.nepoch
-        train_loss = self.train_loss
-        valid_loss = self.valid_loss
-
-        import matplotlib.pyplot as plt
-
-        if len(valid_loss) > 1:
-            plt.plot(range(1, nepoch+1), valid_loss,
-                     c='red', label='valid')
-
-        if len(train_loss) > 1:
-            plt.plot(range(1, nepoch+1), train_loss,
-                     c='blue', label='train')
-            plt.title("Loss/ epoch")
-            plt.xlabel("Number of epoch")
-            plt.ylabel("Total loss")
-            plt.legend()
-            plt.savefig('loss_epoch{}.png'.format(name))
-            plt.close()
-
-    def plot_acc(self, name=''):
-        """Plot the accuracy of the model as a function of the epoch
-
-        Args:
-            name (str, optional): name of the output file. Defaults to ''.
-        """
-        
-        nepoch = self.nepoch
-        train_acc = self.train_acc
-        valid_acc = self.valid_acc
-
-        import matplotlib.pyplot as plt
-
-        if len(valid_acc) > 1:
-            plt.plot(range(1, nepoch+1), valid_acc,
-                     c='red', label='valid')
-
-        if len(train_acc) > 1:
-            plt.plot(range(1, nepoch+1), train_acc,
-                     c='blue', label='train')
-            plt.title("Accuracy/ epoch")
-            plt.xlabel("Number of epoch")
-            plt.ylabel("Accuracy")
-            plt.legend()
-            plt.savefig('acc_epoch{}.png'.format(name))
-            plt.close()
-
-    def plot_hit_rate(self, data='eval', threshold=4, mode='percentage', name=''):
-        """Plots the hitrate as a function of the models' rank
-
-        Args:
-            data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
-            threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
-            mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
-        """
-
-        import matplotlib.pyplot as plt
-
-        try:
-
-            hitrate = self.get_metrics(data, threshold).hitrate()
-
-            nb_models = len(hitrate)
-            X = range(1, nb_models + 1)
-
-            if mode == 'percentage':
-                hitrate /= hitrate.sum()
-
-            plt.plot(X, hitrate, c='blue', label='train')
-            plt.title("Hit rate")
-            plt.xlabel("Number of models")
-            plt.ylabel("Hit Rate")
-            plt.legend()
-            plt.savefig('hitrate{}.png'.format(name))
-            plt.close()
-
-        except:
-            print('No hit rate plot could be generated for you {} task'.format(
-                self.task))
-
-    @staticmethod
-    def update_name(hdf5, outdir):
-        """Check if the file already exists, if so, update the name
-
-        Args:
-            hdf5 (str): hdf5 file
-            outdir (str): output directory
-
-        Returns:
-            str: update hdf5 name
-        """
-
-        fname = os.path.join(outdir, hdf5)
-
-        count = 0
-        hdf5_name = hdf5.split('.')[0]
-
-        # If file exists, change its name with a number                                                                                               
-        while os.path.exists(fname) : 
-            count += 1
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
-            fname = os.path.join(outdir, hdf5)
-
-        return fname
 
     def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """Train the model
@@ -385,42 +270,6 @@ class NeuralNet(object):
         # Close output file
         self.f5.close()
 
-
-    @staticmethod
-    def print_epoch_data(stage, epoch, loss, acc, time):
-        """Prints the data of each epoch
-
-        Args:
-            stage (str): tain or valid
-            epoch (int): epoch number
-            loss (float): loss during that epoch
-            acc (float or None): accuracy
-            time (float): timing of the epoch
-        """
-
-        if acc is None:
-            acc_str = 'None'
-        else:
-            acc_str = '%1.4e' % acc
-
-        print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
-                                                                             stage, loss, acc_str, time))
-
-    def format_output(self, pred, target=None):
-        """Format the network output depending on the task (classification/regression)."""
-
-
-        if self.task == 'class' :
-            pred = F.softmax(pred, dim=1)
-            if target is not None: 
-                target = torch.tensor(  
-                    [self.classes_to_idx[int(x)] for x in target])
-
-        else:
-            pred = pred.reshape(-1)
-            
-        return pred, target
-
     
     def test(self, database_test, threshold=4, hdf5='test_data.hdf5'):
         """Tests the model 
@@ -466,6 +315,7 @@ class NeuralNet(object):
         self._export_epoch_hdf5(0, self.data)
             
         self.f5.close()
+
 
     def eval(self, loader):
         """Evaluate the model
@@ -572,6 +422,7 @@ class NeuralNet(object):
 
         return out, y, running_loss, data
 
+
     def get_metrics(self, data='eval', threshold=4.0, binary=True):
         """Compute the metrics needed
 
@@ -614,6 +465,174 @@ class NeuralNet(object):
         return Metrics(pred, y, self.target, threshold, binary)
 
 
+    def compute_class_weights(self):
+        
+        targets_all = []
+        for batch in self.train_loader:
+            targets_all.append(batch.y)  
+
+        targets_all = torch.cat(targets_all).squeeze().tolist()
+        weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
+        print('class occurences: {}'.format(weights))
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        print('class weights: {}'.format(weights))
+        return weights
+
+
+@staticmethod
+    def print_epoch_data(stage, epoch, loss, acc, time):
+        """Prints the data of each epoch
+
+        Args:
+            stage (str): tain or valid
+            epoch (int): epoch number
+            loss (float): loss during that epoch
+            acc (float or None): accuracy
+            time (float): timing of the epoch
+        """
+
+        if acc is None:
+            acc_str = 'None'
+        else:
+            acc_str = '%1.4e' % acc
+
+        print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
+                                                                             stage, loss, acc_str, time))
+
+
+    def format_output(self, pred, target=None):
+        """Format the network output depending on the task (classification/regression)."""
+
+
+        if self.task == 'class' :
+            pred = F.softmax(pred, dim=1)
+            if target is not None: 
+                target = torch.tensor(  
+                    [self.classes_to_idx[int(x)] for x in target])
+
+        else:
+            pred = pred.reshape(-1)
+            
+        return pred, target
+
+
+    @staticmethod
+    def update_name(hdf5, outdir):
+        """Check if the file already exists, if so, update the name
+
+        Args:
+            hdf5 (str): hdf5 file
+            outdir (str): output directory
+
+        Returns:
+            str: update hdf5 name
+        """
+
+        fname = os.path.join(outdir, hdf5)
+
+        count = 0
+        hdf5_name = hdf5.split('.')[0]
+
+        # If file exists, change its name with a number                                                                                               
+        while os.path.exists(fname) : 
+            count += 1
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
+            fname = os.path.join(outdir, hdf5)
+
+        return fname
+
+
+    def plot_loss(self, name=''):
+        """Plot the loss of the model as a function of the epoch
+
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
+
+        nepoch = self.nepoch
+        train_loss = self.train_loss
+        valid_loss = self.valid_loss
+
+        import matplotlib.pyplot as plt
+
+        if len(valid_loss) > 1:
+            plt.plot(range(1, nepoch+1), valid_loss,
+                     c='red', label='valid')
+
+        if len(train_loss) > 1:
+            plt.plot(range(1, nepoch+1), train_loss,
+                     c='blue', label='train')
+            plt.title("Loss/ epoch")
+            plt.xlabel("Number of epoch")
+            plt.ylabel("Total loss")
+            plt.legend()
+            plt.savefig('loss_epoch{}.png'.format(name))
+            plt.close()
+
+
+    def plot_acc(self, name=''):
+        """Plot the accuracy of the model as a function of the epoch
+
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
+        
+        nepoch = self.nepoch
+        train_acc = self.train_acc
+        valid_acc = self.valid_acc
+
+        import matplotlib.pyplot as plt
+
+        if len(valid_acc) > 1:
+            plt.plot(range(1, nepoch+1), valid_acc,
+                     c='red', label='valid')
+
+        if len(train_acc) > 1:
+            plt.plot(range(1, nepoch+1), train_acc,
+                     c='blue', label='train')
+            plt.title("Accuracy/ epoch")
+            plt.xlabel("Number of epoch")
+            plt.ylabel("Accuracy")
+            plt.legend()
+            plt.savefig('acc_epoch{}.png'.format(name))
+            plt.close()
+
+
+    def plot_hit_rate(self, data='eval', threshold=4, mode='percentage', name=''):
+        """Plots the hitrate as a function of the models' rank
+
+        Args:
+            data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
+            threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
+            mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
+        """
+
+        import matplotlib.pyplot as plt
+
+        try:
+
+            hitrate = self.get_metrics(data, threshold).hitrate()
+
+            nb_models = len(hitrate)
+            X = range(1, nb_models + 1)
+
+            if mode == 'percentage':
+                hitrate /= hitrate.sum()
+
+            plt.plot(X, hitrate, c='blue', label='train')
+            plt.title("Hit rate")
+            plt.xlabel("Number of models")
+            plt.ylabel("Hit Rate")
+            plt.legend()
+            plt.savefig('hitrate{}.png'.format(name))
+            plt.close()
+
+        except:
+            print('No hit rate plot could be generated for you {} task'.format(
+                self.task))
+
+
     def plot_scatter(self):
         """Scatter plot of the results
         """
@@ -638,6 +657,7 @@ class NeuralNet(object):
         plt.scatter(truth['valid'], pred['valid'], c='red')
         plt.show()
 
+
     def save_model(self, filename='model.pth.tar'):
         """Save the model to a file
 
@@ -661,6 +681,7 @@ class NeuralNet(object):
                  'threshold': self.threshold}
 
         torch.save(state, filename)
+
 
     def load_params(self, filename):
         """Load the parameters of a rpetrained model
