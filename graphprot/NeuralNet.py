@@ -480,7 +480,7 @@ class NeuralNet(object):
         return weights
 
 
-@staticmethod
+    @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
         """Prints the data of each epoch
 
