@@ -12,7 +12,16 @@ from .community_pooling import community_detection, community_pooling
 
 
 def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
+    """Divide the dataset into a training set and an evaluation set
 
+    Args:
+        dataset ([type])
+        percent (list, optional): [description]. Defaults to [0.8, 0.2].
+        shuffle (bool, optional): [description]. Defaults to True.
+
+    Returns:
+        [type]: [description]
+    """
     size = dataset.__len__()
     index = np.arange(size)
 
@@ -34,7 +43,12 @@ def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
 
 
 def PreCluster(dataset, method):
+    """Pre-cluster nodes of the graohs
 
+    Args:
+        dataset (HDF5DataSet object)
+        method (srt): 'mcl' (Markov Clustering) or 'louvain'
+    """
     for fname, mol in tqdm(dataset.index_complexes):
 
         data = dataset.load_one_graph(fname, mol)
@@ -80,7 +94,22 @@ class HDF5DataSet(Dataset):
                  dict_filter=None, target=None, tqdm=True, index=None,
                  node_feature='all', edge_feature=['dist'], clustering_method='mcl',
                  edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
+        """Class from which the hdf5 dataset loaded.
 
+        Args:
+            root (str, optional): [description]. Defaults to './'.
+            database (str, optional): Path to hdf5 file(s). Defaults to None.
+            transform (callable, optional): A function/transform that takes in an torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before every access. Defaults to None.
+            pre_transform (callable, optional):  A function/transform that takes in an torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before being saved to disk.. Defaults to None.
+            dict_filter dictionnary, optional): Dictionnary of type [name: cond] to filter the molecules. Defaults to None.
+            target (str, optional): irmsd, lrmsd, fnat, bin, capri_class or DockQ. Defaults to None.
+            tqdm (bool, optional): Show progress bar. Defaults to True.
+            index (int, optional): index of a molecule. Defaults to None.
+            node_feature (str or list, optional): consider all pre-computed node features ('all') or some defined node features (provide a list). Defaults to 'all'.
+            edge_feature (list, optional): only distances are available in this version of GraphProt. Defaults to ['dist'].
+            clustering_method (str, optional): 'mcl' (Markov Clustering) or 'louvain'. Defaults to 'mcl'.
+            edge_feature_transform (function, optional): transformation applied to the edge features. Defaults to lambdax:np.tanh(-x/2+2)+1.
+        """
         super().__init__(root, transform, pre_transform)
 
         # allow for multiple database
@@ -158,7 +187,8 @@ class HDF5DataSet(Dataset):
             self.database.remove(name)
 
     def check_node_feature(self):
-
+        """Check if required node features exist
+        """
         f = h5py.File(self.database[0], 'r')
         mol_key = list(f.keys())[0]
         self.available_node_feature = list(
@@ -178,7 +208,8 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def check_edge_feature(self):
-
+        """Check if required edge features exist
+        """
         f = h5py.File(self.database[0], 'r')
         mol_key = list(f.keys())[0]
         self.available_edge_feature = list(
@@ -198,7 +229,15 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def load_one_graph(self, fname, mol):
+        """Load one graph given
 
+        Args:
+            fname (str): hdf5 file name
+            mol (str): name of the molecule
+
+        Returns:
+            Data object or None: torch_geometric Data object containing the node features, the internal and external edge features, the target and the xyz coordinates. Return None if features cannot be loaded.
+        """
         #print('Load mol :', mol)
 
         f5 = h5py.File(fname, 'r')
