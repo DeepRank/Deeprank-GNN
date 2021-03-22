@@ -12,7 +12,16 @@ class GraphHDF5(object):
 
     def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
                  select=None, outfile='graph.hdf5'):
+        """Master class from which graph are computed 
 
+        Args:
+            pdb_path (str): path to the docking models
+            ref_path (str, optional): path to the reference model. Defaults to None.
+            graph_type (str, optional): Defaults to 'residue'.
+            pssm_path ([type], optional): path to the pssm file. Defaults to None.
+            select (str, optional): filter files that starts with 'input'. Defaults to None.
+            outfile (str, optional): Defaults to 'graph.hdf5'.
+        """
         # get the list of PDB names
         pdbs = list(filter(lambda x: x.endswith(
             '.pdb'), os.listdir(pdb_path)))
@@ -34,7 +43,9 @@ class GraphHDF5(object):
             base_name = mol_name.split('_')[0]
 
             if graph_type == 'residue':
+                # get the pssm file for pdb
                 pssm = self._get_pssm(pssm_path, mol_name, base_name)
+                # generate a graph 
                 graph = ResidueGraph(pdb=pdbfile, pssm=pssm)
 
             # get the score
@@ -42,7 +53,7 @@ class GraphHDF5(object):
                 ref = os.path.join(ref_path, base_name+'.pdb')
                 graph.get_score(ref)
 
-            # export
+            # export the graph in hdf5 format
             try:
                 graph.nx2h5(f5)
             except:
@@ -52,7 +63,17 @@ class GraphHDF5(object):
 
     @staticmethod
     def _get_pssm(pssm_path, mol_name, base_name):
+        """Get the pssm file for a given model
 
+        Args:
+            pssm_path (str): path to the pssm file
+            mol_name (str): molecule name (XXXX_A.pdb -> XXXX_A)
+            base_name (str): short molecule name (XXXX_A.pdb -> XXXX)
+
+        Returns:
+            pssm files for chain A and for chain B 
+            pssm = {'A': pssmA, 'B': pssmB}
+        """
         pssmA = os.path.join(pssm_path, mol_name+'.A.pdb.pssm')
         pssmB = os.path.join(pssm_path, mol_name+'.B.pdb.pssm')
 

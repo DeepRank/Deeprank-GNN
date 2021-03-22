@@ -16,8 +16,17 @@ class ResidueGraph(Graph):
     def __init__(self, pdb=None, pssm=None,
                  contact_distance=8.5, internal_contact_distance=3,
                  pssm_align='res'):
-
         super().__init__()
+
+        """Class from which Residue features are computed
+
+        Args:
+            pdb (str, optional): path to pdb file. Defaults to None.
+            pssm (str, optional): path to pssm file. Defaults to None.
+            contact_distance (float, optional): cutoff distance for external edges. Defaults to 8.5.
+            internal_contact_distance (int, optional): cutoff distance for internal edges. Defaults to 3.
+            pssm_align (str, optional): [description]. Defaults to 'res'.
+        """
 
         self.type = 'residue'
         self.pdb = pdb
@@ -96,7 +105,12 @@ class ResidueGraph(Graph):
                               inst, ' for details')
 
     def get_graph(self, db):
+        """Get the interface graph nodes and edges given the 
+        internal and external distance threshold
 
+        Args:
+            db ([type]): sqldb database
+        """
         self.nx = nx.Graph()
         self.nx.edge_index = []
         self.res_contact_pairs = db.get_contact_residues(
@@ -131,7 +145,18 @@ class ResidueGraph(Graph):
 
     @staticmethod
     def _get_all_valid_nodes(res_contact_pairs, pssm, verbose=False):
+        """Filter out invalide nodes based on 2 criteria:
+            - contain unrecognized residue
+            - contains resiudes absent form the pssm matrix
 
+        Args:
+            res_contact_pairs ([type]): list of contact pairs 
+            pssm ([type]): pssm file
+            verbose (bool, optional): [description]. Defaults to False.
+
+        Returns:
+            Valid list of contact pairs
+        """
         valid_res = [
             'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLU', 'GLN', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE',
             'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL', 'ASX', 'SEC', 'GLX']
@@ -159,7 +184,7 @@ class ResidueGraph(Graph):
                 res_contact_pairs.pop(res, None)
 
         # get a list of residues of chain B
-        # automatically remove the ones that are not proper res
+        # automatically remove the ones that are not proper residues
         # and the ones that are not in the PSSM
         nodesB = []
         for k, reslist in list(res_contact_pairs.items()):
@@ -178,21 +203,9 @@ class ResidueGraph(Graph):
         # make a list of nodes
         return list(res_contact_pairs.keys()) + nodesB
 
-    @staticmethod
-    def _get_all_nodes(res_contact_pairs):
-
-        # get a list of residues of chain B
-        # automatically remove the ones that are not proper res
-        # and the ones that are not in the PSSM
-
-        nodesB = []
-        for k, reslist in list(res_contact_pairs.items()):
-            for res in reslist:
-                nodesB += [res]
-        nodesB = sorted(set(nodesB))
-        return list(res_contact_pairs.keys()) + nodesB
-
     def get_node_features(self, db):
+        """Assign features to each node
+        """
 
         # get the BSA of the residues
         t0 = time()
@@ -250,7 +263,8 @@ class ResidueGraph(Graph):
                 0, 0, 0)
 
     def get_edge_features(self):
-
+        """Assign feature to each edge
+        """
         node_keys = list(self.nx.nodes)
 
         for e in self.nx.edges:
@@ -261,7 +275,8 @@ class ResidueGraph(Graph):
                 [node_keys.index(node1), node_keys.index(node2)])
 
     def get_internal_edges(self, db):
-
+        """Get internal edges and the associated distance 
+        """
         nodesA, nodesB = [], []
         for n in self.nx.nodes:
             if n[0] == 'A':
@@ -277,7 +292,17 @@ class ResidueGraph(Graph):
         return edgesA+edgesB, distA+distB
 
     def _get_internal_edges_chain(self, nodes, db, cutoff):
+        """Get internal edges and the associated distance (min) per chain
 
+        Args:
+            nodes ([type]): list of nodes
+            db ([type]): sqldb database
+            cutoff ([type]): internal edge cutoff
+
+        Returns:
+            edges between two nodes, 
+            and the minimum distance between those two nodes
+        """
         lnodes = list(nodes)
         nn = len(nodes)
         edges, dist = [], []
@@ -296,7 +321,17 @@ class ResidueGraph(Graph):
         return edges, dist
 
     def _get_internal_edges_chain_mean(self, nodes, db, cutoff):
+        """Get internal edges and the associated distance (mean) per chain
 
+        Args:
+            nodes ([type]): list of nodes
+            db ([type]): sqldb database
+            cutoff ([type]): internal edge cutoff
+
+        Returns:
+            edges between two nodes, 
+            and the mean distance between those two nodes
+        """
         lnodes = list(nodes)
         nn = len(nodes)
         edges, dist, centers = [], [], []
@@ -319,7 +354,12 @@ class ResidueGraph(Graph):
         return edges, dist
 
     def _get_edge_polarity(self, node1, node2):
+        """Get edge polarity
 
+        Args:
+            node1 
+            node2 
+        """
         v1 = self.nx.nodes[node1]['polarity']
         v2 = self.nx.nodes[node2]['polarity']
 
@@ -341,6 +381,8 @@ class ResidueGraph(Graph):
 
 
     def onehot(self, idx, size):
+        """One hot encoder
+        """
         onehot = torch.zeros(size)
         # Fill the one-hot encoded sequence with 1 at the corresponding idx
         onehot[idx] = 1

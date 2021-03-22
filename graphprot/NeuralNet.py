@@ -22,12 +22,43 @@ from .Metrics import Metrics
 
 class NeuralNet(object):
 
-    def __init__(self, database, Net,
-                 node_feature=['type', 'polarity', 'bsa'],
-                 edge_feature=['dist'], target='irmsd', lr=0.01,
-                 batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
-                 class_weights=None, task='class', classes=[0, 1], threshold=4,
-                 pretrained_model=None, shuffle=False, outdir='./'):
+    def __init__(self, database=None, Net=None,
+                node_feature=['type', 'polarity', 'bsa'],
+                edge_feature=['dist'], target='irmsd', lr=0.01,
+                batch_size=32, percent=[0.8, 0.2],  
+                database_eval=None, index=None, class_weights=None, task='class', 
+                classes=[0, 1], threshold=4.0,
+                pretrained_model=None, shuffle=True, outdir='./'):
+        """[summary]
+
+        Args:
+            database ([type], required): hdf5 dataset(s). Unique hdf5 file or list of hdf5 files. 
+            Net ([type], required): neural network.
+            node_feature (list, optional): type, charge, polarity, bsa (buried surface area), pssm, 
+                    cons (pssm conservation information), ic (pssm information content), depth , 
+                    hse (half sphere exposure).
+                    Defaults to ['type', 'polarity', 'bsa'].
+            edge_feature (list, optional): dist (distance). Defaults to ['dist'].
+            target (str, optional): irmsd, lrmsd, fnat, capri_class, bin_class, dockQ. 
+                    Defaults to 'irmsd'.
+            lr (float, optional): learning rate. Defaults to 0.01.
+            batch_size (int, optional): Defaults to 32.
+            percent (list, optional): divides the input dataset into a training and an evaluation set. 
+                    Defaults to [0.8, 0.2].
+            database_eval ([type], optional): independent evaluation set. Defaults to None.
+            index ([type], optional): index of the molecules to consider. Defaults to None.
+            class_weights ([list or bool], optional): weights provided to the cross entropy loss function. 
+                    The user can either input a list of weights or let GraphProt (True) define weights 
+                    based on the dataset content. Defaults to None.
+            task (str, optional): 'reg' for regression or 'class' for classification . Defaults to 'class'.
+            classes (list, optional): Define the dataset target classes. Defaults to [0, 1].
+            threshold (int, optional): threshold to compute binary classification metrics. Defaults to 4.0.
+            pretrained_model (str, required): path to pre-trained model.
+            shuffle (bool, optional): shuffle the training set. Defaults to True.
+            outdir (str, optional): output directory. Defaults to ./
+
+        """
+
 
         # load the input data or a pretrained model
         # each named arguments is stored in a member vairable
@@ -74,10 +105,12 @@ class NeuralNet(object):
             'cuda' if torch.cuda.is_available() else 'cpu')
 
         # put the model
+        # Regression mode
         if self.task == 'reg':
             self.model = Net(dataset.get(
                 0).num_features).to(self.device)
 
+        # Cassification mode
         elif self.task == 'class':
             self.classes_to_idx = {i: idx for idx,
                                 i in enumerate(self.classes)}
@@ -357,7 +390,7 @@ class NeuralNet(object):
             epoch (int): epoch number
             loss (float): loss during that epoch
             acc (float or None): accuracy
-            time (float): tiing of the epoch
+            time (float): timing of the epoch
         """
 
         if acc is None:
@@ -534,16 +567,13 @@ class NeuralNet(object):
 
         return out, y, running_loss, data
 
-    def get_metrics(self, data='eval', threshold=4, binary=True):
+    def get_metrics(self, data='eval', threshold=4.0, binary=True):
         """Compute the metrics needed
 
         Args:
-            data (str, optional): [description]. Defaults to 'eval'.
-            threshold (int, optional): [description]. Defaults to 4.
-            binary (bool, optional): [description]. Defaults to True.
-
-        Returns:
-            [type]: [description]
+            data (str, optional): 'eval', 'train' or 'test'. Defaults to 'eval'.
+            threshold (float, optional): threshold use to tranform data into binary values. Defaults to 4.0.
+            binary (bool, optional): Transform data into binary data. Defaults to True.
         """
 
         if self.task ==  'class':

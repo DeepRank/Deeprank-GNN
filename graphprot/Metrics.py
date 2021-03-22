@@ -67,7 +67,7 @@ def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
 class Metrics(object):
 
     def __init__(self, prediction, y, target, threshold=4, binary=True):
-        """Master class from which all the other metrics are computed
+        """Master class from which all metrics are computed
         
         Computed metrics:
         
