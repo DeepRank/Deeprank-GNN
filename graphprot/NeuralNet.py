@@ -681,7 +681,8 @@ class NeuralNet(object):
                  'lr': self.lr,
                  'index': self.index,
                  'shuffle': self.shuffle,
-                 'threshold': self.threshold}
+                 'threshold': self.threshold
+                 'cluster_nodes': self.cluster_nodes}
 
         torch.save(state, filename)
 
@@ -710,6 +711,7 @@ class NeuralNet(object):
         self.classes = state['classes']
         self.threshold = state['threshold']
         self.shuffle = state['shuffle']
+        self.cluster_nodes = state['cluster_nodes']
 
         self.opt_loaded_state_dict = state['optimizer']
         self.model_load_state_dict = state['model']
