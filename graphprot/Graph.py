@@ -14,6 +14,7 @@ class Graph(object):
 
     def __init__(self):
         """Class perform graph level action
+        
             - get score for the graph (lrmsd, irmsd, fnat, capri_class, bin_class and dockQ)
             - networkx object (graph) to hdf5 format
             - networkx object (graph) from hdf5 format
