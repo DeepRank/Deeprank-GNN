@@ -12,7 +12,16 @@ from .community_pooling import community_detection, community_pooling
 
 
 def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
+    """Divide the dataset into a training set and an evaluation set
 
+    Args:
+        dataset ([type])
+        percent (list, optional): [description]. Defaults to [0.8, 0.2].
+        shuffle (bool, optional): [description]. Defaults to True.
+
+    Returns:
+        [type]: [description]
+    """
     size = dataset.__len__()
     index = np.arange(size)
 
@@ -34,15 +43,23 @@ def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
 
 
 def PreCluster(dataset, method):
+    """Pre-cluster nodes of the graohs
 
+    Args:
+        dataset (HDF5DataSet object)
+        method (srt): 'mcl' (Markov Clustering) or 'louvain'
+    """
     for fname, mol in tqdm(dataset.index_complexes):
 
         data = dataset.load_one_graph(fname, mol)
 
         if data is None:
             f5 = h5py.File(fname, 'a')
-            if f5.get(mol):
+            try:
+                print('deleting {}'.format(mol))
                 del f5[mol]
+            except:
+                print('{} not found'.format(mol))
             f5.close()
             continue
 
@@ -77,7 +94,22 @@ class HDF5DataSet(Dataset):
                  dict_filter=None, target=None, tqdm=True, index=None,
                  node_feature='all', edge_feature=['dist'], clustering_method='mcl',
                  edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
+        """Class from which the hdf5 dataset loaded.
 
+        Args:
+            root (str, optional): [description]. Defaults to './'.
+            database (str, optional): Path to hdf5 file(s). Defaults to None.
+            transform (callable, optional): A function/transform that takes in an torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before every access. Defaults to None.
+            pre_transform (callable, optional):  A function/transform that takes in an torch_geometric.data.Data object and returns a transformed version. The data object will be transformed before being saved to disk.. Defaults to None.
+            dict_filter dictionnary, optional): Dictionnary of type [name: cond] to filter the molecules. Defaults to None.
+            target (str, optional): irmsd, lrmsd, fnat, bin, capri_class or DockQ. Defaults to None.
+            tqdm (bool, optional): Show progress bar. Defaults to True.
+            index (int, optional): index of a molecule. Defaults to None.
+            node_feature (str or list, optional): consider all pre-computed node features ('all') or some defined node features (provide a list). Defaults to 'all'.
+            edge_feature (list, optional): only distances are available in this version of GraphProt. Defaults to ['dist'].
+            clustering_method (str, optional): 'mcl' (Markov Clustering) or 'louvain'. Defaults to 'mcl'.
+            edge_feature_transform (function, optional): transformation applied to the edge features. Defaults to lambdax:np.tanh(-x/2+2)+1.
+        """
         super().__init__(root, transform, pre_transform)
 
         # allow for multiple database
@@ -123,6 +155,7 @@ class HDF5DataSet(Dataset):
 
     def get(self, index):
         """Get one item from its unique index.
+        
         Args:
             index (int): index of the complex
         Returns:
@@ -135,7 +168,6 @@ class HDF5DataSet(Dataset):
 
     def check_hdf5_files(self):
         """Check if the data contained in the hdf5 file is ok."""
-
         print("   Checking dataset Integrity")
         remove_file = []
         for fname in self.database:
@@ -155,7 +187,8 @@ class HDF5DataSet(Dataset):
             self.database.remove(name)
 
     def check_node_feature(self):
-
+        """Check if required node features exist
+        """
         f = h5py.File(self.database[0], 'r')
         mol_key = list(f.keys())[0]
         self.available_node_feature = list(
@@ -175,7 +208,8 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def check_edge_feature(self):
-
+        """Check if required edge features exist
+        """
         f = h5py.File(self.database[0], 'r')
         mol_key = list(f.keys())[0]
         self.available_edge_feature = list(
@@ -195,9 +229,15 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def load_one_graph(self, fname, mol):
+        """Load one graph given
 
-        #print('Load mol :', mol)
+        Args:
+            fname (str): hdf5 file name
+            mol (str): name of the molecule
 
+        Returns:
+            Data object or None: torch_geometric Data object containing the node features, the internal and external edge features, the target and the xyz coordinates. Return None if features cannot be loaded.
+        """
         f5 = h5py.File(fname, 'r')
         try : 
             grp = f5[mol]
@@ -221,50 +261,57 @@ class HDF5DataSet(Dataset):
             f5.close()
             return None
 
-        # index ! we have to have all the edges i.e : (i,j) and (j,i)
-        ind = grp['edge_index'][()]
-        ind = np.vstack((ind, np.flip(ind, 1))).T
-        edge_index = torch.tensor(ind, dtype=torch.long).contiguous()
+        try:
+            # index ! we have to have all the edges i.e : (i,j) and (j,i)
+            ind = grp['edge_index'][()]
+            ind = np.vstack((ind, np.flip(ind, 1))).T
+            edge_index = torch.tensor(ind, dtype=torch.long).contiguous()
 
-        # edge feature (same issue than above)
-        data = ()
-        if self.edge_feature is not None:
-            for feat in self.edge_feature:
-                vals = grp['edge_data/'+feat][()]
-                if vals.ndim == 1:
-                    vals = vals.reshape(-1, 1)
-                data += (vals,)
-            data = np.hstack(data)
-            data = np.vstack((data, data))
-            data = self.edge_feature_transform(data)
-            edge_attr = torch.tensor(
-                data, dtype=torch.float).contiguous()
+            # edge feature (same issue than above)
+            data = ()
+            if self.edge_feature is not None:
+                for feat in self.edge_feature:
+                    vals = grp['edge_data/'+feat][()]
+                    if vals.ndim == 1:
+                        vals = vals.reshape(-1, 1)
+                    data += (vals,)
+                data = np.hstack(data)
+                data = np.vstack((data, data))
+                data = self.edge_feature_transform(data)
+                edge_attr = torch.tensor(
+                    data, dtype=torch.float).contiguous()
 
-        else:
-            edge_attr = None
+            else:
+                edge_attr = None
 
-        # internal edges
-        ind = grp['internal_edge_index'][()]
-        ind = np.vstack((ind, np.flip(ind, 1))).T
-        internal_edge_index = torch.tensor(
-            ind, dtype=torch.long).contiguous()
+            # internal edges
+            ind = grp['internal_edge_index'][()]
+            ind = np.vstack((ind, np.flip(ind, 1))).T
+            internal_edge_index = torch.tensor(
+                ind, dtype=torch.long).contiguous()
 
-        # internal edge feature
-        data = ()
-        if self.edge_feature is not None:
-            for feat in self.edge_feature:
-                vals = grp['internal_edge_data/'+feat][()]
-                if vals.ndim == 1:
-                    vals = vals.reshape(-1, 1)
-                data += (vals,)
-            data = np.hstack(data)
-            data = np.vstack((data, data))
-            data = self.edge_feature_transform(data)
-            internal_edge_attr = torch.tensor(
-                data, dtype=torch.float).contiguous()
+            # internal edge feature
+            data = ()
+            if self.edge_feature is not None:
+                for feat in self.edge_feature:
+                    vals = grp['internal_edge_data/'+feat][()]
+                    if vals.ndim == 1:
+                        vals = vals.reshape(-1, 1)
+                    data += (vals,)
+                data = np.hstack(data)
+                data = np.vstack((data, data))
+                data = self.edge_feature_transform(data)
+                internal_edge_attr = torch.tensor(
+                    data, dtype=torch.float).contiguous()
 
-        else:
-            internal_edge_attr = None
+            else:
+                internal_edge_attr = None
+        
+        except:
+            print('edge features not found in the file',
+                  self.database[0])
+            f5.close()
+            return None
 
         # target
         if self.target is None:
@@ -317,6 +364,7 @@ class HDF5DataSet(Dataset):
 
     def create_index_molecules(self):
         '''Create the indexing of each molecule in the dataset.
+        
         Create the indexing: [ ('1ak4.hdf5,1AK4_100w),...,('1fqj.hdf5,1FGJ_400w)]
         This allows to refer to one complex with its index in the list
         '''
@@ -357,8 +405,10 @@ class HDF5DataSet(Dataset):
 
     def filter(self, molgrp):
         '''Filter the molecule according to a dictionary.
+        
         The filter is based on the attribute self.dict_filter
         that must be either of the form: { 'name' : cond } or None
+        
         Args:
             molgrp (str): group name of the molecule in the hdf5 file
         Returns:

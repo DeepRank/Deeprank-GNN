@@ -22,13 +22,42 @@ from .Metrics import Metrics
 
 class NeuralNet(object):
 
-    def __init__(self, database, Net,
-                 node_feature=['type', 'polarity', 'bsa'],
-                 edge_feature=['dist'], target='irmsd', lr=0.01,
-                 batch_size=32, percent=[0.8, 0.2], index=None, database_eval=None,
-                 class_weights=None, task='class', classes=[0, 1], threshold=4,
-                 pretrained_model=None, shuffle=False, outdir='./', cluster_nodes = True):
+    def __init__(self, database=None, Net=None,
+                node_feature=['type', 'polarity', 'bsa'],
+                edge_feature=['dist'], target='irmsd', lr=0.01,
+                batch_size=32, percent=[0.8, 0.2],  
+                database_eval=None, index=None, class_weights=None, task='class', 
+                classes=[0, 1], threshold=4.0,
+                pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl'):
+        """Class from which the network is trained, evaluated and tested
 
+        Args:
+            database (str, required): path(s) to hdf5 dataset(s). Unique hdf5 file or list of hdf5 files. 
+            Net (function, required): neural network.
+            node_feature (list, optional): type, charge, polarity, bsa (buried surface area), pssm, 
+                    cons (pssm conservation information), ic (pssm information content), depth , 
+                    hse (half sphere exposure).
+                    Defaults to ['type', 'polarity', 'bsa'].
+            edge_feature (list, optional): dist (distance). Defaults to ['dist'].
+            target (str, optional): irmsd, lrmsd, fnat, capri_class, bin_class, dockQ. 
+                    Defaults to 'irmsd'.
+            lr (float, optional): learning rate. Defaults to 0.01.
+            batch_size (int, optional): Defaults to 32.
+            percent (list, optional): divides the input dataset into a training and an evaluation set. 
+                    Defaults to [0.8, 0.2].
+            database_eval ([type], optional): independent evaluation set. Defaults to None.
+            index ([type], optional): index of the molecules to consider. Defaults to None.
+            class_weights ([list or bool], optional): weights provided to the cross entropy loss function. 
+                    The user can either input a list of weights or let GraphProt (True) define weights 
+                    based on the dataset content. Defaults to None.
+            task (str, optional): 'reg' for regression or 'class' for classification . Defaults to 'class'.
+            classes (list, optional): Define the dataset target classes. Defaults to [0, 1].
+            threshold (int, optional): threshold to compute binary classification metrics. Defaults to 4.0.
+            pretrained_model (str, required): path to pre-trained model.
+            shuffle (bool, optional): shuffle the training set. Defaults to True.
+            outdir (str, optional): output directory. Defaults to ./
+            cluster_nodes (bool, optional): perform node clustering ('mcl' or 'louvain' algorithm). Default to 'mcl'.
+        """
         # load the input data or a pretrained model
         # each named arguments is stored in a member vairable
         # i.e. self.node_feature = node_feature
@@ -45,8 +74,13 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        if cluster_nodes == True :
-            PreCluster(dataset, method='mcl')
+        if self.cluster_nodes != None :
+            if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':  
+                PreCluster(dataset, method=self.cluster_nodes)
+            else :
+                raise ValueError(
+                    f"Invalid node clustering method. \n\t"
+                    f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
 
 
         # divide the dataset
@@ -76,10 +110,12 @@ class NeuralNet(object):
             'cuda' if torch.cuda.is_available() else 'cpu')
 
         # put the model
+        # Regression mode
         if self.task == 'reg':
             self.model = Net(dataset.get(
                 0).num_features).to(self.device)
 
+        # Cassification mode
         elif self.task == 'class':
             self.classes_to_idx = {i: idx for idx,
                                 i in enumerate(self.classes)}
@@ -124,11 +160,20 @@ class NeuralNet(object):
                 self.weights = self.class_weights
 
             # Automatic definition base on the classes proportions in the input training set
+        elif self.task == 'class':
+            self.weights=None
+
+            # assign weights to each class in case of unbalanced dataset
+            # User weights definition
+            if type(self.class_weights) == list :
+                self.weights = self.class_weights
+
+            # Automatic definition base on the classes proportions in the input training set
             elif self.class_weights == True :
                 self.weights = self.compute_class_weights()
-
+ 
             self.loss = nn.CrossEntropyLoss(
-                weight=self.weights, reduction='mean')
+                weight=self.weights, reduction='mean')               
 
         # init lists
         self.train_acc = []
@@ -137,131 +182,6 @@ class NeuralNet(object):
         self.valid_acc = []
         self.valid_loss = []
 
-    def compute_class_weights(self):
-        
-        targets_all = []
-        for batch in self.train_loader:
-            targets_all.append(batch.y)  
-
-        targets_all = torch.cat(targets_all).squeeze().tolist()
-        weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
-        print('class occurences: {}'.format(weights))
-        weights = 1.0 / weights
-        weights = weights / weights.sum()
-        print('class weights: {}'.format(weights))
-        return weights
-                    
-    def plot_loss(self, name=''):
-        """Plot the loss of the model as a function of the epoch
-
-        Args:
-            name (str, optional): name of the output file. Defaults to ''.
-        """
-
-        nepoch = self.nepoch
-        train_loss = self.train_loss
-        valid_loss = self.valid_loss
-
-        import matplotlib.pyplot as plt
-
-        if len(valid_loss) > 1:
-            plt.plot(range(1, nepoch+1), valid_loss,
-                     c='red', label='valid')
-
-        if len(train_loss) > 1:
-            plt.plot(range(1, nepoch+1), train_loss,
-                     c='blue', label='train')
-            plt.title("Loss/ epoch")
-            plt.xlabel("Number of epoch")
-            plt.ylabel("Total loss")
-            plt.legend()
-            plt.savefig('loss_epoch{}.png'.format(name))
-            plt.close()
-
-    def plot_acc(self, name=''):
-        """Plot the accuracy of the model as a function of the epoch
-
-        Args:
-            name (str, optional): name of the output file. Defaults to ''.
-        """
-        
-        nepoch = self.nepoch
-        train_acc = self.train_acc
-        valid_acc = self.valid_acc
-
-        import matplotlib.pyplot as plt
-
-        if len(valid_acc) > 1:
-            plt.plot(range(1, nepoch+1), valid_acc,
-                     c='red', label='valid')
-
-        if len(train_acc) > 1:
-            plt.plot(range(1, nepoch+1), train_acc,
-                     c='blue', label='train')
-            plt.title("Accuracy/ epoch")
-            plt.xlabel("Number of epoch")
-            plt.ylabel("Accuracy")
-            plt.legend()
-            plt.savefig('acc_epoch{}.png'.format(name))
-            plt.close()
-
-    def plot_hit_rate(self, data='eval', threshold=4, mode='percentage', name=''):
-        """Plots the hitrate as a function of the models' rank
-
-        Args:
-            data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
-            threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
-            mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
-        """
-
-        import matplotlib.pyplot as plt
-
-        try:
-
-            hitrate = self.get_metrics(data, threshold).hitrate()
-
-            nb_models = len(hitrate)
-            X = range(1, nb_models + 1)
-
-            if mode == 'percentage':
-                hitrate /= hitrate.sum()
-
-            plt.plot(X, hitrate, c='blue', label='train')
-            plt.title("Hit rate")
-            plt.xlabel("Number of models")
-            plt.ylabel("Hit Rate")
-            plt.legend()
-            plt.savefig('hitrate{}.png'.format(name))
-            plt.close()
-
-        except:
-            print('No hit rate plot could be generated for you {} task'.format(
-                self.task))
-
-    @staticmethod
-    def update_name(hdf5, outdir):
-        """Check if the file already exists, if so, update the name
-
-        Args:
-            hdf5 (str): hdf5 file
-            outdir (str): output directory
-
-        Returns:
-            str: update hdf5 name
-        """
-
-        fname = os.path.join(outdir, hdf5)
-
-        count = 0
-        hdf5_name = hdf5.split('.')[0]
-
-        # If file exists, change its name with a number                                                                                               
-        while os.path.exists(fname) : 
-            count += 1
-            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
-            fname = os.path.join(outdir, hdf5)
-
-        return fname
 
     def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """Train the model
@@ -353,42 +273,6 @@ class NeuralNet(object):
         # Close output file
         self.f5.close()
 
-
-    @staticmethod
-    def print_epoch_data(stage, epoch, loss, acc, time):
-        """Prints the data of each epoch
-
-        Args:
-            stage (str): tain or valid
-            epoch (int): epoch number
-            loss (float): loss during that epoch
-            acc (float or None): accuracy
-            time (float): tiing of the epoch
-        """
-
-        if acc is None:
-            acc_str = 'None'
-        else:
-            acc_str = '%1.4e' % acc
-
-        print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
-                                                                             stage, loss, acc_str, time))
-
-    def format_output(self, pred, target=None):
-        """Format the network output depending on the task (classification/regression)."""
-
-
-        if self.task == 'class' :
-            pred = F.softmax(pred, dim=1)
-            if target is not None: 
-                target = torch.tensor(  
-                    [self.classes_to_idx[int(x)] for x in target])
-
-        else:
-            pred = pred.reshape(-1)
-            
-        return pred, target
-
     
     def test(self, database_test, threshold=4, hdf5='test_data.hdf5'):
         """Tests the model 
@@ -434,6 +318,7 @@ class NeuralNet(object):
         self._export_epoch_hdf5(0, self.data)
             
         self.f5.close()
+
 
     def eval(self, loader):
         """Evaluate the model
@@ -540,16 +425,14 @@ class NeuralNet(object):
 
         return out, y, running_loss, data
 
-    def get_metrics(self, data='eval', threshold=4, binary=True):
+
+    def get_metrics(self, data='eval', threshold=4.0, binary=True):
         """Compute the metrics needed
 
         Args:
-            data (str, optional): [description]. Defaults to 'eval'.
-            threshold (int, optional): [description]. Defaults to 4.
-            binary (bool, optional): [description]. Defaults to True.
-
-        Returns:
-            [type]: [description]
+            data (str, optional): 'eval', 'train' or 'test'. Defaults to 'eval'.
+            threshold (float, optional): threshold use to tranform data into binary values. Defaults to 4.0.
+            binary (bool, optional): Transform data into binary data. Defaults to True.
         """
 
         if self.task ==  'class':
@@ -585,6 +468,174 @@ class NeuralNet(object):
         return Metrics(pred, y, self.target, threshold, binary)
 
 
+    def compute_class_weights(self):
+        
+        targets_all = []
+        for batch in self.train_loader:
+            targets_all.append(batch.y)  
+
+        targets_all = torch.cat(targets_all).squeeze().tolist()
+        weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
+        print('class occurences: {}'.format(weights))
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        print('class weights: {}'.format(weights))
+        return weights
+
+
+    @staticmethod
+    def print_epoch_data(stage, epoch, loss, acc, time):
+        """Prints the data of each epoch
+
+        Args:
+            stage (str): tain or valid
+            epoch (int): epoch number
+            loss (float): loss during that epoch
+            acc (float or None): accuracy
+            time (float): timing of the epoch
+        """
+
+        if acc is None:
+            acc_str = 'None'
+        else:
+            acc_str = '%1.4e' % acc
+
+        print('Epoch [%04d] : %s loss %e | accuracy %s | time %1.2e sec.' % (epoch,
+                                                                             stage, loss, acc_str, time))
+
+
+    def format_output(self, pred, target=None):
+        """Format the network output depending on the task (classification/regression)."""
+
+
+        if self.task == 'class' :
+            pred = F.softmax(pred, dim=1)
+            if target is not None: 
+                target = torch.tensor(  
+                    [self.classes_to_idx[int(x)] for x in target])
+
+        else:
+            pred = pred.reshape(-1)
+            
+        return pred, target
+
+
+    @staticmethod
+    def update_name(hdf5, outdir):
+        """Check if the file already exists, if so, update the name
+
+        Args:
+            hdf5 (str): hdf5 file
+            outdir (str): output directory
+
+        Returns:
+            str: update hdf5 name
+        """
+
+        fname = os.path.join(outdir, hdf5)
+
+        count = 0
+        hdf5_name = hdf5.split('.')[0]
+
+        # If file exists, change its name with a number                                                                                               
+        while os.path.exists(fname) : 
+            count += 1
+            hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
+            fname = os.path.join(outdir, hdf5)
+
+        return fname
+
+
+    def plot_loss(self, name=''):
+        """Plot the loss of the model as a function of the epoch
+
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
+
+        nepoch = self.nepoch
+        train_loss = self.train_loss
+        valid_loss = self.valid_loss
+
+        import matplotlib.pyplot as plt
+
+        if len(valid_loss) > 1:
+            plt.plot(range(1, nepoch+1), valid_loss,
+                     c='red', label='valid')
+
+        if len(train_loss) > 1:
+            plt.plot(range(1, nepoch+1), train_loss,
+                     c='blue', label='train')
+            plt.title("Loss/ epoch")
+            plt.xlabel("Number of epoch")
+            plt.ylabel("Total loss")
+            plt.legend()
+            plt.savefig('loss_epoch{}.png'.format(name))
+            plt.close()
+
+
+    def plot_acc(self, name=''):
+        """Plot the accuracy of the model as a function of the epoch
+
+        Args:
+            name (str, optional): name of the output file. Defaults to ''.
+        """
+        
+        nepoch = self.nepoch
+        train_acc = self.train_acc
+        valid_acc = self.valid_acc
+
+        import matplotlib.pyplot as plt
+
+        if len(valid_acc) > 1:
+            plt.plot(range(1, nepoch+1), valid_acc,
+                     c='red', label='valid')
+
+        if len(train_acc) > 1:
+            plt.plot(range(1, nepoch+1), train_acc,
+                     c='blue', label='train')
+            plt.title("Accuracy/ epoch")
+            plt.xlabel("Number of epoch")
+            plt.ylabel("Accuracy")
+            plt.legend()
+            plt.savefig('acc_epoch{}.png'.format(name))
+            plt.close()
+
+
+    def plot_hit_rate(self, data='eval', threshold=4, mode='percentage', name=''):
+        """Plots the hitrate as a function of the models' rank
+
+        Args:
+            data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
+            threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
+            mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
+        """
+
+        import matplotlib.pyplot as plt
+
+        try:
+
+            hitrate = self.get_metrics(data, threshold).hitrate()
+
+            nb_models = len(hitrate)
+            X = range(1, nb_models + 1)
+
+            if mode == 'percentage':
+                hitrate /= hitrate.sum()
+
+            plt.plot(X, hitrate, c='blue', label='train')
+            plt.title("Hit rate")
+            plt.xlabel("Number of models")
+            plt.ylabel("Hit Rate")
+            plt.legend()
+            plt.savefig('hitrate{}.png'.format(name))
+            plt.close()
+
+        except:
+            print('No hit rate plot could be generated for you {} task'.format(
+                self.task))
+
+
     def plot_scatter(self):
         """Scatter plot of the results
         """
@@ -609,6 +660,7 @@ class NeuralNet(object):
         plt.scatter(truth['valid'], pred['valid'], c='red')
         plt.show()
 
+
     def save_model(self, filename='model.pth.tar'):
         """Save the model to a file
 
@@ -629,9 +681,11 @@ class NeuralNet(object):
                  'lr': self.lr,
                  'index': self.index,
                  'shuffle': self.shuffle,
-                 'threshold': self.threshold}
+                 'threshold': self.threshold,
+                 'cluster_nodes': self.cluster_nodes}
 
         torch.save(state, filename)
+
 
     def load_params(self, filename):
         """Load the parameters of a rpetrained model
@@ -657,6 +711,7 @@ class NeuralNet(object):
         self.classes = state['classes']
         self.threshold = state['threshold']
         self.shuffle = state['shuffle']
+        self.cluster_nodes = state['cluster_nodes']
 
         self.opt_loaded_state_dict = state['optimizer']
         self.model_load_state_dict = state['model']

@@ -13,7 +13,12 @@ import h5py
 class Graph(object):
 
     def __init__(self):
-
+        """Class perform graph level action
+        
+            - get score for the graph (lrmsd, irmsd, fnat, capri_class, bin_class and dockQ)
+            - networkx object (graph) to hdf5 format
+            - networkx object (graph) from hdf5 format
+        """
         self.type = None
         self.name = None
         self.nx = None
@@ -21,7 +26,11 @@ class Graph(object):
                       'fnat': None, 'dockQ': None, 'bin_class': None}
 
     def get_score(self, ref):
+        """Assign scores to a graph
 
+        Args:
+            ref (path): path to the reference structure to compute the different score
+        """
         ref_name = os.path.splitext(os.path.basename(ref))[0]
         sim = StructureSimilarity(self.pdb, ref)
         
@@ -41,7 +50,11 @@ class Graph(object):
         
 
     def nx2h5(self, f5):
+        """Networkx object to hdf5 format
 
+        Args:
+            f5 ([type]): hdf5 file
+        """
         # group for the graph
         grp = f5.create_group(self.name)
 
@@ -117,7 +130,13 @@ class Graph(object):
                 score_grp.create_dataset(k, data=v)
 
     def h52nx(self, f5name, mol, molgrp=None):
+        """Hdf5 file to Networkx object
 
+        Args:
+            f5name (str): hdf5 file
+            mol (str): molecule name
+            molgrp ([type], optional): hdf5[molecule]. Defaults to None.
+        """
         if molgrp is None:
 
             f5 = h5py.File(f5name, 'r')
@@ -208,7 +227,14 @@ class Graph(object):
             f5.close()
 
     def plotly_2d(self, out=None, offline=False, iplot=True, method='louvain'):
+        """Plot the interface graph in 2D
 
+        Args:
+            out ([type], optional): output name. Defaults to None.
+            offline (bool, optional): Defaults to False.
+            iplot (bool, optional): Defaults to True.
+            method (str, optional): 'mcl' of 'louvain'. Defaults to 'louvain'.
+        """
         if offline:
             import plotly.offline as py
         else:
@@ -347,7 +373,13 @@ class Graph(object):
             py.plot(fig)
 
     def plotly_3d(self, out=None, offline=False, iplot=True):
+        """Plot interface graph in 3D
 
+        Args:
+            out ([type], optional): [description]. Defaults to None.
+            offline (bool, optional): [description]. Defaults to False.
+            iplot (bool, optional): [description]. Defaults to True.
+        """
         if offline:
             import plotly.offline as py
         else:
