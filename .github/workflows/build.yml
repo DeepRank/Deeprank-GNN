@@ -50,14 +50,16 @@ jobs:
         CONDA_PREFIX: /usr/share/miniconda
 
     - name: Test with pytest
-      run: |
-        pytest --cov=graphprot --cov-report xml:coverage.xml
-
-    - name: Coveralls
       env:
-        GITHUB_TOKEN: ${{ secrets.github_token }}
-        COVERALLS_FLAG_NAME: python-${{ matrix.version }}
+        CONDA_PREFIX: /usr/share/miniconda
       run: |
-        coveralls --service=github
+        pytest --cov-config setup.cfg
+
+#     - name: Coveralls
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.github_token }}
+#         COVERALLS_FLAG_NAME: python-${{ matrix.version }}
+#       run: |
+#         coveralls --service=github
 
 
