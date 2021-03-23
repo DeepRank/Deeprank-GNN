@@ -681,7 +681,7 @@ class NeuralNet(object):
                  'lr': self.lr,
                  'index': self.index,
                  'shuffle': self.shuffle,
-                 'threshold': self.threshold
+                 'threshold': self.threshold,
                  'cluster_nodes': self.cluster_nodes}
 
         torch.save(state, filename)
