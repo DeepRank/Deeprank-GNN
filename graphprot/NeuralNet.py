@@ -28,7 +28,7 @@ class NeuralNet(object):
                 batch_size=32, percent=[0.8, 0.2],  
                 database_eval=None, index=None, class_weights=None, task='class', 
                 classes=[0, 1], threshold=4.0,
-                pretrained_model=None, shuffle=True, outdir='./', cluster_nodes = 'mcl'):
+                pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl'):
         """Class from which the network is trained, evaluated and tested
 
         Args:
