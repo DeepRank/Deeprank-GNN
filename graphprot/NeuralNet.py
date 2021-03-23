@@ -28,12 +28,12 @@ class NeuralNet(object):
                 batch_size=32, percent=[0.8, 0.2],  
                 database_eval=None, index=None, class_weights=None, task='class', 
                 classes=[0, 1], threshold=4.0,
-                pretrained_model=None, shuffle=True, outdir='./', cluster_nodes = True):
-        """[summary]
+                pretrained_model=None, shuffle=True, outdir='./', cluster_nodes = 'mcl'):
+        """Class from which the network is trained, evaluated and tested
 
         Args:
-            database ([type], required): hdf5 dataset(s). Unique hdf5 file or list of hdf5 files. 
-            Net ([type], required): neural network.
+            database (str, required): path(s) to hdf5 dataset(s). Unique hdf5 file or list of hdf5 files. 
+            Net (function, required): neural network.
             node_feature (list, optional): type, charge, polarity, bsa (buried surface area), pssm, 
                     cons (pssm conservation information), ic (pssm information content), depth , 
                     hse (half sphere exposure).
@@ -56,10 +56,8 @@ class NeuralNet(object):
             pretrained_model (str, required): path to pre-trained model.
             shuffle (bool, optional): shuffle the training set. Defaults to True.
             outdir (str, optional): output directory. Defaults to ./
-
+            cluster_nodes (bool, optional): perform node clustering ('mcl' or 'louvain' algorithm). Default to 'mcl'.
         """
-
-
         # load the input data or a pretrained model
         # each named arguments is stored in a member vairable
         # i.e. self.node_feature = node_feature
@@ -76,8 +74,13 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        if cluster_nodes == True :
-            PreCluster(dataset, method='mcl')
+        if self.cluster_nodes != None :
+            if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':  
+                PreCluster(dataset, method=self.cluster_nodes)
+            else :
+                raise ValueError(
+                    f"Invalid node clustering method. \n\t"
+                    f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
 
 
         # divide the dataset
