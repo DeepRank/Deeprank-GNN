@@ -155,6 +155,7 @@ class HDF5DataSet(Dataset):
 
     def get(self, index):
         """Get one item from its unique index.
+        
         Args:
             index (int): index of the complex
         Returns:
@@ -167,7 +168,6 @@ class HDF5DataSet(Dataset):
 
     def check_hdf5_files(self):
         """Check if the data contained in the hdf5 file is ok."""
-
         print("   Checking dataset Integrity")
         remove_file = []
         for fname in self.database:
@@ -238,8 +238,6 @@ class HDF5DataSet(Dataset):
         Returns:
             Data object or None: torch_geometric Data object containing the node features, the internal and external edge features, the target and the xyz coordinates. Return None if features cannot be loaded.
         """
-        #print('Load mol :', mol)
-
         f5 = h5py.File(fname, 'r')
         try : 
             grp = f5[mol]
@@ -366,6 +364,7 @@ class HDF5DataSet(Dataset):
 
     def create_index_molecules(self):
         '''Create the indexing of each molecule in the dataset.
+        
         Create the indexing: [ ('1ak4.hdf5,1AK4_100w),...,('1fqj.hdf5,1FGJ_400w)]
         This allows to refer to one complex with its index in the list
         '''
@@ -406,8 +405,10 @@ class HDF5DataSet(Dataset):
 
     def filter(self, molgrp):
         '''Filter the molecule according to a dictionary.
+        
         The filter is based on the attribute self.dict_filter
         that must be either of the form: { 'name' : cond } or None
+        
         Args:
             molgrp (str): group name of the molecule in the hdf5 file
         Returns:
