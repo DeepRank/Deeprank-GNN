@@ -16,8 +16,6 @@ class ResidueGraph(Graph):
     def __init__(self, pdb=None, pssm=None,
                  contact_distance=8.5, internal_contact_distance=3,
                  pssm_align='res'):
-        super().__init__()
-
         """Class from which Residue features are computed
 
         Args:
@@ -27,6 +25,7 @@ class ResidueGraph(Graph):
             internal_contact_distance (int, optional): cutoff distance for internal edges. Defaults to 3.
             pssm_align (str, optional): [description]. Defaults to 'res'.
         """
+        super().__init__()
 
         self.type = 'residue'
         self.pdb = pdb
