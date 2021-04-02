@@ -184,9 +184,9 @@ class NeuralNet(object):
                 0).num_features).to(self.device)
         # classification mode
         elif self.task == 'class':
-            self.classes_idx = {i: idx for idx,
+            self.classes_to_idx = {i: idx for idx,
                                 i in enumerate(self.classes)}
-            self.idx_classes = {idx: i for idx,
+            self.idx_to_classes = {idx: i for idx,
                                 i in enumerate(self.classes)}
             self.output_shape = len(self.classes)
             try:
