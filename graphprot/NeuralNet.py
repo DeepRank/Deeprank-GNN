@@ -91,11 +91,17 @@ class NeuralNet(object):
         print('Test set loaded')
         self.put_the_model(test_dataset, Net)
 
+        self.set_loss()
+        
+        # optimizer                                                                                                                                                                  
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=self.lr)
+        
         # load the model and the optimizer state if we have one                                                                                                                      
         self.optimizer.load_state_dict(self.opt_loaded_state_dict)
         self.model.load_state_dict(self.model_load_state_dict)
 
-        self.set_loss()
+
 
     def load_model(self, database, Net, database_eval):
         """Loads model
