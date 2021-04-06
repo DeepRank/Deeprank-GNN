@@ -74,13 +74,14 @@ class NeuralNet(object):
             self.load_pretrained_model(database, Net)
 
     def load_pretrained_model(self, database, Net):
-        """Loads pretrained model
+        """
+	Loads pretrained model
 
         Args:
             database (str): path to hdf5 file(s)
             Net (function): neural network
         """
-        # Load the test set                                                                                                                                                          
+        # Load the test set
         test_dataset = HDF5DataSet(root='./', database=database,
                                    node_feature=self.node_feature, edge_feature=self.edge_feature,
                                    target=self.target)
@@ -93,18 +94,19 @@ class NeuralNet(object):
 
         self.set_loss()
         
-        # optimizer                                                                                                                                                                  
+        # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr)
         
-        # load the model and the optimizer state if we have one                                                                                                                      
+        # load the model and the optimizer state if we have one
         self.optimizer.load_state_dict(self.opt_loaded_state_dict)
         self.model.load_state_dict(self.model_load_state_dict)
 
 
 
     def load_model(self, database, Net, database_eval):
-        """Loads model
+        """
+	Loads model
 
         Args:
             database (str): path to the hdf5 file(s) of the training set
@@ -114,28 +116,28 @@ class NeuralNet(object):
         Raises:
             ValueError: Invalid node clustering method.
         """
-        # dataset                                                                                                                                                                    
+        # dataset
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
         if self.cluster_nodes != None :
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':  
                 PreCluster(dataset, method=self.cluster_nodes)
-            else :
+	else :
                 raise ValueError(
                     f"Invalid node clustering method. \n\t"
                     f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
 
-        # divide the dataset                                                                                                                                                         
+        # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=self.percent)
 
-        # dataloader                                                                                                                                                                 
+        # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
         print('Training validation set loaded')  
 
-        # independent validation dataset                                                                                                                                             
+        # independent validation dataset
         if database_eval is not None:
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
 					node_feature=self.node_feature, edge_feature=self.edge_feature,
@@ -144,20 +146,20 @@ class NeuralNet(object):
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain': 
-                PreCluster(valid_dataset, method=self.cluster_nodes)                                                                                                                                           
+                PreCluster(valid_dataset, method=self.cluster_nodes)
 
         else:
             print('No independent validation set loaded')
 
         self.put_the_model(dataset, Net)
 
-        # optimizer                                                                                                                                                                  
+        # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr)
 
         self.set_loss()
 
-        # init lists                                                                                                                                                                 
+        # init lists
         self.train_acc = []
         self.train_loss = []
 
@@ -165,7 +167,8 @@ class NeuralNet(object):
         self.valid_loss = []
 
     def put_the_model(self, dataset, Net):
-        """Puts the model on the available device
+        """
+	Puts the model on the available device
 
         Args:
             dataset (str): path to the hdf5 file(s)
@@ -174,12 +177,12 @@ class NeuralNet(object):
         Raises:
             ValueError: Incorrect output shape
         """
-        # get the device                                                                                                                                                             
+        # get the device
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
 
         # regression mode
-        if self.task == 'reg':
+	if self.task == 'reg':
             self.model = Net(dataset.get(
                 0).num_features).to(self.device)
         # classification mode
@@ -201,14 +204,13 @@ class NeuralNet(object):
                     f"self.fc2 = torch.nn.Linear(64, 1) --> self.fc2 = torch.nn.Linear(64, output_shape) \n\t")
 
     def set_loss(self):
-        """Set the loss function (MSE loss for regression/ CrossEntropy loss for classification)
-        """
+        """Set the loss function (MSE loss for regression/ CrossEntropy loss for classification)"""
         if self.task == 'reg':
             self.loss = MSELoss()
 
         elif self.task == 'class':
 
-            # assign weights to each class in case of unbalanced dataset                                                                                                             
+            # assign weights to each class in case of unbalanced dataset
             self.weights=None
             if self.class_weights == True :
                 targets_all = []
@@ -226,7 +228,8 @@ class NeuralNet(object):
                 weight=self.weights, reduction='mean')
 
     def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
-        """Train the model
+        """
+	Train the model
 
         Args:
             nepoch (int, optional): number of epochs. Defaults to 1.
@@ -317,7 +320,8 @@ class NeuralNet(object):
 
     
     def test(self, database_test=None, threshold=4, hdf5='test_data.hdf5'):
-        """Tests the model 
+        """
+	Tests the model 
 
         Args:
             database_test ([type], optional): test database
@@ -347,10 +351,10 @@ class NeuralNet(object):
             if self.load_pretrained_model == None:
                 raise ValueError(
                     f"You need to upload a test dataset \n\t"
-                    f"\n\t"     
-                    f">> model.test(test_dataset)\n\t"     
-                    f"if a pretrained network is loaded, you can directly test the model on the loaded dataset :\n\t"     
-                    f">> model = NeuralNet(database_test, gnn, pretrained_model = model_saved, target=None)\n\t"     
+                    f"\n\t"
+                    f">> model.test(test_dataset)\n\t"
+                    f"if a pretrained network is loaded, you can directly test the model on the loaded dataset :\n\t"
+                    f">> model = NeuralNet(database_test, gnn, pretrained_model = model_saved, target=None)\n\t"
                     f">> model.test()\n\t")
 		
         self.data = {}
@@ -375,7 +379,8 @@ class NeuralNet(object):
 
 
     def eval(self, loader):
-        """Evaluate the model
+        """
+	Evaluate the model
 
         Args:
             loader (DataLoader): [description]
@@ -430,7 +435,8 @@ class NeuralNet(object):
 
     
     def _epoch(self, epoch):
-        """Run a single epoch
+        """
+	Run a single epoch
 
         Returns:
             tuple: prediction, ground truth, running loss
@@ -481,7 +487,8 @@ class NeuralNet(object):
 
 
     def get_metrics(self, data='eval', threshold=4.0, binary=True):
-        """Compute the metrics needed
+        """
+	Compute the metrics needed
 
         Args:
             data (str, optional): 'eval', 'train' or 'test'. Defaults to 'eval'.
@@ -539,7 +546,8 @@ class NeuralNet(object):
 
     @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
-        """Prints the data of each epoch
+        """
+	Prints the data of each epoch
 
         Args:
             stage (str): tain or valid
@@ -576,7 +584,8 @@ class NeuralNet(object):
 
     @staticmethod
     def update_name(hdf5, outdir):
-        """Check if the file already exists, if so, update the name
+        """
+	Check if the file already exists, if so, update the name
 
         Args:
             hdf5 (str): hdf5 file
@@ -601,7 +610,8 @@ class NeuralNet(object):
 
 
     def plot_loss(self, name=''):
-        """Plot the loss of the model as a function of the epoch
+        """
+	Plot the loss of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
@@ -629,7 +639,8 @@ class NeuralNet(object):
 
 
     def plot_acc(self, name=''):
-        """Plot the accuracy of the model as a function of the epoch
+        """
+	Plot the accuracy of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
@@ -657,7 +668,8 @@ class NeuralNet(object):
 
 
     def plot_hit_rate(self, data='eval', threshold=4, mode='percentage', name=''):
-        """Plots the hitrate as a function of the models' rank
+        """
+	Plots the hitrate as a function of the models' rank
 
         Args:
             data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
@@ -716,7 +728,8 @@ class NeuralNet(object):
 
 
     def save_model(self, filename='model.pth.tar'):
-        """Save the model to a file
+        """
+	Saves the model to a file
 
         Args:
             filename (str, optional): name of the file. Defaults to 'model.pth.tar'.
@@ -742,7 +755,8 @@ class NeuralNet(object):
 
 
     def load_params(self, filename):
-        """Load the parameters of a rpetrained model
+        """
+	Loads the parameters of a rpetrained model
 
         Args:
             filename ([type]): [description]
@@ -772,7 +786,8 @@ class NeuralNet(object):
 
         
     def _export_epoch_hdf5(self, epoch, data):
-        """Export the epoch data to the hdf5 file.
+        """
+	Export the epoch data to the hdf5 file.
         Export the data of a given epoch in train/valid/test group.
         In each group are stored the predcited values (outputs),
         ground truth (targets) and molecule name (mol).
