@@ -351,7 +351,8 @@ class NeuralNet(object):
                     f">> model.test(test_dataset)\n\t"     
                     f"if a pretrained network is loaded, you can directly test the model on the loaded dataset :\n\t"     
                     f">> model = NeuralNet(database_test, gnn, pretrained_model = model_saved, target=None)\n\t"     
-                    f">> model.test()\n\t"     
+                    f">> model.test()\n\t")
+		
         self.data = {}
 
         # Run test
