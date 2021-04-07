@@ -103,7 +103,6 @@ class NeuralNet(object):
         self.model.load_state_dict(self.model_load_state_dict)
 
 
-
     def load_model(self, database, Net, database_eval):
 		"""
 		Loads model
