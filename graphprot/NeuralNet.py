@@ -106,7 +106,7 @@ class NeuralNet(object):
 
     def load_model(self, database, Net, database_eval):
         """
-	Loads model
+		Loads model
 
         Args:
             database (str): path to the hdf5 file(s) of the training set
@@ -117,13 +117,13 @@ class NeuralNet(object):
             ValueError: Invalid node clustering method.
         """
         # dataset
-        dataset = HDF5DataSet(root='./', database=database, index=self.index,
+		dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        if self.cluster_nodes != None :
-			if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':  
-                PreCluster(dataset, method=self.cluster_nodes)
-	    	else:
+		if self.cluster_nodes != None :
+			if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
+				PreCluster(dataset, method=self.cluster_nodes)
+			else:
 				raise ValueError(
 					f"Invalid node clustering method. \n\t"
 					f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
