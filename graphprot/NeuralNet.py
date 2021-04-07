@@ -123,7 +123,7 @@ class NeuralNet(object):
         if self.cluster_nodes != None :
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':  
                 PreCluster(dataset, method=self.cluster_nodes)
-	else :
+	    else :
                 raise ValueError(
                     f"Invalid node clustering method. \n\t"
                     f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
