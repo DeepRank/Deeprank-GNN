@@ -138,16 +138,15 @@ class NeuralNet(object):
         print('Training validation set loaded')  
 
         # independent validation dataset
-        if database_eval is not None:
+		if database_eval is not None:
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
 					node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
-            if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain': 
-                PreCluster(valid_dataset, method=self.cluster_nodes)
-
+			if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
+				PreCluster(valid_dataset, method=self.cluster_nodes)
         else:
             print('No independent validation set loaded')
 
