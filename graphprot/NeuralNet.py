@@ -105,7 +105,7 @@ class NeuralNet(object):
 
 
     def load_model(self, database, Net, database_eval):
-        """
+		"""
 		Loads model
 
         Args:
@@ -115,7 +115,7 @@ class NeuralNet(object):
 
         Raises:
             ValueError: Invalid node clustering method.
-        """
+		"""
         # dataset
 		dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
