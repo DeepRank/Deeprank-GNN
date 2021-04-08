@@ -234,7 +234,6 @@ class NeuralNet(object):
             save_epoch (all, intermediate, optional)
             save_every (int, optional): save data every n epoch if save_epoch == 'intermediate'. Defaults to 5
         """
-
         # Output file name
         fname = self.update_name(hdf5, self.outdir)
 
@@ -322,7 +321,6 @@ class NeuralNet(object):
             threshold (int, optional): threshold use to tranform data into binary values. Defaults to 4.
             hdf5 (str, optional): output hdf5 file. Defaults to 'test_data.hdf5'.
         """
-
         # Output file name
         fname = self.update_name(hdf5, self.outdir)
 
@@ -380,7 +378,6 @@ class NeuralNet(object):
         Returns:
             (tuple):
         """
-
         self.model.eval()
 
         loss_func, loss_val = self.loss, 0
@@ -433,7 +430,6 @@ class NeuralNet(object):
         Returns:
             tuple: prediction, ground truth, running loss
         """
-
         running_loss = 0
         out = []
         y = []
@@ -486,7 +482,6 @@ class NeuralNet(object):
             threshold (float, optional): threshold use to tranform data into binary values. Defaults to 4.0.
             binary (bool, optional): Transform data into binary data. Defaults to True.
         """
-
         if self.task ==  'class':
             threshold = self.classes_to_idx[threshold]
 
@@ -546,7 +541,6 @@ class NeuralNet(object):
             acc (float or None): accuracy
             time (float): timing of the epoch
         """
-
         if acc is None:
             acc_str = 'None'
         else:
@@ -558,8 +552,6 @@ class NeuralNet(object):
 
     def format_output(self, pred, target=None):
         """Format the network output depending on the task (classification/regression)."""
-
-
         if self.task == 'class' :
             pred = F.softmax(pred, dim=1)
             if target is not None:
@@ -583,7 +575,6 @@ class NeuralNet(object):
         Returns:
             str: update hdf5 name
         """
-
         fname = os.path.join(outdir, hdf5)
 
         count = 0
@@ -604,7 +595,6 @@ class NeuralNet(object):
         Args:
             name (str, optional): name of the output file. Defaults to ''.
         """
-
         nepoch = self.nepoch
         train_loss = self.train_loss
         valid_loss = self.valid_loss
@@ -632,7 +622,6 @@ class NeuralNet(object):
         Args:
             name (str, optional): name of the output file. Defaults to ''.
         """
-
         nepoch = self.nepoch
         train_acc = self.train_acc
         valid_acc = self.valid_acc
@@ -662,7 +651,6 @@ class NeuralNet(object):
             threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
             mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
         """
-
         import matplotlib.pyplot as plt
 
         try:
@@ -718,7 +706,6 @@ class NeuralNet(object):
         Args:
             filename (str, optional): name of the file. Defaults to 'model.pth.tar'.
         """
-
         state = {'model': self.model.state_dict(),
                  'optimizer': self.optimizer.state_dict(),
                  'node': self.node_feature,
@@ -747,7 +734,6 @@ class NeuralNet(object):
         Returns:
             [type]: [description]
         """
-
         state = torch.load(filename)
 
         self.node_feature = state['node']
@@ -779,7 +765,6 @@ class NeuralNet(object):
             epoch (int): index of the epoch
             data (dict): data of the epoch
         """
-
         # create a group
         grp_name = 'epoch_%04d' % epoch
         grp = self.f5.create_group(grp_name)
