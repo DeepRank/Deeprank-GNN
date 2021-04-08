@@ -8,21 +8,22 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_auc_score
 
 def get_binary(values, threshold, target):
-    """Transform continuous or multiclass values into binary values (0/1)
+    """
+    Transform continuous or multiclass values into binary values (0/1)
 
     Args:
         values (list): vector of the target values
         threshold (int or float): threshold used to assign a binary value
-                                0 is assigned to 'bad' values; 
+                                0 is assigned to 'bad' values;
                                 1 is assigned to 'good' values
         target (string): target (y)
-                        if target is 'fnat' or 'bin_class': target value > threshold = 1 
-                        esle: target value > threshold = 0 
+                        if target is 'fnat' or 'bin_class': target value > threshold = 1
+                        esle: target value > threshold = 0
 
     Returns:
         list: list of binary values
     """
-    inverse = ['fnat', 'bin_class'] 
+    inverse = ['fnat', 'bin_class']
     if target in inverse:
         values_binary = [1 if x > threshold else 0 for x in values]
     else:
@@ -32,7 +33,9 @@ def get_binary(values, threshold, target):
 
 
 def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
-    """Compute the confusion matrix to get the number of: 
+    """
+    Compute the confusion matrix to get the number of:
+
     - false positive (FP)
     - false negative (FN)
     - true positive (TP)
@@ -66,11 +69,12 @@ def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
 class Metrics(object):
 
     def __init__(self, prediction, y, target, threshold=4, binary=True):
-        """Master class from which all metrics are computed
-        
+        """
+        Master class from which all metrics are computed
+
         Computed metrics:
-        
-        Classification metrics: 
+
+        Classification metrics:
         - self.sensitivity: Sensitivity, hit rate, recall, or true positive rate
         - self.specificity: Specificity or true negative rate
         - self.precision: Precision or positive predictive value
@@ -79,10 +83,10 @@ class Metrics(object):
         - self.FNR: False negative rate
         - self.FDR: False discovery rate
         - self.accuracy: Accuracy
-        
+
         - self.auc(): AUC
         - self.hitrate(): Hit rate
-       
+
         Regression metrics:
         - self.explained_variance: Explained variance regression score function
         - self.max_error: Max_error metric calculates the maximum residual error
@@ -116,7 +120,7 @@ class Metrics(object):
             classes = [0, 1]
             false_positive, false_negative, true_positive, true_negative = get_comparison(
                 prediction_binary, y_binary, self.binary, classes=classes)
-            
+
         else:
             if target == 'capri_class':
                 classes = [1, 2, 3, 4, 5]
@@ -180,18 +184,18 @@ class Metrics(object):
         self.mean_squared_log_error = None
         self.median_squared_log_error = None
         self.r2_score = None
-        
+
         if target in ['fnat', 'irmsd', 'lrmsd']:
 
             # Explained variance regression score function
             self.explained_variance = metrics.explained_variance_score(self.y, self.prediction)
-            
+
             # Max_error metric calculates the maximum residual error
             self.max_error = metrics.max_error(self.y, self.prediction)
 
             # Mean absolute error regression loss
             self.mean_absolute_error = metrics.mean_absolute_error(self.y, self.prediction)
-            
+
             # Mean squared error regression loss
             self.mean_squared_error = metrics.mean_squared_error(self.y, self.prediction, squared = True)
 
@@ -203,47 +207,51 @@ class Metrics(object):
                 self.mean_squared_log_error = metrics.mean_squared_log_error(self.y, self.prediction)
             except ValueError:
                 print ("WARNING: Mean Squared Logarithmic Error cannot be used when "
-                            "targets contain negative values.")  
-            
+                            "targets contain negative values.")
+
             # Median absolute error regression loss
             self.median_squared_log_error = metrics.median_absolute_error(self.y, self.prediction)
 
             # R^2 (coefficient of determination) regression score function
             self.r2_score = metrics.r2_score(self.y, self.prediction)
-            
-            
+
+
     def format_score(self):
-        """Sorts the predicted values depending on the target:
+        """
+        Sorts the predicted values depending on the target:
+
         - if target is fnat or bin_class: the highest value the better ranked
-        - else: the lowest value the better ranked  
+        - else: the lowest value the better ranked
 
         Returns:
-            lists: ranks of the predicted values and 
+            lists: ranks of the predicted values and
                     the corresponding binary (0/1) target values
         """
         idx = np.argsort(self.prediction)
 
         inverse = ['fnat', 'bin_class']
-        if self.target in inverse:   
+        if self.target in inverse:
             idx = idx[::-1]
-                
+
         ground_truth_bool = get_binary(
             self.y, self.threshold, self.target)
         ground_truth_bool = np.array(ground_truth_bool)
         return idx, ground_truth_bool
-      
+
 
     def hitrate(self):
-        """Sorts the target boolean values (0/1) according to the ranks of predicted values
+        """
+        Sorts the target boolean values (0/1) according to the ranks of predicted values
 
         Returns:
-            list: the cumulative sum of hits (1) 
+            list: the cumulative sum of hits (1)
         """
         idx, ground_truth_bool = self.format_score()
         return np.cumsum(ground_truth_bool[idx])
 
     def auc(self):
-        """the Receiver Operating Characteristic (ROC) area under the curve (AUC)
+        """
+        Computes the Receiver Operating Characteristic (ROC) area under the curve (AUC)
 
         Returns:
             float: AUC of the ROC curve

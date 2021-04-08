@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm import tqdm
 from time import time
 import h5py
 import os
@@ -9,11 +8,6 @@ import torch
 import torch.nn as nn
 from torch.nn import MSELoss
 import torch.nn.functional as F
-
-# torch_geometric import
-from torch_scatter import scatter_mean
-from torch_geometric.data import DataLoader
-from torch_geometric.nn import max_pool_x
 
 # graphprot import
 from .DataSet import HDF5DataSet, DivideDataSet, PreCluster
@@ -203,7 +197,7 @@ class NeuralNet(object):
                     f"self.fc2 = torch.nn.Linear(64, 1) --> self.fc2 = torch.nn.Linear(64, output_shape) \n\t")
 
     def set_loss(self):
-        """Set the loss function (MSE loss for regression/ CrossEntropy loss for classification) """
+        """Set the loss function (MSE loss for regression/ CrossEntropy loss for classification)."""
         if self.task == 'reg':
             self.loss = MSELoss()
 
@@ -689,7 +683,7 @@ class NeuralNet(object):
 
 
     def plot_scatter(self):
-        """Scatter plot of the results """
+        """Scatter plot of the results."""
         import matplotlib.pyplot as plt
 
         self.model.eval()
