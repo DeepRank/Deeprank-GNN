@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 from torch.nn import MSELoss
 import torch.nn.functional as F
+from torch_geometric.data import DataLoader
 
 # graphprot import
 from .DataSet import HDF5DataSet, DivideDataSet, PreCluster
