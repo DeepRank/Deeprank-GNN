@@ -85,7 +85,7 @@ class NeuralNet(object):
         PreCluster(test_dataset, method=self.cluster_nodes)
 
         print('Test set loaded')
-        self.put_the_model(test_dataset, Net)
+        self.put_model_to_device(test_dataset, Net)
 
         self.set_loss()
         
@@ -145,7 +145,7 @@ class NeuralNet(object):
         else:
             print('No independent validation set loaded')
 
-        self.put_the_model(dataset, Net)
+        self.put_model_to_device(dataset, Net)
 
         # optimizer
         self.optimizer = torch.optim.Adam(
@@ -160,7 +160,7 @@ class NeuralNet(object):
         self.valid_acc = []
         self.valid_loss = []
 
-    def put_the_model(self, dataset, Net):
+    def put_model_to_device(self, dataset, Net):
         """
         Puts the model on the available device
 
