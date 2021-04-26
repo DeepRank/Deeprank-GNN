@@ -1,19 +1,14 @@
 import numpy as np
-from tqdm import tqdm
 from time import time
 import h5py
-import os 
+import os
 
 # torch import
 import torch
 import torch.nn as nn
 from torch.nn import MSELoss
 import torch.nn.functional as F
-
-# torch_geometric import
-from torch_scatter import scatter_mean
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import max_pool_x
 
 # graphprot import
 from .DataSet import HDF5DataSet, DivideDataSet, PreCluster
@@ -25,30 +20,30 @@ class NeuralNet(object):
     def __init__(self, database=None, Net=None,
                 node_feature=['type', 'polarity', 'bsa'],
                 edge_feature=['dist'], target='irmsd', lr=0.01,
-                batch_size=32, percent=[0.8, 0.2],  
-                database_eval=None, index=None, class_weights=None, task='class', 
+                batch_size=32, percent=[0.8, 0.2],
+                database_eval=None, index=None, class_weights=None, task='class',
                 classes=[0, 1], threshold=4.0,
                 pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl'):
         """Class from which the network is trained, evaluated and tested
 
         Args:
-            database (str, required): path(s) to hdf5 dataset(s). Unique hdf5 file or list of hdf5 files. 
+            database (str, required): path(s) to hdf5 dataset(s). Unique hdf5 file or list of hdf5 files.
             Net (function, required): neural network.
-            node_feature (list, optional): type, charge, polarity, bsa (buried surface area), pssm, 
-                    cons (pssm conservation information), ic (pssm information content), depth , 
+            node_feature (list, optional): type, charge, polarity, bsa (buried surface area), pssm,
+                    cons (pssm conservation information), ic (pssm information content), depth ,
                     hse (half sphere exposure).
                     Defaults to ['type', 'polarity', 'bsa'].
             edge_feature (list, optional): dist (distance). Defaults to ['dist'].
-            target (str, optional): irmsd, lrmsd, fnat, capri_class, bin_class, dockQ. 
+            target (str, optional): irmsd, lrmsd, fnat, capri_class, bin_class, dockQ.
                     Defaults to 'irmsd'.
             lr (float, optional): learning rate. Defaults to 0.01.
             batch_size (int, optional): Defaults to 32.
-            percent (list, optional): divides the input dataset into a training and an evaluation set. 
+            percent (list, optional): divides the input dataset into a training and an evaluation set.
                     Defaults to [0.8, 0.2].
             database_eval ([type], optional): independent evaluation set. Defaults to None.
             index ([type], optional): index of the molecules to consider. Defaults to None.
-            class_weights ([list or bool], optional): weights provided to the cross entropy loss function. 
-                    The user can either input a list of weights or let GraphProt (True) define weights 
+            class_weights ([list or bool], optional): weights provided to the cross entropy loss function.
+                    The user can either input a list of weights or let GraphProt (True) define weights
                     based on the dataset content. Defaults to None.
             task (str, optional): 'reg' for regression or 'class' for classification . Defaults to 'class'.
             classes (list, optional): Define the dataset target classes. Defaults to [0, 1].
@@ -65,23 +60,67 @@ class NeuralNet(object):
             for k, v in dict(locals()).items():
                 if k not in ['self', 'database', 'Net', 'database_eval']:
                     self.__setattr__(k, v)
+            self.load_model(database, Net, database_eval)
 
         else:
             self.load_params(pretrained_model)
             self.outdir = outdir
+            self.target = target
+            self.load_pretrained_model(database, Net)
 
+    def load_pretrained_model(self, database, Net):
+        """
+        Loads pretrained model
+
+        Args:
+            database (str): path to hdf5 file(s)
+            Net (function): neural network
+        """
+        # Load the test set
+        test_dataset = HDF5DataSet(root='./', database=database,
+                                   node_feature=self.node_feature, edge_feature=self.edge_feature,
+                                   target=self.target)
+        self.test_loader = DataLoader(
+            test_dataset)
+        PreCluster(test_dataset, method=self.cluster_nodes)
+
+        print('Test set loaded')
+        self.put_model_to_device(test_dataset, Net)
+
+        self.set_loss()
+        
+        # optimizer
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=self.lr)
+        
+        # load the model and the optimizer state if we have one
+        self.optimizer.load_state_dict(self.opt_loaded_state_dict)
+        self.model.load_state_dict(self.model_load_state_dict)
+
+
+    def load_model(self, database, Net, database_eval):
+        """
+        Loads model
+
+        Args:
+            database (str): path to the hdf5 file(s) of the training set
+            Net (function): neural network
+            database_eval (str): path to the hdf5 file(s) of the evaluation set
+
+        Raises:
+            ValueError: Invalid node clustering method.
+        """
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
         if self.cluster_nodes != None :
-            if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':  
+            if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 PreCluster(dataset, method=self.cluster_nodes)
             else :
                 raise ValueError(
                     f"Invalid node clustering method. \n\t"
                     f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
-
 
         # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
@@ -90,6 +129,7 @@ class NeuralNet(object):
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+        print('Training validation set loaded')
 
         # independent validation dataset
         if database_eval is not None:
@@ -99,23 +139,47 @@ class NeuralNet(object):
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded')
-            if cluster_nodes == True :
-                PreCluster(valid_dataset, method='mcl')
-            
+            if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
+                PreCluster(valid_dataset, method=self.cluster_nodes)
+
         else:
             print('No independent validation set loaded')
 
+        self.put_model_to_device(dataset, Net)
+
+        # optimizer
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=self.lr)
+
+        self.set_loss()
+
+        # init lists
+        self.train_acc = []
+        self.train_loss = []
+
+        self.valid_acc = []
+        self.valid_loss = []
+
+    def put_model_to_device(self, dataset, Net):
+        """
+        Puts the model on the available device
+
+        Args:
+            dataset (str): path to the hdf5 file(s)
+            Net (function): neural network
+
+        Raises:
+            ValueError: Incorrect output shape
+        """
         # get the device
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
 
-        # put the model
-        # Regression mode
+        # regression mode
         if self.task == 'reg':
             self.model = Net(dataset.get(
                 0).num_features).to(self.device)
-
-        # Cassification mode
+        # classification mode
         elif self.task == 'class':
             self.classes_to_idx = {i: idx for idx,
                                 i in enumerate(self.classes)}
@@ -133,71 +197,45 @@ class NeuralNet(object):
                     f"def __init__(self, input_shape): --> def __init__(self, input_shape, output_shape) \n\t"
                     f"self.fc2 = torch.nn.Linear(64, 1) --> self.fc2 = torch.nn.Linear(64, output_shape) \n\t")
 
-        else:
-            raise ValueError(
-                f"Task {self.task} not recognized. Options are:\n\t "
-                f"reg': regression \n\t 'class': classifiation\n")
-
-        # optimizer
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.lr)
-
-        # laod the model and the optimizer state if we have one
-        if pretrained_model is not None:
-            self.optimizer.load_state_dict(self.opt_loaded_state_dict)
-            self.model.load_state_dict(self.model_load_state_dict)
-            
-        # loss
+    def set_loss(self):
+        """Set the loss function (MSE loss for regression/ CrossEntropy loss for classification)."""
         if self.task == 'reg':
             self.loss = MSELoss()
 
         elif self.task == 'class':
-            self.weights=None
 
             # assign weights to each class in case of unbalanced dataset
-            # User weights definition
-            if type(self.class_weights) == list :
-                self.weights = self.class_weights
-
-            # Automatic definition base on the classes proportions in the input training set
-        elif self.task == 'class':
             self.weights=None
+            if self.class_weights == True :
+                targets_all = []
+                for batch in self.train_loader:
+                    targets_all.append(batch.y)
 
-            # assign weights to each class in case of unbalanced dataset
-            # User weights definition
-            if type(self.class_weights) == list :
-                self.weights = self.class_weights
+                targets_all = torch.cat(targets_all).squeeze().tolist()
+                self.weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
+                print('class occurences: {}'.format(self.weights))
+                self.weights = 1.0 / self.weights
+                self.weights = self.weights / self.weights.sum()
+                print('class weights: {}'.format(self.weights))
 
-            # Automatic definition base on the classes proportions in the input training set
-            elif self.class_weights == True :
-                self.weights = self.compute_class_weights()
- 
             self.loss = nn.CrossEntropyLoss(
-                weight=self.weights, reduction='mean')               
-
-        # init lists
-        self.train_acc = []
-        self.train_loss = []
-
-        self.valid_acc = []
-        self.valid_loss = []
-
+                weight=self.weights, reduction='mean')
 
     def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
-        """Train the model
+        """
+        Train the model
 
         Args:
             nepoch (int, optional): number of epochs. Defaults to 1.
             validate (bool, optional): perform validation. Defaults to False.
-            save_model (last, best, optional): save the model. Defaults to 'last' 
+            save_model (last, best, optional): save the model. Defaults to 'last'
             hdf5 (str, optional): hdf5 output file
             save_epoch (all, intermediate, optional)
             save_every (int, optional): save data every n epoch if save_epoch == 'intermediate'. Defaults to 5
         """
-
         # Output file name
         fname = self.update_name(hdf5, self.outdir)
-        
+
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
 
@@ -244,13 +282,13 @@ class NeuralNet(object):
 
                 # save the best model (i.e. lowest loss value on validation data)
                 if save_model == 'best' :
-                    
+
                     if min(self.valid_loss) == _val_loss :
                         self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
                             self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
 
             else :
-                # if no validation set, saves the best performing model on the traing set 
+                # if no validation set, saves the best performing model on the traing set
                 if save_model == 'best' :
                     if min(self.train_loss) == _train_loss :
                         print ('WARNING: The training set is used both for learning and model selection.')
@@ -262,50 +300,61 @@ class NeuralNet(object):
             # Save epoch data
             if (save_epoch == 'all') or (epoch == nepoch) :
                 self._export_epoch_hdf5(epoch, self.data)
-            
+
             elif (save_epoch == 'intermediate') and (epoch%save_every == 0) :
                 self._export_epoch_hdf5(epoch, self.data)
 
-        # Save the last model 
+        # Save the last model
         if save_model == 'last' :
             self.save_model(filename='t{}_y{}_b{}_e{}_lr{}.pth.tar'.format(self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr)))
-        
+
         # Close output file
         self.f5.close()
 
-    
-    def test(self, database_test, threshold=4, hdf5='test_data.hdf5'):
-        """Tests the model 
+
+    def test(self, database_test=None, threshold=4, hdf5='test_data.hdf5'):
+        """
+        Tests the model
 
         Args:
-            database_test ([type]): test database
+            database_test ([type], optional): test database
             threshold (int, optional): threshold use to tranform data into binary values. Defaults to 4.
             hdf5 (str, optional): output hdf5 file. Defaults to 'test_data.hdf5'.
         """
-
         # Output file name
         fname = self.update_name(hdf5, self.outdir)
-        
+
         # Open output file for writting
         self.f5 = h5py.File(fname, 'w')
 
-        # Load the test set
-        test_dataset = HDF5DataSet(root='./', database=database_test,
-                                        node_feature=self.node_feature, edge_feature=self.edge_feature,
-                                        target=self.target)
-        print('Test set loaded')
-        PreCluster(test_dataset, method='mcl')
+        # Loads the test dataset if provided
+        if database_test is not None:
+            # Load the test set
+            test_dataset = HDF5DataSet(root='./', database=database_test,
+                                            node_feature=self.node_feature, edge_feature=self.edge_feature,
+                                            target=self.target)
+            print('Test set loaded')
+            PreCluster(test_dataset, method='mcl')
 
-        self.test_loader = DataLoader(
-            test_dataset)
+            self.test_loader = DataLoader(
+                test_dataset)
 
+        else:
+            if self.load_pretrained_model == None:
+                raise ValueError(
+                    "You need to upload a test dataset \n\t"
+                    "\n\t"
+                    ">> model.test(test_dataset)\n\t"
+                    "if a pretrained network is loaded, you can directly test the model on the loaded dataset :\n\t"
+                    ">> model = NeuralNet(database_test, gnn, pretrained_model = model_saved, target=None)\n\t"
+                    ">> model.test()\n\t")
         self.data = {}
 
         # Run test
         _out, _y, _test_loss, self.data['test'] = self.eval(self.test_loader)
 
         self.test_out = _out
-        
+
         if len(_y) == 0 :
             self.test_y = None
             self.test_acc = None
@@ -313,15 +362,16 @@ class NeuralNet(object):
             self.test_y = _y
             _test_acc = self.get_metrics('test', threshold).accuracy
             self.test_acc = _test_acc
-            
+
         self.test_loss = _test_loss
         self._export_epoch_hdf5(0, self.data)
-            
+
         self.f5.close()
 
 
     def eval(self, loader):
-        """Evaluate the model
+        """
+        Evaluates the model
 
         Args:
             loader (DataLoader): [description]
@@ -329,7 +379,6 @@ class NeuralNet(object):
         Returns:
             (tuple):
         """
-
         self.model.eval()
 
         loss_func, loss_val = self.loss, 0
@@ -343,13 +392,13 @@ class NeuralNet(object):
             pred, data_batch.y = self.format_output(pred, data_batch.y)
 
             # Check if a target value was provided (i.e. benchmarck scenario)
-            if data_batch.y is not None: 
-                y += data_batch.y                
+            if data_batch.y is not None:
+                y += data_batch.y
                 loss_val += loss_func(pred, data_batch.y).detach().item()
                 # Save targets
                 if self.task == 'class':
                     data['targets'] += [self.idx_to_classes(x) for x in data_batch.y.numpy().tolist()]
-                else: 
+                else:
                     data['targets'] += data_batch.y.numpy().tolist()
 
             # Get the outputs for export
@@ -359,11 +408,11 @@ class NeuralNet(object):
                 pred = pred.detach().reshape(-1)
 
             out += pred
-            
+
             # Save predictions
             if self.task == 'class':
                 data['outputs'] += [self.idx_to_classes(x) for x in pred.tolist()]
-            else: 
+            else:
                 data['outputs'] += pred.tolist()
 
 
@@ -374,18 +423,18 @@ class NeuralNet(object):
 
         return out, y, loss_val, data
 
-    
+
     def _epoch(self, epoch):
-        """Run a single epoch
+        """
+        Run a single epoch
 
         Returns:
             tuple: prediction, ground truth, running loss
         """
-
         running_loss = 0
         out = []
         y = []
-        data = {'outputs': [], 'targets': [], 'mol': []}        
+        data = {'outputs': [], 'targets': [], 'mol': []}
 
         for data_batch in self.train_loader:
 
@@ -394,11 +443,11 @@ class NeuralNet(object):
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(pred, data_batch.y)
 
-            try : 
+            try :
                 y += data_batch.y
             except ValueError:
                 print ("You must provide target values (y) for the training set")
-                            
+
             loss = self.loss(pred, data_batch.y)
             running_loss += loss.detach().item()
             loss.backward()
@@ -416,10 +465,10 @@ class NeuralNet(object):
             if self.task == 'class':
                 data['targets'] += [self.idx_to_classes(x) for x in data_batch.y.numpy().tolist()]
                 data['outputs'] += [self.idx_to_classes(x) for x in pred.tolist()]
-            else: 
+            else:
                 data['targets'] += data_batch.y.numpy().tolist()
                 data['outputs'] += pred.tolist()
-            
+
             # get the data
             data['mol'] += data_batch['mol']
 
@@ -427,14 +476,14 @@ class NeuralNet(object):
 
 
     def get_metrics(self, data='eval', threshold=4.0, binary=True):
-        """Compute the metrics needed
+        """
+        Computes the metrics needed
 
         Args:
             data (str, optional): 'eval', 'train' or 'test'. Defaults to 'eval'.
             threshold (float, optional): threshold use to tranform data into binary values. Defaults to 4.0.
             binary (bool, optional): Transform data into binary data. Defaults to True.
         """
-
         if self.task ==  'class':
             threshold = self.classes_to_idx[threshold]
 
@@ -442,15 +491,15 @@ class NeuralNet(object):
             if len(self.valid_out) == 0:
                 print('No evaluation set has been provided')
 
-            else: 
+            else:
                 pred = self.valid_out
                 y = [x.item() for x in self.valid_y]
 
         elif data == 'train':
             if len(self.train_out) == 0:
                 print('No training set has been provided')
-            
-            else: 
+
+            else:
                 pred = self.train_out
                 y = [x.item() for x in self.train_y]
 
@@ -458,10 +507,10 @@ class NeuralNet(object):
             if len(self.test_out) == 0:
                 print('No test set has been provided')
 
-            if self.test_y == None:   
+            if self.test_y == None:
                 print('You must provide ground truth target values to compute the metrics')
-                
-            else: 
+
+            else:
                 pred = self.test_out
                 y = [x.item() for x in self.test_y]
 
@@ -469,10 +518,10 @@ class NeuralNet(object):
 
 
     def compute_class_weights(self):
-        
+
         targets_all = []
         for batch in self.train_loader:
-            targets_all.append(batch.y)  
+            targets_all.append(batch.y)
 
         targets_all = torch.cat(targets_all).squeeze().tolist()
         weights = torch.tensor([targets_all.count(i) for i in self.classes], dtype=torch.float32)
@@ -485,7 +534,8 @@ class NeuralNet(object):
 
     @staticmethod
     def print_epoch_data(stage, epoch, loss, acc, time):
-        """Prints the data of each epoch
+        """
+        Prints the data of each epoch
 
         Args:
             stage (str): tain or valid
@@ -494,7 +544,6 @@ class NeuralNet(object):
             acc (float or None): accuracy
             time (float): timing of the epoch
         """
-
         if acc is None:
             acc_str = 'None'
         else:
@@ -506,23 +555,22 @@ class NeuralNet(object):
 
     def format_output(self, pred, target=None):
         """Format the network output depending on the task (classification/regression)."""
-
-
         if self.task == 'class' :
             pred = F.softmax(pred, dim=1)
-            if target is not None: 
-                target = torch.tensor(  
+            if target is not None:
+                target = torch.tensor(
                     [self.classes_to_idx[int(x)] for x in target])
 
         else:
             pred = pred.reshape(-1)
-            
+
         return pred, target
 
 
     @staticmethod
     def update_name(hdf5, outdir):
-        """Check if the file already exists, if so, update the name
+        """
+        Check if the file already exists, if so, update the name
 
         Args:
             hdf5 (str): hdf5 file
@@ -531,14 +579,13 @@ class NeuralNet(object):
         Returns:
             str: update hdf5 name
         """
-
         fname = os.path.join(outdir, hdf5)
 
         count = 0
         hdf5_name = hdf5.split('.')[0]
 
-        # If file exists, change its name with a number                                                                                               
-        while os.path.exists(fname) : 
+        # If file exists, change its name with a number
+        while os.path.exists(fname) :
             count += 1
             hdf5 = '{}_{:03d}.hdf5'.format(hdf5_name, count)
             fname = os.path.join(outdir, hdf5)
@@ -547,12 +594,12 @@ class NeuralNet(object):
 
 
     def plot_loss(self, name=''):
-        """Plot the loss of the model as a function of the epoch
+        """
+        Plot the loss of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
         """
-
         nepoch = self.nepoch
         train_loss = self.train_loss
         valid_loss = self.valid_loss
@@ -575,12 +622,12 @@ class NeuralNet(object):
 
 
     def plot_acc(self, name=''):
-        """Plot the accuracy of the model as a function of the epoch
+        """
+        Plot the accuracy of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
         """
-        
         nepoch = self.nepoch
         train_acc = self.train_acc
         valid_acc = self.valid_acc
@@ -603,14 +650,14 @@ class NeuralNet(object):
 
 
     def plot_hit_rate(self, data='eval', threshold=4, mode='percentage', name=''):
-        """Plots the hitrate as a function of the models' rank
+        """
+        Plots the hitrate as a function of the models' rank
 
         Args:
             data (str, optional): which stage to consider train/eval/test. Defaults to 'eval'.
             threshold (int, optional): defines the value to split into a hit (1) or a non-hit (0). Defaults to 4.
             mode (str, optional): displays the hitrate as a number of hits ('count') or as a percentage ('percantage') . Defaults to 'percentage'.
         """
-
         import matplotlib.pyplot as plt
 
         try:
@@ -637,8 +684,7 @@ class NeuralNet(object):
 
 
     def plot_scatter(self):
-        """Scatter plot of the results
-        """
+        """Scatter plot of the results."""
         import matplotlib.pyplot as plt
 
         self.model.eval()
@@ -662,12 +708,12 @@ class NeuralNet(object):
 
 
     def save_model(self, filename='model.pth.tar'):
-        """Save the model to a file
+        """
+        Saves the model to a file
 
         Args:
             filename (str, optional): name of the file. Defaults to 'model.pth.tar'.
         """
-
         state = {'model': self.model.state_dict(),
                  'optimizer': self.optimizer.state_dict(),
                  'node': self.node_feature,
@@ -688,7 +734,8 @@ class NeuralNet(object):
 
 
     def load_params(self, filename):
-        """Load the parameters of a rpetrained model
+        """
+        Loads the parameters of a pretrained model
 
         Args:
             filename ([type]): [description]
@@ -696,7 +743,6 @@ class NeuralNet(object):
         Returns:
             [type]: [description]
         """
-
         state = torch.load(filename)
 
         self.node_feature = state['node']
@@ -716,18 +762,19 @@ class NeuralNet(object):
         self.opt_loaded_state_dict = state['optimizer']
         self.model_load_state_dict = state['model']
 
-        
+
     def _export_epoch_hdf5(self, epoch, data):
-        """Export the epoch data to the hdf5 file.
+        """
+        Exports the epoch data to the hdf5 file.
+
         Export the data of a given epoch in train/valid/test group.
-        In each group are stored the predcited values (outputs),
+        In each group are stored the predicted values (outputs),
         ground truth (targets) and molecule name (mol).
 
         Args:
             epoch (int): index of the epoch
             data (dict): data of the epoch
         """
-
         # create a group
         grp_name = 'epoch_%04d' % epoch
         grp = self.f5.create_group(grp_name)
