@@ -2,9 +2,9 @@ Training a module
 =============================================
 
 
->>> from graphprot.NeuralNet import NeuralNet
->>> from graphprot.ginet import GINet
->>> from graphprot.foutnet import FoutNet
+>>> from deeprabk_gnn.NeuralNet import NeuralNet
+>>> from deeprabk_gnn.ginet import GINet
+>>> from deeprabk_gnn.foutnet import FoutNet
 >>>
 >>> database = './hdf5/1ACB_residue.hdf5'
 >>> database = './1ATN_residue.hdf5'
