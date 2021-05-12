@@ -8,9 +8,24 @@ Welcome to DeepRank-GNN's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: DeepRank-GNN:
+
+   installation
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorial:
+
+   tutorial.generate_graph
+   tutorial.train_model
 
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Documentation
+
+   api.graph_generator
+   api.graph_network
 
 Indices and tables
 ==================

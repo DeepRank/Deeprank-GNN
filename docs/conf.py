@@ -22,46 +22,11 @@ import sys
 from unittest.mock import MagicMock
 
 
-# MOCK_CLASSES = ['torch.nn.Module']
-
-
-# class Mock(MagicMock):
-#     @classmethod
-#     def __getattr__(cls, name):
-#         if name in MOCK_CLASSES:
-#             return object
-#         return MagicMock()
-
-
-# MOCK_MODULES = [
-#     'numpy',
-#     'scipy',
-#     'h5py',
-#     'scipy.signal',
-#     'torch',
-#     'torch.utils',
-#     'torch.utils.data',
-#     'matplotlib',
-#     'matplotlib.pyplot',
-#     'torch.autograd',
-#     'torch.nn',
-#     'torch.nn.Module'
-#     'torch.optim',
-#     'torch.cuda',
-#     'torch.distributions',
-#     'mendeleev',
-#     'pandas',
-#     'pyscf',
-#     'adf',
-#     'tqdm']
-
-# sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-
 autodoc_mock_imports = [
     'numpy',
     'scipy',
     'h5py',
+    'sklearn',
     'scipy.signal',
     'torch',
     'torch.utils',
@@ -73,11 +38,14 @@ autodoc_mock_imports = [
     'torch.optim',
     'torch.cuda',
     'torch.distributions',
+    'torch_sparse',
     'mendeleev',
     'pandas',
     'tqdm',
-    'horovod']
+    'horovod',
+    'numba']
 
+sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 
 
