@@ -18,6 +18,8 @@ When all the dependencies are installed just clone the repo and install it with:
 pip install -e ./
 ```
 
+The documentation can be found here : https://deeprank-gnn.readthedocs.io/ 
+
 ## Generate Graphs
 
 All the graphs/line graphs of all the pdb/pssm stored in `data/pdb/` and `data/pssm/` with the `GenGraph.py` script. This will generate the hdf5 file `graph_residue.hdf5` which contains the graph of the different conformations.
