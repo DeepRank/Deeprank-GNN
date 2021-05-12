@@ -46,7 +46,10 @@ autodoc_mock_imports = [
     'pandas',
     'tqdm',
     'horovod',
-    'numba']
+    'numba',
+    'Bio',
+    'torch_geometric',
+    'community']
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
