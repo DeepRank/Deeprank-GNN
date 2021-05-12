@@ -40,6 +40,8 @@ autodoc_mock_imports = [
     'torch.distributions',
     'torch_sparse',
     'torch_scatter',
+    'torch_cluster',
+    'torch-spline-conv',
     'pdb2sql',
     'networkx',
     'mendeleev',
@@ -49,7 +51,8 @@ autodoc_mock_imports = [
     'numba',
     'Bio',
     'torch_geometric',
-    'community']
+    'community',
+    'markov_clustering']
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
