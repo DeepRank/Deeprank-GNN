@@ -20,3 +20,7 @@ GraphProt.egg-info
 htmlcov
 .coverage
 covergage.xml
+
+# doc
+docs/_build
+docs/apidocs
