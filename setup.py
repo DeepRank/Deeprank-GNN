@@ -6,29 +6,29 @@ from setuptools import (find_packages, setup)
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# To update the package version number, edit GraphProt/__version__.py
+# To update the package version number, edit DeepRank-GNN/__version__.py
 version = {}
-with open(os.path.join(here, 'graphprot', '__version__.py')) as f:
+with open(os.path.join(here, 'deeprank_gnn', '__version__.py')) as f:
     exec(f.read(), version)
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
 setup(
-    name='GraphProt',
+    name='DeepRank-GNN',
     version=version['__version__'],
     description='Graph Neural network Scoring of protein-protein conformations',
     long_description=readme + '\n\n',
     long_description_content_type='text/markdown',
     author=["Nicolas Renaud", "Manon Reau"],
     author_email='n.renaud@esciencecenter.nl',
-    url='https://github.com/DeepRank/GraphProt',
+    url='https://github.com/DeepRank/DeepRank-GNN',
     packages=find_packages(),
-    package_dir={'graphprot': 'graphprot'},
+    package_dir={'deeprank_gnn': 'deeprank_gnn'},
     include_package_data=True,
     license="Apache Software License 2.0",
     zip_safe=False,
-    keywords='graphprot',
+    keywords='deeprank_gnn',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -49,5 +49,6 @@ setup(
         'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],
         'doc': ['recommonmark', 'sphinx', 'sphinx_rtd_theme'],
         'test':
-        ['coverage', 'pycodestyle', 'pytest', 'pytest-cov', 'pytest-runner', 'coveralls'],
+        ['coverage', 'pycodestyle', 'pytest',
+            'pytest-cov', 'pytest-runner', 'coveralls'],
     })

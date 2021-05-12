@@ -1,8 +1,8 @@
-#Byte-compiled / optimized 
+#Byte-compiled / optimized
 *__pycache__*
 
-# distribution 
-GraphProt.egg-info
+# distribution
+deeprank_gnn.egg-info
 
 
 # datafile
@@ -20,3 +20,7 @@ GraphProt.egg-info
 htmlcov
 .coverage
 covergage.xml
+
+# doc
+docs/_build
+docs/apidocs

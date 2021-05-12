@@ -12,7 +12,7 @@ from torch_geometric.utils import remove_self_loops, add_self_loops, softmax
 from torch_geometric.nn.inits import uniform
 from torch_geometric.nn import max_pool_x
 
-# graphprot import
+# deeprank_gnn import
 from .community_pooling import get_preloaded_cluster, community_pooling
 
 
@@ -117,7 +117,7 @@ class GraphAttention(torch.nn.Module):
 
 class GINet(torch.nn.Module):
 
-    def __init__(self, input_shape, output_shape = 1):
+    def __init__(self, input_shape, output_shape=1):
         super(GINet, self).__init__()
 
         self.conv1 = GraphAttention(input_shape, 16)

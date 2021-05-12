@@ -106,7 +106,7 @@ class HDF5DataSet(Dataset):
             tqdm (bool, optional): Show progress bar. Defaults to True.
             index (int, optional): index of a molecule. Defaults to None.
             node_feature (str or list, optional): consider all pre-computed node features ('all') or some defined node features (provide a list). Defaults to 'all'.
-            edge_feature (list, optional): only distances are available in this version of GraphProt. Defaults to ['dist'].
+            edge_feature (list, optional): only distances are available in this version of DeepRank-GNN. Defaults to ['dist'].
             clustering_method (str, optional): 'mcl' (Markov Clustering) or 'louvain'. Defaults to 'mcl'.
             edge_feature_transform (function, optional): transformation applied to the edge features. Defaults to lambdax:np.tanh(-x/2+2)+1.
         """
@@ -155,7 +155,7 @@ class HDF5DataSet(Dataset):
 
     def get(self, index):
         """Get one item from its unique index.
-        
+
         Args:
             index (int): index of the complex
         Returns:
@@ -239,9 +239,9 @@ class HDF5DataSet(Dataset):
             Data object or None: torch_geometric Data object containing the node features, the internal and external edge features, the target and the xyz coordinates. Return None if features cannot be loaded.
         """
         f5 = h5py.File(fname, 'r')
-        try : 
+        try:
             grp = f5[mol]
-        except :
+        except:
             f5.close()
             return None
 
@@ -265,7 +265,8 @@ class HDF5DataSet(Dataset):
             # index ! we have to have all the edges i.e : (i,j) and (j,i)
             ind = grp['edge_index'][()]
             ind = np.vstack((ind, np.flip(ind, 1))).T
-            edge_index = torch.tensor(ind, dtype=torch.long).contiguous()
+            edge_index = torch.tensor(
+                ind, dtype=torch.long).contiguous()
 
             # edge feature (same issue than above)
             data = ()
@@ -306,7 +307,7 @@ class HDF5DataSet(Dataset):
 
             else:
                 internal_edge_attr = None
-        
+
         except:
             print('edge features not found in the file',
                   self.database[0])
@@ -316,14 +317,14 @@ class HDF5DataSet(Dataset):
         # target
         if self.target is None:
             y = None
-        
+
         else:
             if grp['score/'+self.target][()] is not None:
                 y = torch.tensor(
                     [grp['score/'+self.target][()]], dtype=torch.float).contiguous()
             else:
                 y = None
-                
+
         # pos
         pos = torch.tensor(grp['node_data/pos/']
                            [()], dtype=torch.float).contiguous()
@@ -345,9 +346,9 @@ class HDF5DataSet(Dataset):
         if 'clustering' in grp.keys():
             if self.clustering_method in grp['clustering'].keys():
                 if ('depth_0' in grp['clustering/{}'.format(self.clustering_method)].keys() and
-                    'depth_1' in grp['clustering/{}'.format(
-                                self.clustering_method)].keys()
-                    ):
+                        'depth_1' in grp['clustering/{}'.format(
+                            self.clustering_method)].keys()
+                        ):
                     data.cluster0 = torch.tensor(
                         grp['clustering/' + self.clustering_method + '/depth_0'][()], dtype=torch.long)
                     data.cluster1 = torch.tensor(
@@ -364,7 +365,7 @@ class HDF5DataSet(Dataset):
 
     def create_index_molecules(self):
         '''Create the indexing of each molecule in the dataset.
-        
+
         Create the indexing: [ ('1ak4.hdf5,1AK4_100w),...,('1fqj.hdf5,1FGJ_400w)]
         This allows to refer to one complex with its index in the list
         '''
@@ -405,10 +406,10 @@ class HDF5DataSet(Dataset):
 
     def filter(self, molgrp):
         '''Filter the molecule according to a dictionary.
-        
+
         The filter is based on the attribute self.dict_filter
         that must be either of the form: { 'name' : cond } or None
-        
+
         Args:
             molgrp (str): group name of the molecule in the hdf5 file
         Returns:

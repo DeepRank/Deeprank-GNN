@@ -1,4 +1,4 @@
-from graphprot.GraphGenMP import GraphHDF5
+from deeprank_gnn.GraphGenMP import GraphHDF5
 
 pdb_path = './data/pdb/1ATN/'
 pssm_path = './data/pssm/1ATN/'

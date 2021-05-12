@@ -1,5 +1,5 @@
 import unittest
-from graphprot.GraphGenMP import GraphHDF5
+from deeprank_gnn.GraphGenMP import GraphHDF5
 
 
 class TestCreateGraph(unittest.TestCase):
