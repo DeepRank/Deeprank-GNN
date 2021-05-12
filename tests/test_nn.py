@@ -1,8 +1,8 @@
 import unittest
 
-from graphprot.NeuralNet import NeuralNet
-from graphprot.ginet import GINet
-from graphprot.foutnet import FoutNet
+from deeprank_gnn.NeuralNet import NeuralNet
+from deeprank_gnn.ginet import GINet
+from deeprank_gnn.foutnet import FoutNet
 
 
 __PLOT__ = False

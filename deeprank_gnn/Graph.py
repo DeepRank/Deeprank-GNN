@@ -4,7 +4,7 @@ import numpy as np
 import networkx as nx
 from collections import OrderedDict
 import time
-from graphprot.tools.embedding import manifold_embedding
+from deeprank_gnn.tools.embedding import manifold_embedding
 import community
 import markov_clustering as mc
 import h5py
@@ -14,7 +14,7 @@ class Graph(object):
 
     def __init__(self):
         """Class perform graph level action
-        
+
             - get score for the graph (lrmsd, irmsd, fnat, capri_class, bin_class and dockQ)
             - networkx object (graph) to hdf5 format
             - networkx object (graph) from hdf5 format
@@ -33,21 +33,20 @@ class Graph(object):
         """
         ref_name = os.path.splitext(os.path.basename(ref))[0]
         sim = StructureSimilarity(self.pdb, ref)
-        
+
         self.score['lrmsd'] = sim.compute_lrmsd_fast(
-            method='svd', lzone=ref_name+'.lzone') 
+            method='svd', lzone=ref_name+'.lzone')
         self.score['irmsd'] = sim.compute_irmsd_fast(
-            method='svd', izone=ref_name+'.izone') 
+            method='svd', izone=ref_name+'.izone')
         self.score['fnat'] = sim.compute_fnat_fast()
         self.score['dockQ'] = sim.compute_DockQScore(
             self.score['fnat'], self.score['lrmsd'], self.score['irmsd'])
         self.score['bin_class'] = self.score['irmsd'] < 4.0
-        
+
         self.score['capri_class'] = 5
-        for thr, val in zip([6.0, 4.0, 2.0, 1.0],[4,3,2,1]):
+        for thr, val in zip([6.0, 4.0, 2.0, 1.0], [4, 3, 2, 1]):
             if self.score['irmsd'] <= thr:
                 self.score['capri_class'] = val
-        
 
     def nx2h5(self, f5):
         """Networkx object to hdf5 format

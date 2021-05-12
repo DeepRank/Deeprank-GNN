@@ -1,9 +1,9 @@
-# GraphProt
+# DeepRank
 
 
-[![Build Status](https://github.com/DeepRank/GraphProt/workflows/build/badge.svg)](https://github.com/DeepRank/GraphProt/actions)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3f98b2d1883493ead50e3acaa23f2cc)](https://app.codacy.com/gh/DeepRank/GraphProt?utm_source=github.com&utm_medium=referral&utm_content=DeepRank/GraphProt&utm_campaign=Badge_Grade)
-[![Coverage Status](https://coveralls.io/repos/github/DeepRank/GraphProt/badge.svg)](https://coveralls.io/github/DeepRank/GraphProt)
+[![Build Status](https://github.com/DeepRank/DeepRank-GNN/workflows/build/badge.svg)](https://github.com/DeepRank/DeepRank-GNN/actions)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3f98b2d1883493ead50e3acaa23f2cc)](https://app.codacy.com/gh/DeepRank/DeepRank-GNN?utm_source=github.com&utm_medium=referral&utm_content=DeepRank/DeepRank-GNN&utm_campaign=Badge_Grade)
+[![Coverage Status](https://coveralls.io/repos/github/DeepRank/DeepRank-GNN/badge.svg)](https://coveralls.io/github/DeepRank/DeepRank-GNN)
 
 ![alt-text](./graphprot.png)
 
@@ -11,7 +11,7 @@
 
 You'll probably need to manually install pytorch geometric
   * pytorch_geometric : https://github.com/rusty1s/pytorch_geometric
-  
+
 When all the dependencies are installed just clone the repo and install it with:
 
 ```
@@ -40,8 +40,8 @@ Using the graph interaction network is rather simple :
 
 
 ```python
-from graphprot.NeuralNet import NeuralNet
-from graphprot.ginet import GINet
+from deeprank_gnn.NeuralNet import NeuralNet
+from deeprank_gnn.ginet import GINet
 
 database = './hdf5/1ACB_residue.hdf5'
 
@@ -60,7 +60,7 @@ NN.plot_scatter()
 
 ## Custom CNN
 
-It is also possible to define new network architecture and to specify the loss and optimizer to be used during the training. 
+It is also possible to define new network architecture and to specify the loss and optimizer to be used during the training.
 
 ```python
 
@@ -114,6 +114,6 @@ model.train(nepoch=50)
 
 ## h5x support
 
-After installing  `h5xplorer`  (https://github.com/DeepRank/h5xplorer), you can execute the python file `graphprot/h5x/h5x.py` to explorer the connection graph used by GraphProt. The context menu (right click on the name of the structure) allows to automatically plot the graphs using `plotly` as shown below.
+After installing  `h5xplorer`  (https://github.com/DeepRank/h5xplorer), you can execute the python file `deeprank_gnn/h5x/h5x.py` to explorer the connection graph used by DeepRank-GNN. The context menu (right click on the name of the structure) allows to automatically plot the graphs using `plotly` as shown below.
 
 ![alt-text](./h5_graphprot.png)

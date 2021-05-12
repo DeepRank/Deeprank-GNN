@@ -1,6 +1,6 @@
-from graphprot.NeuralNet import NeuralNet
-from graphprot.ginet import GINet
-from graphprot.foutnet import FoutNet
+from deeprank_gnn.NeuralNet import NeuralNet
+from deeprank_gnn.ginet import GINet
+from deeprank_gnn.foutnet import FoutNet
 
 database = './hdf5/1ACB_residue.hdf5'
 database = './1ATN_residue.hdf5'
