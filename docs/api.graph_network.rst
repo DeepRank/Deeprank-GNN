@@ -1,4 +1,4 @@
-Representing PPI as Graphs
+Graph Network
 =====================================
 
 EGAT

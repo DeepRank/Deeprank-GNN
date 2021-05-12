@@ -1,4 +1,4 @@
-Representing PPI as Graphs
+Graph and Graph Generator
 =====================================
 
 Graphs

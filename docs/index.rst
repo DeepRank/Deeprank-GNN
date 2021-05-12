@@ -22,7 +22,7 @@ Welcome to DeepRank-GNN's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Documentation
+   :caption: API
 
    api.graph_generator
    api.graph_network
