@@ -146,7 +146,7 @@ class ResidueGraph(Graph):
     def _get_all_valid_nodes(res_contact_pairs, pssm, verbose=False):
         """Filters out invalid nodes based on 2 criteria:
             - contains unrecognized residue(s)
-            - contains resiude(s) absent form the pssm matrix
+            - contains residue(s) absent form the pssm matrix
 
         Args:
             res_contact_pairs ([type]): list of contact pairs 
