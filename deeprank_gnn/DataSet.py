@@ -12,7 +12,7 @@ from .community_pooling import community_detection, community_pooling
 
 
 def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
-    """Divide the dataset into a training set and an evaluation set
+    """Divides the dataset into a training set and an evaluation set
 
     Args:
         dataset ([type])
@@ -43,7 +43,7 @@ def DivideDataSet(dataset, percent=[0.8, 0.2], shuffle=True):
 
 
 def PreCluster(dataset, method):
-    """Pre-cluster nodes of the graohs
+    """Pre-clusters nodes of the graphs
 
     Args:
         dataset (HDF5DataSet object)
@@ -94,7 +94,7 @@ class HDF5DataSet(Dataset):
                  dict_filter=None, target=None, tqdm=True, index=None,
                  node_feature='all', edge_feature=['dist'], clustering_method='mcl',
                  edge_feature_transform=lambda x: np.tanh(-x/2+2)+1):
-        """Class from which the hdf5 dataset loaded.
+        """Class from which the hdf5 datasets are loaded.
 
         Args:
             root (str, optional): [description]. Defaults to './'.
@@ -141,7 +141,7 @@ class HDF5DataSet(Dataset):
         self.create_index_molecules()
 
     def __len__(self):
-        """Get the length of the dataset
+        """Gets the length of the dataset
         Returns:
             int: number of complexes in the dataset
         """
@@ -154,7 +154,7 @@ class HDF5DataSet(Dataset):
         pass
 
     def get(self, index):
-        """Get one item from its unique index.
+        """Gets one item from its unique index.
 
         Args:
             index (int): index of the complex
@@ -167,7 +167,7 @@ class HDF5DataSet(Dataset):
         return data
 
     def check_hdf5_files(self):
-        """Check if the data contained in the hdf5 file is ok."""
+        """Checks if the data contained in the hdf5 file is valid."""
         print("   Checking dataset Integrity")
         remove_file = []
         for fname in self.database:
@@ -187,7 +187,7 @@ class HDF5DataSet(Dataset):
             self.database.remove(name)
 
     def check_node_feature(self):
-        """Check if required node features exist
+        """Checks if the required node features exist
         """
         f = h5py.File(self.database[0], 'r')
         mol_key = list(f.keys())[0]
@@ -208,7 +208,7 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def check_edge_feature(self):
-        """Check if required edge features exist
+        """Checks if the required edge features exist
         """
         f = h5py.File(self.database[0], 'r')
         mol_key = list(f.keys())[0]
@@ -229,7 +229,7 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def load_one_graph(self, fname, mol):
-        """Load one graph given
+        """Loads one graph 
 
         Args:
             fname (str): hdf5 file name
@@ -364,9 +364,9 @@ class HDF5DataSet(Dataset):
         return data
 
     def create_index_molecules(self):
-        '''Create the indexing of each molecule in the dataset.
+        '''Creates the indexing of each molecule in the dataset.
 
-        Create the indexing: [ ('1ak4.hdf5,1AK4_100w),...,('1fqj.hdf5,1FGJ_400w)]
+        Creates the indexing: [ ('1ak4.hdf5,1AK4_100w),...,('1fqj.hdf5,1FGJ_400w)]
         This allows to refer to one complex with its index in the list
         '''
         print("   Processing data set")
@@ -405,7 +405,7 @@ class HDF5DataSet(Dataset):
         self.ntot = len(self.index_complexes)
 
     def filter(self, molgrp):
-        '''Filter the molecule according to a dictionary.
+        '''Filters the molecule according to a dictionary.
 
         The filter is based on the attribute self.dict_filter
         that must be either of the form: { 'name' : cond } or None

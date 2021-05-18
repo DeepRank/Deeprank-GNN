@@ -9,7 +9,7 @@ from sklearn.metrics import roc_auc_score
 
 def get_binary(values, threshold, target):
     """
-    Transform continuous or multiclass values into binary values (0/1)
+    Transforms continuous or multiclass values into binary values (0/1)
 
     Args:
         values (list): vector of the target values
@@ -34,7 +34,7 @@ def get_binary(values, threshold, target):
 
 def get_comparison(prediction, ground_truth, binary=True, classes=[0, 1]):
     """
-    Compute the confusion matrix to get the number of:
+    Computes the confusion matrix to get the number of:
 
     - false positive (FP)
     - false negative (FN)

@@ -34,9 +34,6 @@ class FoutLayer(torch.nn.Module):
     Protein Interface Predition using Graph Convolutional Network
     by Alex Fout et al. NIPS 2018
 
-    z =   x_i * Wc + 1 / Ni \Sum_j x_j * Wn + b
-
-
     Args:
         in_channels (int): Size of each input sample.
         out_channels (int): Size of each output sample.

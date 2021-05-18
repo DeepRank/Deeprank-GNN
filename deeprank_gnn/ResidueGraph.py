@@ -90,7 +90,7 @@ class ResidueGraph(Graph):
         db._close()
 
     def check_execs(self):
-        """see if all the required external execs are installed.
+        """Checks if all the required external execs are installed.
 
         Raises:
             OSError: if execs not found
@@ -104,7 +104,7 @@ class ResidueGraph(Graph):
                               inst, ' for details')
 
     def get_graph(self, db):
-        """Get the interface graph nodes and edges given the 
+        """Gets the interface graph nodes and edges given the 
         internal and external distance threshold
 
         Args:
@@ -144,9 +144,9 @@ class ResidueGraph(Graph):
 
     @staticmethod
     def _get_all_valid_nodes(res_contact_pairs, pssm, verbose=False):
-        """Filter out invalide nodes based on 2 criteria:
-            - contain unrecognized residue
-            - contains resiudes absent form the pssm matrix
+        """Filters out invalid nodes based on 2 criteria:
+            - contains unrecognized residue(s)
+            - contains resiude(s) absent form the pssm matrix
 
         Args:
             res_contact_pairs ([type]): list of contact pairs 
@@ -203,7 +203,7 @@ class ResidueGraph(Graph):
         return list(res_contact_pairs.keys()) + nodesB
 
     def get_node_features(self, db):
-        """Assign features to each node
+        """Assigns features to each node
         """
 
         # get the BSA of the residues
@@ -262,7 +262,7 @@ class ResidueGraph(Graph):
                 0, 0, 0)
 
     def get_edge_features(self):
-        """Assign feature to each edge
+        """Assigns distance feature to each edge
         """
         node_keys = list(self.nx.nodes)
 
@@ -274,7 +274,7 @@ class ResidueGraph(Graph):
                 [node_keys.index(node1), node_keys.index(node2)])
 
     def get_internal_edges(self, db):
-        """Get internal edges and the associated distance 
+        """Gets internal edges and the associated distances 
         """
         nodesA, nodesB = [], []
         for n in self.nx.nodes:
@@ -291,7 +291,7 @@ class ResidueGraph(Graph):
         return edgesA+edgesB, distA+distB
 
     def _get_internal_edges_chain(self, nodes, db, cutoff):
-        """Get internal edges and the associated distance (min) per chain
+        """Gets internal edges and the associated distances (min) per chain
 
         Args:
             nodes ([type]): list of nodes
@@ -320,7 +320,7 @@ class ResidueGraph(Graph):
         return edges, dist
 
     def _get_internal_edges_chain_mean(self, nodes, db, cutoff):
-        """Get internal edges and the associated distance (mean) per chain
+        """Gets internal edges and the associated distance (mean) per chain
 
         Args:
             nodes ([type]): list of nodes
@@ -353,7 +353,7 @@ class ResidueGraph(Graph):
         return edges, dist
 
     def _get_edge_polarity(self, node1, node2):
-        """Get edge polarity
+        """Gets edge polarity
 
         Args:
             node1 

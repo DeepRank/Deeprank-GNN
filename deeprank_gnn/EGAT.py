@@ -6,17 +6,8 @@ import torch.nn as nn
 
 class EGAT(torch.nn.Module):
     """
-    1) Create edges feature by concatenating node feature
-    :math: `e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j])`
-    
-    2) Apply softmax function, in order to learn to ignore some edges
-    :math: `\alpha_{ij}  = softmax(e_{ij})`
-    
-    3) Sum over the nodes (no averaging here !)
-    :math: `z_i = \sum_j (\alpha_{ij} * Wx_j + b_i)`
-    
-    Herein, we add the edge feature to the step 1)
-    :math: `e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j || We * edge_{attr} ])`
+    Graph Attention Layer including edge features
+    Inspired by Sazan Mahbub et al. "EGAT: Edge Aggregated Graph Attention Networks and Transfer Learning Improve Protein-Protein Interaction Site Prediction"
     """
 
     def __init__(self,

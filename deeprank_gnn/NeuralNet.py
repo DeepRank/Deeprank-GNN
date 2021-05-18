@@ -197,7 +197,7 @@ class NeuralNet(object):
                     f"self.fc2 = torch.nn.Linear(64, 1) --> self.fc2 = torch.nn.Linear(64, output_shape) \n\t")
 
     def set_loss(self):
-        """Set the loss function (MSE loss for regression/ CrossEntropy loss for classification)."""
+        """Sets the loss function (MSE loss for regression/ CrossEntropy loss for classification)."""
         if self.task == 'reg':
             self.loss = MSELoss()
 
@@ -224,7 +224,7 @@ class NeuralNet(object):
 
     def train(self, nepoch=1, validate=False, save_model='last', hdf5='train_data.hdf5', save_epoch='intermediate', save_every=5):
         """
-        Train the model
+        Trains the model
 
         Args:
             nepoch (int, optional): number of epochs. Defaults to 1.
@@ -433,7 +433,7 @@ class NeuralNet(object):
 
     def _epoch(self, epoch):
         """
-        Run a single epoch
+        Runs a single epoch
 
         Returns:
             tuple: prediction, ground truth, running loss
@@ -578,7 +578,7 @@ class NeuralNet(object):
     @staticmethod
     def update_name(hdf5, outdir):
         """
-        Check if the file already exists, if so, update the name
+        Checks if the file already exists, if so, update the name
 
         Args:
             hdf5 (str): hdf5 file
@@ -602,7 +602,7 @@ class NeuralNet(object):
 
     def plot_loss(self, name=''):
         """
-        Plot the loss of the model as a function of the epoch
+        Plots the loss of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
@@ -629,7 +629,7 @@ class NeuralNet(object):
 
     def plot_acc(self, name=''):
         """
-        Plot the accuracy of the model as a function of the epoch
+        Plots the accuracy of the model as a function of the epoch
 
         Args:
             name (str, optional): name of the output file. Defaults to ''.
@@ -688,7 +688,7 @@ class NeuralNet(object):
                 self.task))
 
     def plot_scatter(self):
-        """Scatter plot of the results."""
+        """Scatters plot of the results."""
         import matplotlib.pyplot as plt
 
         self.model.eval()
@@ -768,7 +768,7 @@ class NeuralNet(object):
         """
         Exports the epoch data to the hdf5 file.
 
-        Export the data of a given epoch in train/valid/test group.
+        Exports the data of a given epoch in train/valid/test group.
         In each group are stored the predicted values (outputs),
         ground truth (targets) and molecule name (mol).
 
