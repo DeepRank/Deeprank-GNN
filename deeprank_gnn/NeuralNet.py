@@ -39,7 +39,7 @@ class NeuralNet(object):
             lr (float, optional): learning rate. Defaults to 0.01.
             batch_size (int, optional): defaults to 32.
             percent (list, optional): divides the input dataset into a training and an evaluation set.
-                    Defaults to [0.8, 0.2].
+                    Defaults to [1.0, 0.0].
             database_eval ([type], optional): independent evaluation set. Defaults to None.
             index ([type], optional): index of the molecules to consider. Defaults to None.
             class_weights ([list or bool], optional): weights provided to the cross entropy loss function.
