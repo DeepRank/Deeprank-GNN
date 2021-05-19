@@ -48,7 +48,7 @@ class NeuralNet(object):
             task (str, optional): 'reg' for regression or 'class' for classification . Defaults to 'class'.
             classes (list, optional): Define the dataset target classes. Defaults to [0, 1].
             threshold (int, optional): threshold to compute binary classification metrics. Defaults to 4.0.
-            pretrained_model (str, required): path to pre-trained model.
+            pretrained_model (str, optional): path to pre-trained model. Defaults to None.
             shuffle (bool, optional): shuffle the training set. Defaults to True.
             outdir (str, optional): output directory. Defaults to ./
             cluster_nodes (bool, optional): perform node clustering ('mcl' or 'louvain' algorithm). Default to 'mcl'.
