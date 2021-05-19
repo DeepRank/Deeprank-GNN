@@ -17,7 +17,7 @@ from .Metrics import Metrics
 
 class NeuralNet(object):
 
-    def __init__(self, database=None, Net=None,
+    def __init__(self, database, Net,
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd', lr=0.01,
                  batch_size=32, percent=[0.8, 0.2],
