@@ -9,7 +9,8 @@ Welcome to DeepRank-GNN's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: DeepRank-GNN:
-
+   
+   overview
    installation
 
 .. toctree::
