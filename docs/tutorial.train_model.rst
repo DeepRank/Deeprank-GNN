@@ -72,11 +72,11 @@ The target values are pre-calculated during the Graph generation step if a refer
 3. Select hyperparamaters
 ---------------------------------------------
 
-- regression ('reg') of classification ('class') mode
+- Regression ('reg') of classification ('class') mode
 
 >>> task='reg' 
 
-- B-batch size
+- Batch size
 
 >>> batch_size=64
 
@@ -84,7 +84,7 @@ The target values are pre-calculated during the Graph generation step if a refer
 
 >>> shuffle=True
 
-- learning rate:
+- Learning rate:
 
 >>> lr=0.001
 
