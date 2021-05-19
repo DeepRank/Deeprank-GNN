@@ -24,11 +24,11 @@ orientation, and it may require data augmentation (i.e. multiple rotations of th
 network to forget about the orientation in the learning process; second, the size of the 3D grid is
 unique for all input data, which does not reflect the variety in interface sizes observed in experimental
 structures and may be problematic for large interfaces that do not fit inside the predefined grid size.
+A solution to this problem is to use instead Graph Neural networks (GNN). 
+By definition, graphs are non-structured geometric structures and do not hold orientation information. They are rotational invariant and can easily represent interfaces of varying sizes. 
 
-Building up on our previous tool DeepRank(https://github.com/DeepRank/deeprank) that maps atomic and residue-level features from PPIs to 3D grids and applies 3D CNNs to learn problem-specific interaction patterns, we present here Deeprank-Graph Neural networks (Deeprank-GNN). By definition, graphs are
-non-structured geometric structures and do not hold orientation information. They are rotational
-invariant and can easily represent interfaces of varying sizes. We have therefore developed Deeprank-
-GNN that converts PPI interfaces into graphs and uses those to learn interaction patterns. 
+Building up on our previous tool DeepRank(https://github.com/DeepRank/deeprank) that maps atomic and residue-level features from PPIs to 3D grids and applies 3D CNNs to learn problem-specific interaction patterns, we present here Deeprank-GNN. Deeprank-
+GNN converts PPI interfaces into graphs and uses those to learn interaction patterns. 
 
 Deeprank-GNN is a framework than can be easily used by the community and adapted to any topic involving 
 PPI interactions. The framework allows users to define their own graph neural network, features and target values. 
