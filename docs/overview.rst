@@ -19,7 +19,7 @@ approaches (e.g., X-ray crystallography, nuclear magnetic resonance, cryogenic e
 Given the remarkable success of Convolutional Neural Network (CNN) in retrieving patterns in images [1]_,
 CNN architectures have been developed to learn interaction patterns in PPI interfaces [2]_, [3]_.
 
-We have developed Deeprank [1]_ (https://github.com/DeepRank/deeprank), an open-source
+We have developed Deeprank [2]_ (https://github.com/DeepRank/deeprank), an open-source
 configurable deep learning framework for data mining PPIs using 3D-CNNs. Deeprank maps atomic and
 residue-level features from PPIs to 3D grids and applies 3D CNNs to learn problem-specific interaction
 patterns. Deeprank was applied to two problems: 1) the classification of biological vs. crystallographic
