@@ -22,7 +22,7 @@ To install the code
 
  * clone the repository ``git clone https://github.com/DeepRank/DeepRank-GNN.git``
  * go there ``cd DeepRank-GNN``
- * install the module ``pip insall -e ./``
+ * install the module ``pip install -e ./``
 
 You can then test the installation :
 

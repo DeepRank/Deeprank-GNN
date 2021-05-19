@@ -22,6 +22,7 @@ def plot_graph(graph,cluster):
 
 
 def get_preloaded_cluster(cluster,batch):
+    
     nbatch = torch.max(batch)+1
     for ib in range(1,nbatch):
         cluster[batch==ib] += torch.max(cluster[batch==ib-1]) + 1
@@ -75,7 +76,20 @@ def community_detection_per_batch(edge_index,batch,num_nodes,edge_attr=None,meth
 
 
 def community_detection(edge_index,num_nodes,edge_attr=None,method='mcl'):
+    """Detects clusters of nodes based on the edge attributes (distances)
 
+    Args:
+        edge_index (Tensor): Edge index
+        num_nodes (int): Number of nodes
+        edge_attr (Tensor, optional): Edge attributes. Defaults to None.
+        method (str, optional): method. Defaults to 'mcl'.
+
+    Raises:
+        ValueError: Requires a valid clustering method ('mcl' or 'louvain')
+
+    Returns:
+        cluster Tensor
+    """
     # make the networkX graph
     g = nx.Graph()
     g.add_nodes_from(range(num_nodes))
@@ -98,32 +112,34 @@ def community_detection(edge_index,num_nodes,edge_attr=None,method='mcl'):
     # detect the communities using MCL detection
     elif method == 'mcl':
 
-        #print('')
-        #t0 = time()
         matrix = nx.to_scipy_sparse_matrix(g)
-        #print('__ scipy %f' %(time()-t0))
 
-        #t0 = time()
         result = mc.run_mcl(matrix)           # run MCL with default parameters
-        #print('__ run %f' %(time()-t0))
 
-        #t0 = time()
         clusters = mc.get_clusters(result)    # get clusters
-        #print('__ cluster %f' %(time()-t0))
 
-        #t0 = time()
         index = np.zeros(num_nodes).astype('int')
         for ic, c in enumerate(clusters):
             index[list(c)] = ic
-        #print('__ process %f' %(time()-t0))
 
         return torch.tensor(index).to(device)
     else:
         raise ValueError('Clustering method %s not supported' %method)
 
 def community_pooling(cluster,data):
+    """Pools features and edges of all cluster members 
+    
+    All cluster members are pooled into a single node that is assigned:
+    - the max cluster value for each feature
+    - the average cluster nodes position 
 
+    Args:
+        cluster ([type]): clusters
+        data ([type]): features tensor
 
+    Returns:
+        pooled features tensor
+    """
     # determine what the batches has as attributes
     has_internal_edges = hasattr(data,'internal_edge_index')
     has_pos2D = hasattr(data,'pos2D')

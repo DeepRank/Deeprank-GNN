@@ -13,7 +13,7 @@ import h5py
 class Graph(object):
 
     def __init__(self):
-        """Class perform graph level action
+        """Class that performs graph level action
 
             - get score for the graph (lrmsd, irmsd, fnat, capri_class, bin_class and dockQ)
             - networkx object (graph) to hdf5 format
@@ -26,10 +26,10 @@ class Graph(object):
                       'fnat': None, 'dockQ': None, 'bin_class': None}
 
     def get_score(self, ref):
-        """Assign scores to a graph
+        """Assigns scores (lrmsd, irmsd, fnat, dockQ, bin_class, capri_class) to a protein graph
 
         Args:
-            ref (path): path to the reference structure to compute the different score
+            ref (path): path to the reference structure required to compute the different score
         """
         ref_name = os.path.splitext(os.path.basename(ref))[0]
         sim = StructureSimilarity(self.pdb, ref)
@@ -45,11 +45,11 @@ class Graph(object):
 
         self.score['capri_class'] = 5
         for thr, val in zip([6.0, 4.0, 2.0, 1.0], [4, 3, 2, 1]):
-            if self.score['irmsd'] <= thr:
+            if self.score['irmsd'] < thr:
                 self.score['capri_class'] = val
 
     def nx2h5(self, f5):
-        """Networkx object to hdf5 format
+        """Converts Networkx object to hdf5 format
 
         Args:
             f5 ([type]): hdf5 file
@@ -129,7 +129,7 @@ class Graph(object):
                 score_grp.create_dataset(k, data=v)
 
     def h52nx(self, f5name, mol, molgrp=None):
-        """Hdf5 file to Networkx object
+        """Converts Hdf5 file to Networkx object
 
         Args:
             f5name (str): hdf5 file
@@ -226,7 +226,7 @@ class Graph(object):
             f5.close()
 
     def plotly_2d(self, out=None, offline=False, iplot=True, method='louvain'):
-        """Plot the interface graph in 2D
+        """Plots the interface graph in 2D
 
         Args:
             out ([type], optional): output name. Defaults to None.
@@ -372,7 +372,7 @@ class Graph(object):
             py.plot(fig)
 
     def plotly_3d(self, out=None, offline=False, iplot=True):
-        """Plot interface graph in 3D
+        """Plots interface graph in 3D
 
         Args:
             out ([type], optional): [description]. Defaults to None.

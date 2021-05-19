@@ -12,7 +12,7 @@ class GraphHDF5(object):
 
     def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
                  select=None, outfile='graph.hdf5'):
-        """Master class from which graph are computed 
+        """Master class from which graphs are computed 
 
         Args:
             pdb_path (str): path to the docking models
@@ -63,7 +63,7 @@ class GraphHDF5(object):
 
     @staticmethod
     def _get_pssm(pssm_path, mol_name, base_name):
-        """Get the pssm file for a given model
+        """Gets the pssm file for a given model
 
         Args:
             pssm_path (str): path to the pssm file
