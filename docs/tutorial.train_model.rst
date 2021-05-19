@@ -300,4 +300,5 @@ In short
 >>> model.save_model("model_backup")
 >>> #model.test(database_test, threshold=4.0)
 
-For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the ./tools directory
+.. note::  
+ For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the ./tools directory
