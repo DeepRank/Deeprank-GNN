@@ -108,7 +108,7 @@ The user may :
 >>> database = './hdf5/1ACB_residue.hdf5'
 >>> database = './1ATN_residue.hdf5'
 >>>
->>> NN = NeuralNet(database, GINet,
+>>> model = NeuralNet(database, GINet,
 >>>                node_feature=node_feature,
 >>>                edge_feature=edge_feature,
 >>>                target=target,
@@ -152,7 +152,7 @@ The user may :
 
 - example 1:
 
->>> NN.train(nepoch=50, validate=False)
+>>> model.train(nepoch=50, validate=False)
 
 - example 2:
 
@@ -273,7 +273,7 @@ In short
 >>> shuffle=True
 >>> lr=0.001
 >>>
->>> NN = NeuralNet(database, GINet,
+>>> model = NeuralNet(database, GINet,
 >>>                node_feature=node_feature,
 >>>                edge_feature=edge_feature,
 >>>                target=target,
