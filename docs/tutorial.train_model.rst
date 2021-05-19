@@ -120,7 +120,7 @@ The user may :
 >>>
 
 .. note::  
- The *percent* argument is required to split the input dataset into a training set and a test set. Using ``percent=[0.8, 0.2]``, 80% of the input dataset will constitute the  training set, 20% will constotute the evaluation set. 
+ The *percent* argument is required to split the input dataset into a training set and a test set. Using ``percent=[0.8, 0.2]``, 80% of the input dataset will constitute the  training set, 20% will constitute the evaluation set. 
 
 4.2. Option 2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
