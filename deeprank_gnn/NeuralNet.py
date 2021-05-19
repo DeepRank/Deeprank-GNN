@@ -20,7 +20,7 @@ class NeuralNet(object):
     def __init__(self, database, Net,
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd', lr=0.01,
-                 batch_size=32, percent=[0.8, 0.2],
+                 batch_size=32, percent=[1.0, 0.0],
                  database_eval=None, index=None, class_weights=None, task='class',
                  classes=[0, 1], threshold=4.0,
                  pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl'):
