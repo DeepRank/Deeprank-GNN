@@ -28,16 +28,16 @@ class NeuralNet(object):
 
         Args:
             database (str, required): path(s) to hdf5 dataset(s). Unique hdf5 file or list of hdf5 files.
-            Net (function, required): neural network.
+            Net (function, required): neural network function (ex. GINet, Foutnet etc.)
             node_feature (list, optional): type, charge, polarity, bsa (buried surface area), pssm,
-                    cons (pssm conservation information), ic (pssm information content), depth ,
+                    cons (pssm conservation information), ic (pssm information content), depth,
                     hse (half sphere exposure).
                     Defaults to ['type', 'polarity', 'bsa'].
             edge_feature (list, optional): dist (distance). Defaults to ['dist'].
             target (str, optional): irmsd, lrmsd, fnat, capri_class, bin_class, dockQ.
                     Defaults to 'irmsd'.
             lr (float, optional): learning rate. Defaults to 0.01.
-            batch_size (int, optional): Defaults to 32.
+            batch_size (int, optional): defaults to 32.
             percent (list, optional): divides the input dataset into a training and an evaluation set.
                     Defaults to [0.8, 0.2].
             database_eval ([type], optional): independent evaluation set. Defaults to None.
@@ -46,7 +46,7 @@ class NeuralNet(object):
                     The user can either input a list of weights or let DeepRanl-GNN (True) define weights
                     based on the dataset content. Defaults to None.
             task (str, optional): 'reg' for regression or 'class' for classification . Defaults to 'class'.
-            classes (list, optional): Define the dataset target classes. Defaults to [0, 1].
+            classes (list, optional): define the dataset target classes in classification mode. Defaults to [0, 1].
             threshold (int, optional): threshold to compute binary classification metrics. Defaults to 4.0.
             pretrained_model (str, optional): path to pre-trained model. Defaults to None.
             shuffle (bool, optional): shuffle the training set. Defaults to True.
