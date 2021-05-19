@@ -16,10 +16,10 @@ including cell growth, structure, communication, protection and death. Acquiring
 fundamental to understand normal and altered physiological processes and propose solutions to
 restore them. In the past decades, a large number of PPI structures have been solved by experimental
 approaches (e.g., X-ray crystallography, nuclear magnetic resonance, cryogenic electron microscopy).
-Given the remarkable success of Convolutional Neural Network (CNN) in retrieving patterns in images1,
-CNN architectures have been developed to learn interaction patterns in PPI interfaces2,3.
+Given the remarkable success of Convolutional Neural Network (CNN) in retrieving patterns in images[KRI2012]_,
+CNN architectures have been developed to learn interaction patterns in PPI interfaces[REN2021]_,[WAN2020]_.
 
-We have developed Deeprank2 (https://github.com/DeepRank/deeprank), an open-source
+We have developed Deeprank[REN2021]_ (https://github.com/DeepRank/deeprank), an open-source
 configurable deep learning framework for data mining PPIs using 3D-CNNs. Deeprank maps atomic and
 residue-level features from PPIs to 3D grids and applies 3D CNNs to learn problem-specific interaction
 patterns. Deeprank was applied to two problems: 1) the classification of biological vs. crystallographic
@@ -38,3 +38,10 @@ GNN that converts PPI interfaces into graphs and uses those to learn interaction
 
 Deeprank-GNN is a framework than can be easily used by the community and adapted to any topic involving 
 PPI interactions. The framework allows users to define their own graph neural network, features and target values. 
+
+.. [KRI2012] Krizhevsky A, Sutskever I, Hinton GE, ImageNet classification with deep convolutional neural networks. Adv Neural Inf Process Syst 25, 2012
+
+.. [REN2021] Renaud N, Geng C, Georgievska S, Ambrosetti F, Ridder L, Marzella D, Bonvin A, Xue L, DeepRank: A deep learning framework for data mining 3D protein-protein interfaces, bioRxiv, 2021.01.29.425727
+
+.. [WAN2020] Wang X, Terashi G, Christoffer CW, Zhu M, Kihara D. Protein docking model evaluation by 3D deep convolutional neural networks. Bioinformatics. 2020 ;36(7):2113-2118.
+          
