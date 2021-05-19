@@ -3,19 +3,19 @@ Training a module
 
 
 1. Select node and edge features
-----------
+---------------------------------------------
 
 As implemented in Graphprot:
 
 1.1. Edge feature:
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **dist**: distance between nodes
 
 >>> edge_feature=['dist']
 
 1.2. Node features:
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **pos**: xyz coordinates
 
@@ -50,7 +50,7 @@ As implemented in Graphprot:
 
 
 2. select the target (benchmarking mode)
------------------
+---------------------------------------------
 
 When using Deeprank-GNN in a bencharking mode, the target (often referred to as Y) should be provided.
 
@@ -73,7 +73,7 @@ The target values are pre-calculated during the Graph generation step if a refer
 >>> target='irmsd'
 
 3. Select hyperparamaters
------------------
+---------------------------------------------
 
 - regression ('reg') of classification ('class') mode
 
@@ -92,7 +92,7 @@ The target values are pre-calculated during the Graph generation step if a refer
 >>> lr=0.001
 
 4. Load the network
------------------
+---------------------------------------------
 
 This step requires pre-calculated graphs in hdf5 format. 
 
@@ -103,7 +103,7 @@ The user may :
 - option 2: input distinct training/evaluation/test sets
 
 4.1. Option 1
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
@@ -124,7 +124,7 @@ The user may :
 >>>
 
 4.2. Option 2
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
@@ -149,7 +149,7 @@ The user may :
 >>>                   database_eval = database_eval)
 
 5. Train the model 
-----------------
+---------------------------------------------
 
 - example 1:
 
@@ -160,15 +160,15 @@ The user may :
 >>> model.train(nepoch=50, validate=True, plot=True, save_model='best', hdf5='output.hdf5')
 
 6. Analysis
----------------
+---------------------------------------------
 
 6.1. Plot the loss evolution over the epochs
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 >>> model.plot_loss(name='plot_loss')
 
 6.2 Analyse the performance in benchmarking conditions
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following analysis only apply if a reference structure was provided during the graph generation step.
 
@@ -238,20 +238,20 @@ The following metrics can be easily computed:
 >>> print('evaluation set - sensitivity:', eval_metrics.sensitivity)
 
 7. Save the model/network
------------------
+---------------------------------------------
 
 >>> model.save_model("model_backup")
 
 8. Test the model on an external dataset
------------------
+---------------------------------------------
 
 8.1. On a loaded model
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 >>> model.test(database_test, threshold=4.0)
 
 8.2. On a pre-trained model
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 >>> NeuralNet(database_test, GINet, pretrained_model = "model_backup..pth.tar")
 >>> model.test(database_test, threshold=4.0)
