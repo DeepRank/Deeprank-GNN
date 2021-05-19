@@ -64,11 +64,11 @@ The target values are pre-calculated during the Graph generation step if a refer
 
 - **fnat**: fraction of native contacts
 
-- **dockQ**: see Basu et al. "DockQ: A Quality Measure for Protein-Protein Docking Models", PLOS ONE, 2016
+- **dockQ**: see Basu et al., "DockQ: A Quality Measure for Protein-Protein Docking Models", PLOS ONE, 2016
 
-- **bin_class**: binary classification (0: irmsd >= 4 A, 1: RMSD < 4A)
+- **bin_class**: binary classification (0: ``irmsd >= 4 A``, 1: ``RMSD < 4A``)
 
-- **capri_classes**: 1: RMSD < 1A, 2: RMSD < 2A, 3: RMSD < 4A, 4: RMSD < 6A, 0: RMSD >= 6A
+- **capri_classes**: 1: ``RMSD < 1A``, 2: ``RMSD < 2A``, 3: ``RMSD < 4A``, 4: ``RMSD < 6A``, 0: ``RMSD >= 6A``
 
 >>> target='irmsd'
 
@@ -167,7 +167,7 @@ The user may :
 
 >>> model.plot_loss(name='plot_loss')
 
-6.2 Analysis in benchmarking conditions
+6.2 Analyse the performance in benchmarking conditions
 ^^^^^^^^^^^
 
 The following analysis only apply if a reference structure was provided during the graph generation step.
@@ -227,7 +227,7 @@ The following metrics can be easily computed:
 - **r2_score**: R^2 (coefficient of determination) regression score function
 
 .. note::  
-  All classification metrics can be calculated on continuous targets as soon as a threshold is provided to binarise the data
+  All classification metrics can be calculated on continuous targets as soon as a threshold is provided to binarise the data.
 
 >>> train_metrics = model.get_metrics('train', threshold = 4.0)
 >>> print('training set - accuracy:', train_metrics.accuracy)
