@@ -5,13 +5,13 @@ Creating Graphs
   The graph generation requires an ensemble of PDB files
   
   You can also provide PSSM matrices to compute evolutionary conservation node features. Some pre-calculated PSSM matrices can be downloaded from http://3dcons.cnb.csic.es/.
-  A ``3dcons_2_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format.
+  A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format.
   
 
 Training mode 
 -------------------------------------
 
-In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed : 
+In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed and assigned the graphs : 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
@@ -40,7 +40,7 @@ In a training mode, you are required to provide the path to the reference struct
   
    - PDB files: ``1ATN_xxx.pdb`` (xxx may be replaced by anything)
    - PSSM files: ``1ATN.A.pdb.pssm 1ATN.B.pdb.pssm`` or ``1ATN.A.pssm 1ATN.B.pssm``
-   - Reference PDB files: ``1KXQ.pdb``
+   - Reference PDB files: ``1ATN.pdb``
    
 
 Prediction mode
@@ -56,7 +56,7 @@ In a prediction mode, you may use a pretrained model and apply it to graphs for 
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5'')
 
-Add your own target value
+Add your own target values
 -------------------------------------
 
 The automatically computed target values are docking related, which may not match your research requirement.
@@ -76,7 +76,8 @@ You may instead generate the PPI graphs and add your own target values.
 
 .. note::
   The list of target values should respect the following format:
-  1ATN_xxx-1.pdb 0
-  1ATN_xxx-2.pdb 1
-  1ATN_xxx-3.pdb 0
-  1ATN_xxx-4.pdb 0
+  
+  ``1ATN_xxx-1.pdb 0``
+  ``1ATN_xxx-2.pdb 1``
+  ``1ATN_xxx-3.pdb 0``
+  ``1ATN_xxx-4.pdb 0``
