@@ -121,6 +121,9 @@ The user may :
 >>>                percent=[0.8, 0.2])
 >>>
 
+.. note::  
+ The *percent* argument is required to spli the input dataset into a training set and a test set. Using ``percent=[0.8, 0.2]``, 80% of the input dataset will constitute the  training set, 20% will constotute the evaluation set. 
+
 4.2. Option 2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -143,7 +146,6 @@ The user may :
 >>>                   task=task, 
 >>>                   lr=lr, 
 >>>                   shuffle=shuffle,
->>>                   percent=[1.0, 0.0], 
 >>>                   database_eval = database_eval)
 
 5. Train the model 
@@ -251,7 +253,7 @@ The following metrics can be easily computed:
 8.2. On a pre-trained model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
->>> NeuralNet(database_test, GINet, pretrained_model = "model_backup..pth.tar")
+>>> NeuralNet(database_test, GINet, pretrained_model = "model_backup.pth.tar")
 >>> model.test(database_test, threshold=4.0)
 
 In short
