@@ -177,7 +177,7 @@ The following analysis only apply if a reference structure was provided during t
 
 6.2.2. **Plot hitrate**
 
-Please provide a threshold to consider binarise the target value
+A threshold value is required to binarise the target value
 
 >>> model.plot_hit_rate(data='eval', threshold=4.0, mode='percentage', name='hitrate_eval')
 
