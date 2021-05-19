@@ -5,8 +5,6 @@ Training a module
 1. Select node and edge features
 ---------------------------------------------
 
-As implemented in Graphprot:
-
 1.1. Edge feature:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
