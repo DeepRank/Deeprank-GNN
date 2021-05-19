@@ -112,7 +112,6 @@ The user may :
 >>>                node_feature=node_feature,
 >>>                edge_feature=edge_feature,
 >>>                target=target,
->>>                index=None,
 >>>                task=task, 
 >>>                lr=lr,
 >>>                batch_size=batch_size,
@@ -138,14 +137,14 @@ The user may :
 >>> database_test = glob.glob('./hdf5/test*.hdf5')
 >>> 
 >>> model = NeuralNet(database_train, GINet,
->>>                   node_feature=node_feature,
->>>                   edge_feature=edge_attr,
->>>                   target=target,
->>>                   batch_size=batch_size,
->>>                   task=task, 
->>>                   lr=lr, 
->>>                   shuffle=shuffle,
->>>                   database_eval = database_eval)
+>>>                node_feature=node_feature,
+>>>                edge_feature=edge_attr,
+>>>                target=target,
+>>>                task=task, 
+>>>                lr=lr,
+>>>                batch_size=batch_size,
+>>>                shuffle=shuffle,,
+>>>                database_eval = database_eval)
 
 5. Train the model 
 ---------------------------------------------
