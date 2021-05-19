@@ -51,7 +51,6 @@ Training a module
 ---------------------------------------------
 
 When using Deeprank-GNN in a bencharking mode, the target (often referred to as Y) should be provided.
-
 The target values are pre-calculated during the Graph generation step if a reference structure is provided.
 
 **Pre-calculated targets:** 
