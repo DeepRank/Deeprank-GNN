@@ -3,44 +3,69 @@ Training a module
 
 
 1. Select node and edge features
+----------
+
 As implemented in Graphprot:
 
 1.1. Edge feature:
+
 - dist: distance between nodes
+
 >>> edge_feature=['dist']
 
 1.2. Node features:
+
 - pos: xyz coordinates
+
 - chain: chain ID
+
 - charge: residue charge
+
 - polarity: apolar/polar/neg_charged/pos_charged (one hot encoded)
+
 - depth: average atom depth of the atoms in a residue (distance to the surface)
+
 - bsa: buried surface are
+
 - hse: half sphere exposure
+
 - pssm: pssm score for each residues
+
 - cons: pssm score of the residue
+
 - ic: information content of the PSSM (~Shannon entropy)
+
 - type: residue type (one hot encoded)
+
 
 >>> node_feature=['type', 'polarity', 'bsa',
 >>>               'depth', 'hse', 'ic', 'pssm'],
 
 Note : 
+
 External edges connect 2 residues of chain A and B if they have at least 1 pairwise atomic distance < 8.5 A (Used for to define neighbors)
+
 Internal edges connect 2 residues within a chain if they have at least 1 pairwise atomic distance < 3 A (Used to cluster nodes)
 
 
 2. select the target (benchmarking mode)
 
 When using Deeprank-GNN in a bencharking mode, the target should be provided.
+
 The target values are pre-calculated during the Graph generation if a reference structure is provided.
 
 Pre-calculated targets : 
+
 - irmsd: interface RMSD (RMSD between the superimposed interface residues)
+
 - lrmsd: ligand RMSD (RMSD between chains B given that chains A are superimposed)
+
 - fnat: fraction of native contacts
+
 - dockQ (see Basu et al. "DockQ: A Quality Measure for Protein-Protein Docking Models", PLOS ONE, 2016)
+
 - bin_class: binary classification (0: irmsd >= 4 A, 1: RMSD < 4A)
+
 - capri_classes: 1: RMSD < 1A, 2: RMSD < 2A, 3: RMSD < 4A, 4: RMSD < 6A, 0: RMSD >= 6A
 
 >>> target='irmsd'
@@ -48,22 +73,33 @@ Pre-calculated targets :
 3. Select hyperparamaters
 
 - regression ('reg') of classification ('class')
+
 >>> task='reg' 
+
 - Batch batch_size
+
 >>> batch_size=64
+
 - Shuffle the training dataset
+
 >>> shuffle=True
+
 - learning rate:
+
 >>> lr=0.001
 
 4. Load the network
+
 This step requires pre-calculated graphs in hdf5 format. 
 
 The user may :
+
 - option 1: input a unique dataset and chose to automatically split it into a training and an evaluation step
+
 - option 2: input distinct training/evaluation/test sets
 
 4.1. Option 1
+
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>>
@@ -83,6 +119,7 @@ The user may :
 >>>
 
 4.2. Option 2
+
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>> import glob 
@@ -108,63 +145,98 @@ The user may :
 5. Train the model 
 
 - example 1:
+
 >>> NN.train(nepoch=50, validate=False)
 
 - example 2:
+
 >>> model.train(nepoch=50, validate=True, plot=True, save_model='best', hdf5='output.hdf5')
 
 6. Analysis
+
 6.1. Plot the loss evolution
+
 >>> model.plot_loss(name='plot_loss')
 
 6.2 Analysis in benchmarking conditions
+
 The following analysis only apply if a reference structure was provided during the graph generation step.
 
 6.2.1. Plot accuracy evolution 
+
 >>> model.plot_loss(name='plot_accuracy')
 
 6.2.2. Plot hitrate
+
 Please provide a threshold to consider binarise the target value
+
 >>> model.plot_hit_rate(data='eval', threshold=4.0, mode='percentage', name='hitrate_eval')
 
 6.2.3. Get various metrics
+
 The following metrics can be easily computed: 
 
 Classification metrics:
+
 - sensitivity: Sensitivity, hit rate, recall, or true positive rate
+
 - specificity: Specificity or true negative rate
+
 - precision: Precision or positive predictive value
+
 - NPV: Negative predictive value
+
 - FPR: Fall out or false positive rate
+
 - FNR: False negative rate
+
 - FDR: False discovery rate
+
 - accuracy: Accuracy
+
 - auc(): AUC
+
 - hitrate(): Hit rate
 
 Regression metrics:
+
 - explained_variance: Explained variance regression score function
+
 - max_error: Max_error metric calculates the maximum residual error
+
 - mean_abolute_error: Mean absolute error regression loss
+
 - mean_squared_error: Mean squared error regression loss
+
 - root_mean_squared_error: Root mean squared error regression loss
+
 - mean_squared_log_error: Mean squared logarithmic error regression loss
+
 - median_squared_log_error: Median absolute error regression loss
+
 - r2_score: R^2 (coefficient of determination) regression score function
 
 All classification metrics can be calculated on continuous targets as soon as a threshold is provided to binarise the data
 
+>>> train_metrics = model.get_metrics('train', threshold = 4.0)
+>>> print('train set - accuracy:', train_metrics.accuracy, '\n', 'training set - sensitivity:', train_metrics.sensitivity)
+>>> 
 >>> eval_metrics = model.get_metrics('eval', threshold = 4.0)
->>> print('eval accuracy:', eval_metrics.accuracy, 'eval sensitivity:', eval_metrics.sensitivity)
+>>> print('evaluation set - accuracy:', eval_metrics.accuracy, '\n', 'evaluation set - sensitivity:', eval_metrics.sensitivity)
+
 
 7. Save the model/network
+
 >>> model.save_model("model_backup")
 
 8. Test the model on an external dataset
+
 8.1. On a loaded model
+
 >>> model.test(database_test, threshold=4.0)
 
 8.2. On a pre-trained model
+
 >>> NeuralNet(database_test, GINet, pretrained_model = "model_backup..pth.tar")
 >>> model.test(database_test, threshold=4.0)
 
@@ -185,7 +257,6 @@ In short
 >>> batch_size=64
 >>> shuffle=True
 >>> lr=0.001
-
 >>>
 >>> NN = NeuralNet(database, GINet,
 >>>                node_feature=node_feature,
@@ -199,5 +270,16 @@ In short
 >>>                percent=[0.8, 0.2])
 >>>
 >>> model.train(nepoch=50, validate=True, plot=True, save_model='best', hdf5='output.hdf5')
+>>>
+>>> model.plot_loss(name='plot_loss')
+>>> 
+>>> train_metrics = model.get_metrics('train', threshold = 4.0)
+>>> print('training set - accuracy:', train_metrics.accuracy, '\n', 'training set - sensitivity:', train_metrics.sensitivity)
+>>> 
+>>> eval_metrics = model.get_metrics('eval', threshold = 4.0)
+>>> print('evaluation set - accuracy:', eval_metrics.accuracy, '\n', 'evaluation set - sensitivity:', eval_metrics.sensitivity)
+>>> 
+>>> model.save_model("model_backup")
+>>> #model.test(database_test, threshold=4.0)
 
 For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the ./tools directory
