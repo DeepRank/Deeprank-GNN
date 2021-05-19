@@ -151,11 +151,20 @@ The user may :
 
 - example 1:
 
+train the network, perform 50 epochs
+
 >>> model.train(nepoch=50, validate=False)
 
 - example 2:
 
->>> model.train(nepoch=50, validate=True, plot=True, save_model='best', hdf5='output.hdf5')
+train the model, evaluate it at each epoch, save the best model (i.e. the model with the lowest loss), and write all predictions to ``output.hdf5``
+
+>>> model.train(nepoch=50, validate=True, save_model='best', hdf5='output.hdf5')
+
+.. warning::
+ The ``last`` model is saved by default.
+ 
+ When setting ``save_model='best'``, a model that is associated with a lower loss than those generated in the previous epochs will be saved. By default, the epoch number is included in the output name not to write over intermediate models.
 
 6. Analysis
 ---------------------------------------------
