@@ -47,7 +47,7 @@ Training a module
   **Internal edges** connect 2 residues within a chain if they have at least 1 pairwise atomic distance **< 3 A** (Used to cluster nodes)
 
 
-2. select the target (benchmarking mode)
+2. Select the target (benchmarking mode)
 ---------------------------------------------
 
 When using Deeprank-GNN in a bencharking mode, the target (often referred to as Y) should be provided.
