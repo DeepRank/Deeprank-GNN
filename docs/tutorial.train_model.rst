@@ -10,7 +10,7 @@ As implemented in Graphprot:
 1.1. Edge feature:
 ^^^^^^^^^^^
 
-- dist: distance between nodes
+- **dist**: distance between nodes
 
 >>> edge_feature=['dist']
 
@@ -45,17 +45,18 @@ As implemented in Graphprot:
 
 .. note::  
   **External edges** connect 2 residues of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
+  
   **Internal edges** connect 2 residues within a chain if they have at least 1 pairwise atomic distance **< 3 A** (Used to cluster nodes)
 
 
 2. select the target (benchmarking mode)
 -----------------
 
-When using Deeprank-GNN in a bencharking mode, the target should be provided.
+When using Deeprank-GNN in a bencharking mode, the target (often referred to as Y) should be provided.
 
-The target values are pre-calculated during the Graph generation if a reference structure is provided.
+The target values are pre-calculated during the Graph generation step if a reference structure is provided.
 
-Pre-calculated targets : 
+**Pre-calculated targets:** 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
@@ -74,11 +75,11 @@ Pre-calculated targets :
 3. Select hyperparamaters
 -----------------
 
-- regression ('reg') of classification ('class')
+- regression ('reg') of classification ('class') mode
 
 >>> task='reg' 
 
-- Batch batch_size
+- B-batch size
 
 >>> batch_size=64
 
@@ -97,7 +98,7 @@ This step requires pre-calculated graphs in hdf5 format.
 
 The user may :
 
-- option 1: input a unique dataset and chose to automatically split it into a training and an evaluation step
+- option 1: input a unique dataset and chose to automatically split it into a training set and an evaluation set
 
 - option 2: input distinct training/evaluation/test sets
 
@@ -185,7 +186,7 @@ Please provide a threshold to consider binarise the target value
 
 The following metrics can be easily computed: 
 
-Classification metrics:
+**Classification metrics:**
 
 - **sensitivity**: Sensitivity, hit rate, recall, or true positive rate
 
@@ -207,7 +208,7 @@ Classification metrics:
 
 - **hitrate()**: Hit rate
 
-Regression metrics:
+**Regression metrics:**
 
 - **explained_variance**: Explained variance regression score function
 
@@ -229,11 +230,12 @@ Regression metrics:
   All classification metrics can be calculated on continuous targets as soon as a threshold is provided to binarise the data
 
 >>> train_metrics = model.get_metrics('train', threshold = 4.0)
->>> print('train set - accuracy:', train_metrics.accuracy, '\n', 'training set - sensitivity:', train_metrics.sensitivity)
+>>> print('training set - accuracy:', train_metrics.accuracy)
+>>> print('training set - sensitivity:', train_metrics.sensitivity)
 >>> 
 >>> eval_metrics = model.get_metrics('eval', threshold = 4.0)
->>> print('evaluation set - accuracy:', eval_metrics.accuracy, '\n', 'evaluation set - sensitivity:', eval_metrics.sensitivity)
-
+>>> print('evaluation set - accuracy:', eval_metrics.accuracy)
+>>> print('evaluation set - sensitivity:', eval_metrics.sensitivity)
 
 7. Save the model/network
 -----------------
@@ -288,10 +290,12 @@ In short
 >>> model.plot_loss(name='plot_loss')
 >>> 
 >>> train_metrics = model.get_metrics('train', threshold = 4.0)
->>> print('training set - accuracy:', train_metrics.accuracy, '\n', 'training set - sensitivity:', train_metrics.sensitivity)
+>>> print('training set - accuracy:', train_metrics.accuracy)
+>>> print('training set - sensitivity:', train_metrics.sensitivity)
 >>> 
 >>> eval_metrics = model.get_metrics('eval', threshold = 4.0)
->>> print('evaluation set - accuracy:', eval_metrics.accuracy, '\n', 'evaluation set - sensitivity:', eval_metrics.sensitivity)
+>>> print('evaluation set - accuracy:', eval_metrics.accuracy)
+>>> print('evaluation set - sensitivity:', eval_metrics.sensitivity)
 >>> 
 >>> model.save_model("model_backup")
 >>> #model.test(database_test, threshold=4.0)
