@@ -180,7 +180,7 @@ class HDF5DataSet(Dataset):
                 f.close()
             except Exception as e:
                 print(e)
-                print('    -> %s is corrputed ' % fname)
+                print('    -> %s is corrupted ' % fname)
                 remove_file.append(fname)
 
         for name in remove_file:
