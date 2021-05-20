@@ -44,7 +44,9 @@ class GraphHDF5(object):
 
             if graph_type == 'residue':
                 # get the pssm file for pdb
-                pssm = self._get_pssm(pssm_path, mol_name, base_name)
+                if pssm_path is not None: 
+                    pssm = self._get_pssm(pssm_path, mol_name, base_name)
+                else pssm = None
                 # generate a graph 
                 graph = ResidueGraph(pdb=pdbfile, pssm=pssm)
 
@@ -90,6 +92,7 @@ class GraphHDF5(object):
                     'PSSM file for ' + mol_name + ' not found')
         return pssm
 
+    def AddTarget():
 
 if __name__ == '__main__':
 

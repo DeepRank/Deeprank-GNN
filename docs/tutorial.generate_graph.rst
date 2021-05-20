@@ -1,12 +1,14 @@
+
+.. _Graph Generation tool:
+
 Creating Graphs
 =====================================
 
 .. warning::
-  The graph generation requires an ensemble of PDB files
+  The graph generation requires an ensemble of PDB files containing two chains: chain **A** and chain **B**.
   
-  You can also provide PSSM matrices to compute evolutionary conservation node features. Some pre-calculated PSSM matrices can be downloaded from http://3dcons.cnb.csic.es/.
-  A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format.
-  
+  You can provide PSSM matrices to compute evolutionary conservation node features. Some pre-calculated PSSM matrices can be downloaded from http://3dcons.cnb.csic.es/.
+  A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format. **Make sure the sequence numbering matches the PDB residues numbering.**
 
 Training mode 
 -------------------------------------
@@ -47,6 +49,7 @@ Prediction mode
 -------------------------------------
 
 In a prediction mode, you may use a pretrained model and apply it to graphs for which no experimental structure is available. 
+No targets will be computed.
 
 >>> from deeprank_gnn.GraphGenMP import GraphHDF5
 >>>
@@ -64,7 +67,7 @@ The automatically computed target values are docking related, which may not matc
 You may instead generate the PPI graphs and add your own target values.
 
 >>> from deeprank_gnn.GraphGen import GraphHDF5
->>> from deeprank_gnn.GraphGen import AddTarget
+>>> from deeprank.CustomizeGraph import CustomizeGraph
 >>>
 >>> pdb_path = './data/pdb/1ATN/'
 >>> pssm_path = './data/pssm/1ATN/'
@@ -72,7 +75,7 @@ You may instead generate the PPI graphs and add your own target values.
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5'')
 >>>
->>> AddTarget(pdb_path=pdb_path, name='new_target', list=list_of_target_values)
+>>> CustomizeGraph.add_target(pdb_path=pdb_path, target_name='new_target', target_list=list_of_target_values.txt)
 
 .. note::
   The list of target values should respect the following format:
@@ -81,3 +84,7 @@ You may instead generate the PPI graphs and add your own target values.
   ``1ATN_xxx-2.pdb 1``
   ``1ATN_xxx-3.pdb 0``
   ``1ATN_xxx-4.pdb 0``
+  
+  if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
+  >>> CustomizeGraph.add_target(pdb_path=pdb_path, target_name='new_target', target_list=list_of_target_values.txt, sep=',')
+  

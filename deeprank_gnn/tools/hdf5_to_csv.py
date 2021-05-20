@@ -59,9 +59,9 @@ python hdf5_to_csv.py file.hdf5
 """)
                 
 	else: 
-                #try: 
-                hdf5_path = sys.argv[1]
-                hdf5_to_csv(hdf5_path)
+                try: 
+                        hdf5_path = sys.argv[1]
+                        hdf5_to_csv(hdf5_path)
                         
-                #except:
-                #        print('Please make sure that your input file if a HDF5 file')
+                except:
+                        print('Please make sure that your input file if a HDF5 file')
