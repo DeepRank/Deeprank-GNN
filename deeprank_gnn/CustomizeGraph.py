@@ -1,6 +1,7 @@
 import glob
 import h5py
 import sys
+import numpy as np 
 
 def add_target(graph_path, target_name, target_list, sep=' '):
 
