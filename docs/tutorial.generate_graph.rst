@@ -8,8 +8,7 @@ Creating Graphs
   The graph generation requires an ensemble of PDB files containing two chains: chain **A** and chain **B**.
   
   You can provide PSSM matrices to compute evolutionary conservation node features. Some pre-calculated PSSM matrices can be downloaded from http://3dcons.cnb.csic.es/.
-  A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format.
-  
+  A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format. **Make sure the sequence numbering matches the PDB residues numbering.**
 
 Training mode 
 -------------------------------------
@@ -68,7 +67,7 @@ The automatically computed target values are docking related, which may not matc
 You may instead generate the PPI graphs and add your own target values.
 
 >>> from deeprank_gnn.GraphGen import GraphHDF5
->>> import deeprank.CustomizeGraph 
+>>> from deeprank.CustomizeGraph import CustomizeGraph
 >>>
 >>> pdb_path = './data/pdb/1ATN/'
 >>> pssm_path = './data/pssm/1ATN/'
