@@ -2,7 +2,7 @@ import glob
 import h5py
 import sys
 
-def add_target(self, graph_path, target_name, target_list, sep=' '):
+def add_target(graph_path, target_name, target_list, sep=' '):
 
     # Converts the target list into a dictionary
     # The input target list should respect the following format :
