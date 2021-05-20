@@ -89,5 +89,6 @@ You may instead generate the PPI graphs and add your own target values.
   ``1ATN_xxx-4.pdb 0``
   
   if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
+  
   >>> CustomizeGraph.add_target(pdb_path=pdb_path, target_name='new_target', target_list=list_of_target_values.txt, sep=',')
   
