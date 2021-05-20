@@ -5,6 +5,8 @@ import numpy as np
 
 def add_target(graph_path, target_name, target_list, sep=' '):
 
+    target_dict = {}
+
     # Converts the target list into a dictionary
     # The input target list should respect the following format :
     # 1ATN_xxx-1.pdb 0
