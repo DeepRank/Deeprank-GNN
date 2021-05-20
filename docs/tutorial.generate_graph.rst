@@ -80,13 +80,13 @@ You may instead generate the PPI graphs and add your own target values.
 .. note::
   The list of target values should respect the following format:
   
-  ``1ATN_xxx-1.pdb 0``
+  ``1ATN_xxx-1 0``
   
-  ``1ATN_xxx-2.pdb 1``
+  ``1ATN_xxx-2 1``
   
-  ``1ATN_xxx-3.pdb 0``
+  ``1ATN_xxx-3 0``
   
-  ``1ATN_xxx-4.pdb 0``
+  ``1ATN_xxx-4 0``
   
   if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
   
