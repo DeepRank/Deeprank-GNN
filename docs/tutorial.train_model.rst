@@ -41,7 +41,7 @@ Training a module
 
 
 >>> node_feature=['type', 'polarity', 'bsa',
->>>               'depth', 'hse', 'ic', 'pssm'],
+>>>               'depth', 'hse', 'ic', 'pssm']
 
 .. note::  
   **External edges** connect 2 residues of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
@@ -276,7 +276,7 @@ In short
 >>>
 >>> edge_feature=['dist']
 >>> node_feature=['type', 'polarity', 'bsa',
->>>               'depth', 'hse', 'ic', 'pssm'],
+>>>               'depth', 'hse', 'ic', 'pssm']
 >>> target='irmsd'
 >>> task='reg' 
 >>> batch_size=64
