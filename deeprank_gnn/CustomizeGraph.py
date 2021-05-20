@@ -40,7 +40,7 @@ class CustomizeGraph(object):
                                                 first_model = False     
 
                                 # Create the target     
-                                group[target] = self.target_dict[model]
+                                group[target_name] = self.target_dict[model]
 
                         f5.close()
 
