@@ -1,5 +1,5 @@
 
-.. _Graph Generation tool:
+.. _Graph Generation tools:
 
 Creating Graphs
 =====================================
