@@ -65,7 +65,7 @@ class NeuralNet(object):
             if self.task == None: 
                 if self.target in ['irmsd', 'lrmsd', 'fnat', 'dockQ']:
                     self.task = 'reg'
-                if self.target in ['bin_class', 'capri_classes', 'fnat']:
+                if self.target in ['bin_class', 'capri_classes']:
                     self.task = 'class'
                 else: 
                     raise ValueError(
