@@ -34,6 +34,6 @@ You can then test the installation :
   .. prompt:: bash 
     python -c "import torch; print(torch.__version__)"
   
-  In case PyTorch Geometric Installation fails, refer to the installation guide:  https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html 
+  In case PyTorch Geometric installation fails, refer to the installation guide:  https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html 
 
 
