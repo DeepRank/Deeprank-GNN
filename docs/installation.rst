@@ -4,7 +4,7 @@ Installation
 Via Python Package
 -----------------------------
 
-The latest release of DeepRank-GNN can be installed usint the pypi package manager with :
+The latest release of DeepRank-GNN can be installed using the pypi package manager with :
 
 ``pip install deeprank-gnn``
 
@@ -28,5 +28,12 @@ You can then test the installation :
 
  * ``cd test``
  * ``pytest``
+
+..:note: 
+  Ensure that at least PyTorch 1.5.0 is installed:
+  .. prompt:: bash 
+    python -c "import torch; print(torch.__version__)"
+  
+  In case PyTorch Geometric Installation fails, refer to the installation guide:  https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html 
 
 
