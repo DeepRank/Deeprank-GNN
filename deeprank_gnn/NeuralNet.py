@@ -21,7 +21,7 @@ class NeuralNet(object):
                  node_feature=['type', 'polarity', 'bsa'],
                  edge_feature=['dist'], target='irmsd', lr=0.01,
                  batch_size=32, percent=[1.0, 0.0],
-                 database_eval=None, index=None, class_weights=None, task='class',
+                 database_eval=None, index=None, class_weights=None, task=None,
                  classes=[0, 1], threshold=4.0,
                  pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl'):
         """Class from which the network is trained, evaluated and tested
@@ -45,7 +45,7 @@ class NeuralNet(object):
             class_weights ([list or bool], optional): weights provided to the cross entropy loss function.
                     The user can either input a list of weights or let DeepRanl-GNN (True) define weights
                     based on the dataset content. Defaults to None.
-            task (str, optional): 'reg' for regression or 'class' for classification . Defaults to 'class'.
+            task (str, optional): 'reg' for regression or 'class' for classification . Defaults to None.
             classes (list, optional): define the dataset target classes in classification mode. Defaults to [0, 1].
             threshold (int, optional): threshold to compute binary classification metrics. Defaults to 4.0.
             pretrained_model (str, optional): path to pre-trained model. Defaults to None.
@@ -61,7 +61,23 @@ class NeuralNet(object):
                 if k not in ['self', 'database', 'Net', 'database_eval']:
                     self.__setattr__(k, v)
             self.load_model(database, Net, database_eval)
-
+            
+            if self.task == None: 
+                if self.target in ['irmsd', 'lrmsd', 'fnat', 'dockQ']:
+                    self.task = 'reg'
+                if self.target in ['bin_class', 'capri_classes', 'fnat']:
+                    self.task = 'class'
+                else: 
+                    raise ValueError(
+                        f"User target detected -> The task argument is required ('class' or 'reg'). \n\t"
+                        f"Example: \n\t"
+                        f""
+                        f"model = NeuralNet(database, GINet,"
+                        f"                  target='physiological_assembly',"
+                        f"                  task='class',"
+                        f"                  shuffle=True,"
+                        f"                  percent=[0.8, 0.2])")
+            
         else:
             self.load_params(pretrained_model)
             self.outdir = outdir
