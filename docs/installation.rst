@@ -29,7 +29,7 @@ You can then test the installation :
  * ``cd test``
  * ``pytest``
 
-..:note: 
+.. note::
   Ensure that at least PyTorch 1.5.0 is installed:
   .. prompt:: bash 
     python -c "import torch; print(torch.__version__)"
