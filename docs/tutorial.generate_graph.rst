@@ -67,7 +67,7 @@ The automatically computed target values are docking related, which may not matc
 You may instead generate the PPI graphs and add your own target values.
 
 >>> from deeprank_gnn.GraphGen import GraphHDF5
->>> from deeprank.CustomizeGraph import CustomizeGraph
+>>> from deeprank_gnn.CustomizeGraph import CustomizeGraph
 >>>
 >>> pdb_path = './data/pdb/1ATN/'
 >>> pssm_path = './data/pssm/1ATN/'
@@ -75,7 +75,7 @@ You may instead generate the PPI graphs and add your own target values.
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5'')
 >>>
->>> CustomizeGraph.add_target(pdb_path=pdb_path, target_name='new_target', target_list=list_of_target_values.txt)
+>>> CustomizeGraph.add_target(graph_path='.', target_name='new_target', target_list='list_of_target_values.txt')
 
 .. note::
   The list of target values should respect the following format:
