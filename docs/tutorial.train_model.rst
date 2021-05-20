@@ -145,7 +145,7 @@ The user may :
 >>>                task=task, 
 >>>                lr=lr,
 >>>                batch_size=batch_size,
->>>                shuffle=shuffle,,
+>>>                shuffle=shuffle,
 >>>                database_eval = database_eval)
 
 5. Train the model 
@@ -294,8 +294,7 @@ In short
 >>>                shuffle=shuffle,
 >>>                percent=[0.8, 0.2])
 >>>
->>> model.train(nepoch=50, validate=True, plot=True, save_model='best', hdf5='output.hdf5')
->>>
+>>> model.train(nepoch=50, validate=True, save_model='best', hdf5='output.hdf5')>>>
 >>> model.plot_loss(name='plot_loss')
 >>> 
 >>> train_metrics = model.get_metrics('train', threshold = 4.0)
