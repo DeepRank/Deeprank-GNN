@@ -13,7 +13,7 @@ def add_target(graph_path, target_name, target_list, sep=' '):
     # 1ATN_xxx-4.pdb 0
     labels, values = np.genfromtxt(target_list, delimiter=sep, unpack=True)
     for label, value in zip(labels, values):
-        self.target_dict[label] = value
+        target_dict[label] = value
         
     first_model = True
 
@@ -33,7 +33,7 @@ def add_target(graph_path, target_name, target_list, sep=' '):
                         first_model = False     
 
                 # Create the target     
-                group[target_name] = self.target_dict[model]
+                group[target_name] = target_dict[model]
 
                 f5.close()
 
