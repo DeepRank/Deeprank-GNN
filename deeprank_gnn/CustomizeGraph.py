@@ -2,8 +2,6 @@ import glob
 import h5py
 import sys
 
-name=sys.argv[1]
-
 class CustomizeGraph(object):
 
     def __init__(self):
