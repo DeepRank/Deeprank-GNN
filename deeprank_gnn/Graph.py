@@ -19,7 +19,6 @@ class Graph(object):
             - networkx object (graph) to hdf5 format
             - networkx object (graph) from hdf5 format
         """
-        self.type = None
         self.name = None
         self.nx = None
         self.score = {'irmsd': None, 'lrmsd': None, 'capri_class': None,
@@ -47,7 +46,7 @@ class Graph(object):
         for thr, val in zip([6.0, 4.0, 2.0, 1.0], [4, 3, 2, 1]):
             if self.score['irmsd'] < thr:
                 self.score['capri_class'] = val
-
+        
     def nx2h5(self, f5):
         """Converts Networkx object to hdf5 format
 
@@ -147,7 +146,7 @@ class Graph(object):
             self.name = molgrp.name
             self.pdb = self.name+'.pdb'
 
-        # creat the graph
+        # creates the graph
         self.nx = nx.Graph()
 
         # get nodes
