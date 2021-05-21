@@ -57,7 +57,7 @@ No targets will be computed.
 >>> pssm_path = './data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
->>>          graph_type='residue', outfile='1ATN_residue.hdf5'')
+>>>          graph_type='residue', outfile='1ATN_residue.2.hdf5'')
 
 Add your own target values
 -------------------------------------
@@ -73,7 +73,7 @@ You may instead generate the PPI graphs and add your own target values.
 >>> pssm_path = './data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
->>>          graph_type='residue', outfile='1ATN_residue.hdf5'')
+>>>          graph_type='residue', outfile='1ATN_residue.hdf5')
 >>>
 >>> CustomizeGraph.add_target(graph_path='.', target_name='new_target', target_list='list_of_target_values.txt')
 
