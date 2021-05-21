@@ -71,7 +71,7 @@ The target values are pre-calculated during the Graph generation step if a refer
 
 >>> target='irmsd'
 
-3. Select hyperparamaters
+3. Select hyperparameters
 ---------------------------------------------
 
 - Regression ('reg') of classification ('class') mode
