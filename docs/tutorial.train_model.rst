@@ -317,4 +317,4 @@ In short
 >>> #model.test(database_test, threshold=4.0)
 
 .. note::  
- For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the ./tools directory
+ For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the **tools** directory
