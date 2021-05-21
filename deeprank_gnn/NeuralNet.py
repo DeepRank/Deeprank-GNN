@@ -144,6 +144,9 @@ class NeuralNet(object):
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+        if self.percent[1] > 0.0:
+            self.valid_loader = DataLoader(
+                valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
         print('Training validation set loaded')
 
         # independent validation dataset
