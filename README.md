@@ -5,7 +5,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3f98b2d1883493ead50e3acaa23f2cc)](https://app.codacy.com/gh/DeepRank/DeepRank-GNN?utm_source=github.com&utm_medium=referral&utm_content=DeepRank/DeepRank-GNN&utm_campaign=Badge_Grade)
 [![Coverage Status](https://coveralls.io/repos/github/DeepRank/Deeprank-GNN/badge.svg?branch=master)](https://coveralls.io/github/DeepRank/Deeprank-GNN?branch=master)
 
-![alt-text](./graphprot.png)
+![alt-text](./deeprank_gnn.png)
 
 ## Installation
 
@@ -118,4 +118,4 @@ model.train(nepoch=50)
 
 After installing  `h5xplorer`  (https://github.com/DeepRank/h5xplorer), you can execute the python file `deeprank_gnn/h5x/h5x.py` to explorer the connection graph used by DeepRank-GNN. The context menu (right click on the name of the structure) allows to automatically plot the graphs using `plotly` as shown below.
 
-![alt-text](./h5_graphprot.png)
+![alt-text](./h5_deeprank_gnn.png)
