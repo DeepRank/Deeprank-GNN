@@ -15,14 +15,14 @@ Deeprank-GNN works in a two step process:
 
 Use your own protein-protein complexes to generate PPI interface graphs.
 
-**Go to :ref:`Graph Generation tools<Graph Generation tools>` **
+Go to :ref:`Graph Generation tools<Graph Generation tools>` 
 
 2) Model Training
 -------------------------
 
 Tune and train your Graph Neural Network and make your own predictions.
 
-**Go to :ref:`Training and Evaluation tools<Training and Evaluation tools>` **
+Go to :ref:`Training and Evaluation tools<Training and Evaluation tools>` 
  
 
 Motivations
