@@ -57,7 +57,7 @@ No targets will be computed.
 >>> pssm_path = './data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
->>>          graph_type='residue', outfile='1ATN_residue.2.hdf5'')
+>>>          graph_type='residue', outfile='1ATN_residue.2.hdf5')
 
 Add your own target values
 -------------------------------------
