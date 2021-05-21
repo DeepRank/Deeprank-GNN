@@ -19,7 +19,7 @@ Welcome to DeepRank-GNN's documentation!
 
    tutorial.generate_graph
    tutorial.train_model
-
+   tutorial.usermodel
 
 .. toctree::
    :maxdepth: 2
