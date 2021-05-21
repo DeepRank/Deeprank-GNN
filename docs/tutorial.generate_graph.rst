@@ -13,7 +13,7 @@ Creating Graphs
 Training mode 
 -------------------------------------
 
-In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed and assigned to the graphs : 
+In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values based on CAPRI quality criteria [REFE] will be automatically computed and assigned to the graphs : 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
