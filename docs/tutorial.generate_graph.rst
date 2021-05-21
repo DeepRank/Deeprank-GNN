@@ -13,7 +13,7 @@ Creating Graphs
 Training mode 
 -------------------------------------
 
-In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed and assigned the graphs : 
+In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed and assigned to the graphs : 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
@@ -48,7 +48,7 @@ In a training mode, you are required to provide the path to the reference struct
 Prediction mode
 -------------------------------------
 
-In a prediction mode, you may use a pretrained model and apply it to graphs for which no experimental structure is available. 
+In a prediction mode, you may use a pre-trained model and run it on graphs for which no experimental structure is available. 
 No targets will be computed.
 
 >>> from deeprank_gnn.GraphGenMP import GraphHDF5
