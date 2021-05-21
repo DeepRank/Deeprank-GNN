@@ -5,7 +5,7 @@ Deeprank_GNN is a framework that converts PPI interfaces into graphs and uses th
 
 The framework is designed to be adapted to any PPI related research project.
 
-.. figure:: ../graphprot.png
+.. figure:: ../deeprank_gnn.png
     :align: center
 
 Deeprank-GNN works in a two step process:
