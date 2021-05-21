@@ -13,7 +13,7 @@ Creating Graphs
 Training mode 
 -------------------------------------
 
-In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values based on CAPRI quality criteria [REFE] will be automatically computed and assigned to the graphs : 
+In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values based on CAPRI quality criteria [1]_ will be automatically computed and assigned to the graphs : 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
@@ -26,7 +26,6 @@ In a training mode, you are required to provide the path to the reference struct
 - **bin_class**: binary classification (0: ``irmsd >= 4 A``, 1: ``RMSD < 4A``)
 
 - **capri_classes**: 1: ``RMSD < 1A``, 2: ``RMSD < 2A``, 3: ``RMSD < 4A``, 4: ``RMSD < 6A``, 0: ``RMSD >= 6A``
-
 
 >>> from deeprank_gnn.GraphGenMP import GraphHDF5
 >>>
@@ -94,3 +93,5 @@ You may instead generate the PPI graphs and add your own target values.
   >>> CustomizeGraph.add_target(pdb_path=pdb_path, target_name='new_target', 
   >>>                           target_list=list_of_target_values.txt, sep=',')
   
+.. [1] 
+  Lensink MF, Méndez R, Wodak SJ, Docking and scoring protein complexes: CAPRI 3rd Edition. Proteins. 2007
