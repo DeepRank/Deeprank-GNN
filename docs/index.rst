@@ -19,8 +19,8 @@ Welcome to DeepRank-GNN's documentation!
 
    tutorial.generate_graph
    tutorial.train_model
-   tutorial.usermodel
-
+   tutorial.advanced
+   
 .. toctree::
    :maxdepth: 2
    :caption: API
