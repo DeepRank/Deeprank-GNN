@@ -37,7 +37,7 @@ Given the remarkable success of Convolutional Neural Network (CNN) in retrieving
 CNN architectures have been developed to learn interaction patterns in PPI interfaces [2]_, [3]_.
 
 CNNs however come with major limitations: First, they are sensitive to the input PPI
-orientation, and it may require data augmentation (i.e. multiple rotations of the input data) for the
+orientation, which may require data augmentation (i.e. multiple rotations of the input data) for the
 network to forget about the orientation in the learning process; second, the size of the 3D grid is
 unique for all input data, which does not reflect the variety in interface sizes observed in experimental
 structures and may be problematic for large interfaces that do not fit inside the predefined grid size.
