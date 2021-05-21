@@ -1,7 +1,7 @@
 Overview
 =========================
 
-Deeprank_GNN is a framework that converts PPI interfaces into graphs and uses those to learn interaction patterns.
+Deeprank_GNN is a framework that converts PPI interfaces into graphs and uses those to learn interaction patterns using Graph Neural Networks.
 
 The framework is designed to be adapted to any PPI related research project.
 
