@@ -1,4 +1,4 @@
-.. _Training and Evaluation tools:
+.. _Training a module:
 
 Training a module
 =============================================
