@@ -3,7 +3,8 @@
 
 # distribution
 deeprank_gnn.egg-info
-
+build/*
+dist/*
 
 # datafile
 *.pdb
