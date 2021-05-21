@@ -249,7 +249,7 @@ The following metrics can be easily computed:
 7. Save the model/network
 ---------------------------------------------
 
->>> model.save_model("model_backup")
+>>> model.save_model("model_backup.pth.tar")
 
 8. Test the model on an external dataset
 ---------------------------------------------
@@ -262,8 +262,16 @@ The following metrics can be easily computed:
 8.2. On a pre-trained model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
->>> NeuralNet(database_test, GINet, pretrained_model = "model_backup.pth.tar")
->>> model.test(database_test, threshold=4.0)
+>>> from deeprank_gnn.NeuralNet import NeuralNet
+>>> from deeprank_gnn.ginet import GINet
+>>>  
+>>> database_test = './1ATN_residue.hdf5'
+>>>  
+>>> model = NeuralNet(database_test, GINet, pretrained_model = "model_backup.pth.tar")
+>>> model.test(database_test)
+>>>  
+>>> test_metrics = model.get_metrics('test', threshold = 4.0)
+>>> print(test_metrics.accuracy)
 
 In short
 =============================================
@@ -305,7 +313,7 @@ In short
 >>> print('evaluation set - accuracy:', eval_metrics.accuracy)
 >>> print('evaluation set - sensitivity:', eval_metrics.sensitivity)
 >>> 
->>> model.save_model("model_backup")
+>>> model.save_model("model_backup.pth.tar")
 >>> #model.test(database_test, threshold=4.0)
 
 .. note::  
