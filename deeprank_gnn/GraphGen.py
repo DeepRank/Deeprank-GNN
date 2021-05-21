@@ -92,8 +92,6 @@ class GraphHDF5(object):
                     'PSSM file for ' + mol_name + ' not found')
         return pssm
 
-    def AddTarget():
-
 if __name__ == '__main__':
 
     pdb_path = './data/pdb/1ATN/'

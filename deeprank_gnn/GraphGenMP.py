@@ -7,16 +7,29 @@ import time
 import multiprocessing as mp
 from functools import partial
 import pickle
+
 from .ResidueGraph import ResidueGraph
 from .Graph import Graph
 
 
 class GraphHDF5(object):
 
-    def __init__(self, pdb_path, ref_path, graph_type='residue', pssm_path=None,
+    def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
                  select=None, outfile='graph.hdf5', nproc=1, use_tqdm=True, tmpdir='./',
                  limit=None):
-
+        """Master class from which graphs are computed 
+        Args:
+            pdb_path (str): path to the docking models
+            ref_path (str, optional): path to the reference model. Defaults to None.
+            graph_type (str, optional): Defaults to 'residue'.
+            pssm_path ([type], optional): path to the pssm file. Defaults to None.
+            select (str, optional): filter files that starts with 'input'. Defaults to None.
+            outfile (str, optional): Defaults to 'graph.hdf5'.
+            nproc (int, optional): number of processors. Default to 1.
+            use_tqdm (bool, optional): Default to True.
+            tmpdir (str, optional): Default to `./`.
+            limit (int, optional): Default to None.
+        """
         # get the list of PDB names
         pdbs = list(filter(lambda x: x.endswith(
             '.pdb'), os.listdir(pdb_path)))
@@ -37,7 +50,10 @@ class GraphHDF5(object):
             base = os.path.basename(p)
             mol_name = os.path.splitext(base)[0]
             base_name = mol_name.split('_')[0]
-            pssm[p] = self._get_pssm(pssm_path, mol_name, base_name)
+            if pssm_path is not None:
+                pssm[p] = self._get_pssm(pssm_path, mol_name, base_name)
+            else:
+                pssm[p] = None
 
         # get the ref path
         if ref_path is None:
