@@ -32,8 +32,7 @@ You can then test the installation :
 .. note::
   Ensure that at least PyTorch 1.5.0 is installed:
   
-  .. prompt:: bash 
-    python -c "import torch; print(torch.__version__)"
+  ``python -c "import torch; print(torch.__version__)"
   
   In case PyTorch Geometric installation fails, refer to the installation guide:  https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html 
 
