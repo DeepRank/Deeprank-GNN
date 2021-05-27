@@ -22,7 +22,7 @@ class NeuralNet(object):
                  edge_feature=['dist'], target='irmsd', lr=0.01,
                  batch_size=32, percent=[1.0, 0.0],
                  database_eval=None, index=None, class_weights=None, task=None,
-                 classes=[0, 1], threshold=4.0,
+                 classes=[0, 1], threshold=0.3,
                  pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl'):
         """Class from which the network is trained, evaluated and tested
 
@@ -60,12 +60,11 @@ class NeuralNet(object):
             for k, v in dict(locals()).items():
                 if k not in ['self', 'database', 'Net', 'database_eval']:
                     self.__setattr__(k, v)
-            self.load_model(database, Net, database_eval)
             
             if self.task == None: 
                 if self.target in ['irmsd', 'lrmsd', 'fnat', 'dockQ']:
                     self.task = 'reg'
-                if self.target in ['bin_class', 'capri_classes']:
+                elif self.target in ['bin_class', 'capri_classes']:
                     self.task = 'class'
                 else: 
                     raise ValueError(
@@ -77,7 +76,9 @@ class NeuralNet(object):
                         f"                  task='class',"
                         f"                  shuffle=True,"
                         f"                  percent=[0.8, 0.2])")
-            
+
+            self.load_model(database, Net, database_eval)
+                    
         else:
             self.load_params(pretrained_model)
             self.outdir = outdir
