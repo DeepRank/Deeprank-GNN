@@ -157,8 +157,8 @@ class GraphHDF5(object):
         if pssm_path is None:
             return None
 
-        pssmA = os.path.join(pssm_path, mol_name+'.A.pdb.pssm')
-        pssmB = os.path.join(pssm_path, mol_name+'.B.pdb.pssm')
+        pssmA = os.path.join(pssm_path, base_name+'.A.pssm')
+        pssmB = os.path.join(pssm_path, base_name+'.B.pssm')
 
         # check if the pssms exists
         if os.path.isfile(pssmA) and os.path.isfile(pssmB):
