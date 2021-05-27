@@ -76,8 +76,8 @@ class GraphHDF5(object):
             pssm files for chain A and for chain B 
             pssm = {'A': pssmA, 'B': pssmB}
         """
-        pssmA = os.path.join(pssm_path, mol_name+'.A.pdb.pssm')
-        pssmB = os.path.join(pssm_path, mol_name+'.B.pdb.pssm')
+        pssmA = os.path.join(pssm_path, base_name+'.A.pdb.pssm')
+        pssmB = os.path.join(pssm_path, base_name+'.B.pdb.pssm')
 
         # check if the pssms exists
         if os.path.isfile(pssmA) and os.path.isfile(pssmB):
