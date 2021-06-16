@@ -145,21 +145,24 @@ class NeuralNet(object):
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+        print('Training set loaded')
+
         if self.percent[1] > 0.0:
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
-        print('Training validation set loaded')
+            print('Evaluation set loaded')
 
         # independent validation dataset
         if database_eval is not None:
+            print('Loading independent evaluation dataset...')
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
-            self.valid_loader = DataLoader(
-                valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
-            print('Independent validation set loaded')
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 PreCluster(valid_dataset, method=self.cluster_nodes)
+            self.valid_loader = DataLoader(
+                valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+            print('Independent validation set loaded !')
 
         else:
             print('No independent validation set loaded')
@@ -194,6 +197,13 @@ class NeuralNet(object):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
 
+        print ('device set to :', self.device)
+        if self.device.type == 'cuda':
+            print(torch.cuda.get_device_name(0))
+            print('Memory Usage:')
+            print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
+            print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
+            
         # regression mode
         if self.task == 'reg':
             self.model = Net(dataset.get(
@@ -419,21 +429,21 @@ class NeuralNet(object):
 
             # Check if a target value was provided (i.e. benchmarck scenario)
             if data_batch.y is not None:
-                y += data_batch.y
+                y += data_batch.y.cpu()
                 loss_val += loss_func(pred,
-                                      data_batch.y).detach().item()
+                                      data_batch.y).detach().cpu().item()
                 # Save targets
                 if self.task == 'class':
                     data['targets'] += [self.idx_to_classes(
-                        x) for x in data_batch.y.numpy().tolist()]
+                        x) for x in data_batch.y.cpu().numpy().tolist()]
                 else:
-                    data['targets'] += data_batch.y.numpy().tolist()
+                    data['targets'] += data_batch.y.cpu().numpy().tolist()
 
             # Get the outputs for export
             if self.task == 'class':
-                pred = np.argmax(pred.detach(), axis=1)
+                pred = np.argmax(pred.detach().cpu(), axis=1)
             else:
-                pred = pred.detach().reshape(-1)
+                pred = pred.detach().cpu().reshape(-1)
 
             out += pred
 
@@ -472,7 +482,7 @@ class NeuralNet(object):
                 pred, data_batch.y)
 
             try:
-                y += data_batch.y
+                y += data_batch.y.cpu()
             except ValueError:
                 print(
                     "You must provide target values (y) for the training set")
@@ -484,20 +494,20 @@ class NeuralNet(object):
 
             # get the outputs for export
             if self.task == 'class':
-                pred = np.argmax(pred.detach(), axis=1)
+                pred = np.argmax(pred.detach().cpu(), axis=1)
             else:
-                pred = pred.detach().reshape(-1)
+                pred = pred.detach().cpu().reshape(-1)
 
             out += pred
 
             # save targets and predictions
             if self.task == 'class':
                 data['targets'] += [self.idx_to_classes(x)
-                                    for x in data_batch.y.numpy().tolist()]
+                                    for x in data_batch.y.cpu().numpy().tolist()]
                 data['outputs'] += [self.idx_to_classes(x)
                                     for x in pred.tolist()]
             else:
-                data['targets'] += data_batch.y.numpy().tolist()
+                data['targets'] += data_batch.y.cpu().numpy().tolist()
                 data['outputs'] += pred.tolist()
 
             # get the data
