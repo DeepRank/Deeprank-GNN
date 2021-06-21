@@ -430,7 +430,6 @@ class NeuralNet(object):
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
             
-            print(pred, data_batch.y)
             # Check if a target value was provided (i.e. benchmarck scenario)
             if data_batch.y is not None:
                 y += data_batch.y.tolist()
