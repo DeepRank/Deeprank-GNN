@@ -100,7 +100,7 @@ class NeuralNet(object):
                                    target=self.target)
         self.test_loader = DataLoader(
             test_dataset)
-        #PreCluster(test_dataset, method=self.cluster_nodes)
+        PreCluster(test_dataset, method=self.cluster_nodes)
 
         print('Test set loaded')
         self.put_model_to_device(test_dataset, Net)
@@ -134,7 +134,7 @@ class NeuralNet(object):
         if self.cluster_nodes != None:
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print("Loading clusters")
-                #PreCluster(dataset, method=self.cluster_nodes)
+                PreCluster(dataset, method=self.cluster_nodes)
             else:
                 raise ValueError(
                     f"Invalid node clustering method. \n\t"
@@ -162,7 +162,7 @@ class NeuralNet(object):
                                         target=self.target)
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print('Loading clusters for the evaluation set.')
-                #PreCluster(valid_dataset, method=self.cluster_nodes)
+                PreCluster(valid_dataset, method=self.cluster_nodes)
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded !')
@@ -372,7 +372,7 @@ class NeuralNet(object):
                                        node_feature=self.node_feature, edge_feature=self.edge_feature,
                                        target=self.target)
             print('Test set loaded')
-            #PreCluster(test_dataset, method='mcl')
+            PreCluster(test_dataset, method='mcl')
             
             self.test_loader = DataLoader(
                 test_dataset)
