@@ -81,9 +81,7 @@ class NeuralNet(object):
                     
         else:
             self.load_params(pretrained_model)
-            self.transform_sigmoid = True
             self.outdir = outdir
-            #self.target = target
             self.load_pretrained_model(database, Net)
 
     def load_pretrained_model(self, database, Net):
