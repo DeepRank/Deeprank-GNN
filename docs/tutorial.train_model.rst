@@ -273,7 +273,7 @@ The following metrics can be easily computed:
 >>> test_metrics = model.get_metrics('test', threshold = 4.0)
 >>> print(test_metrics.accuracy)
 
-In short
+In short 
 =============================================
 
 >>> from deeprank_gnn.NeuralNet import NeuralNet
@@ -315,6 +315,33 @@ In short
 >>> 
 >>> model.save_model("model_backup.pth.tar")
 >>> #model.test(database_test, threshold=4.0)
+
+Using default settings 
+>>> from deeprank_gnn.NeuralNet import NeuralNet
+>>> from deeprank_gnn.ginet import GINet
+>>>
+>>> database = glob.glob('./hdf5/*_train.hdf5')
+>>> dataset_test = glob.glob('./hdf5/*_test.hdf5')
+>>>
+>>> target='irmsd'
+>>>
+>>> model = NeuralNet(database, GINet,
+>>>                target=target,
+>>>                percent=[0.8, 0.2])
+>>>
+>>> model.train(nepoch=50, validate=True, save_model='best', hdf5='output.hdf5')
+>>> model.plot_loss(name='plot_loss')
+>>> 
+>>> train_metrics = model.get_metrics('train', threshold = 4.0)
+>>> print('training set - accuracy:', train_metrics.accuracy)
+>>> print('training set - sensitivity:', train_metrics.sensitivity)
+>>> 
+>>> eval_metrics = model.get_metrics('eval', threshold = 4.0)
+>>> print('evaluation set - accuracy:', eval_metrics.accuracy)
+>>> print('evaluation set - sensitivity:', eval_metrics.sensitivity)
+>>> 
+>>> model.save_model("model_backup.pth.tar")
+>>> model.test(database_test, threshold=4.0)
 
 .. note::  
  For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the **tools** directory
