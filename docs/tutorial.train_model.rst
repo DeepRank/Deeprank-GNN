@@ -317,6 +317,7 @@ In short
 >>> #model.test(database_test, threshold=4.0)
 
 Using default settings 
+
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>>
