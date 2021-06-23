@@ -480,16 +480,16 @@ class NeuralNet(object):
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
 
+            loss = self.loss(pred, data_batch.y)
+            running_loss += loss.detach().item()
+            loss.backward()
+            self.optimizer.step()
+
             try:
                 y += data_batch.y.tolist()
             except ValueError:
                 print(
                     "You must provide target values (y) for the training set")
-
-            loss = self.loss(pred, data_batch.y)
-            running_loss += loss.detach().item()
-            loss.backward()
-            self.optimizer.step()
 
             # get the outputs for export
             if self.task == 'class':
