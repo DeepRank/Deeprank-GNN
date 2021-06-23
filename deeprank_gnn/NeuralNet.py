@@ -129,6 +129,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
+ 
         if self.cluster_nodes != None:
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print("Loading clusters")
@@ -201,9 +202,6 @@ class NeuralNet(object):
         print ('device set to :', self.device)
         if self.device.type == 'cuda':
             print(torch.cuda.get_device_name(0))
-            print('Memory Usage:')
-            print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-            print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
             
         # regression mode
         if self.task == 'reg':
@@ -470,7 +468,7 @@ class NeuralNet(object):
         out = []
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}
-
+        
         for data_batch in self.train_loader:
             data_batch = data_batch.to(self.device)
             self.optimizer.zero_grad()
