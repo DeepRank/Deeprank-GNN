@@ -129,7 +129,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
- 
+        
         if self.cluster_nodes != None:
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print("Loading clusters")
@@ -138,7 +138,7 @@ class NeuralNet(object):
                 raise ValueError(
                     f"Invalid node clustering method. \n\t"
                     f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
-
+                
         # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=self.percent)
@@ -152,35 +152,37 @@ class NeuralNet(object):
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Evaluation set loaded')
-
+            
         # independent validation dataset
         if database_eval is not None:
             print('Loading independent evaluation dataset...')
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
+            
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print('Loading clusters for the evaluation set.')
                 PreCluster(valid_dataset, method=self.cluster_nodes)
+                
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded !')
-
+            
         else:
             print('No independent validation set loaded')
-
+            
         self.put_model_to_device(dataset, Net)
-
+        
         # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr)
-
+        
         self.set_loss()
-
+        
         # init lists
         self.train_acc = []
         self.train_loss = []
-
+        
         self.valid_acc = []
         self.valid_loss = []
 
@@ -207,6 +209,7 @@ class NeuralNet(object):
         if self.task == 'reg':
             self.model = Net(dataset.get(
                 0).num_features).to(self.device)
+            
         # classification mode
         elif self.task == 'class':
             self.classes_to_idx = {i: idx for idx,
