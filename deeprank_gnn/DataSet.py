@@ -161,7 +161,6 @@ class HDF5DataSet(Dataset):
         Returns:
             dict: {'mol':[fname,mol],'feature':feature,'target':target}
         """
-
         fname, mol = self.index_complexes[index]
         data = self.load_one_graph(fname, mol)
         return data
