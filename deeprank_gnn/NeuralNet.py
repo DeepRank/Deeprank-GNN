@@ -60,13 +60,13 @@ class NeuralNet(object):
             for k, v in dict(locals()).items():
                 if k not in ['self', 'database', 'Net', 'database_eval']:
                     self.__setattr__(k, v)
-            
-            if self.task == None: 
+
+            if self.task == None:
                 if self.target in ['irmsd', 'lrmsd', 'fnat', 'dockQ']:
                     self.task = 'reg'
                 elif self.target in ['bin_class', 'capri_classes']:
                     self.task = 'class'
-                else: 
+                else:
                     raise ValueError(
                         f"User target detected -> The task argument is required ('class' or 'reg'). \n\t"
                         f"Example: \n\t"
@@ -78,7 +78,7 @@ class NeuralNet(object):
                         f"                  percent=[0.8, 0.2])")
 
             self.load_model(database, Net, database_eval)
-                    
+
         else:
             self.load_params(pretrained_model)
             self.outdir = outdir
@@ -129,7 +129,7 @@ class NeuralNet(object):
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
                               target=self.target)
-        
+
         if self.cluster_nodes != None:
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print("Loading clusters")
@@ -138,11 +138,11 @@ class NeuralNet(object):
                 raise ValueError(
                     f"Invalid node clustering method. \n\t"
                     f"Please set cluster_nodes to 'mcl', 'louvain' or None. Default to 'mcl' \n\t")
-                
+
         # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=self.percent)
-        
+
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
@@ -152,37 +152,37 @@ class NeuralNet(object):
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Evaluation set loaded')
-            
+
         # independent validation dataset
         if database_eval is not None:
             print('Loading independent evaluation dataset...')
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
                                         target=self.target)
-            
+
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print('Loading clusters for the evaluation set.')
                 PreCluster(valid_dataset, method=self.cluster_nodes)
-                
+
             self.valid_loader = DataLoader(
                 valid_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
             print('Independent validation set loaded !')
-            
+
         else:
             print('No independent validation set loaded')
-            
+
         self.put_model_to_device(dataset, Net)
-        
+
         # optimizer
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr)
-        
+
         self.set_loss()
-        
+
         # init lists
         self.train_acc = []
         self.train_loss = []
-        
+
         self.valid_acc = []
         self.valid_loss = []
 
@@ -204,12 +204,12 @@ class NeuralNet(object):
         print ('device set to :', self.device)
         if self.device.type == 'cuda':
             print(torch.cuda.get_device_name(0))
-            
+
         # regression mode
         if self.task == 'reg':
             self.model = Net(dataset.get(
                 0).num_features).to(self.device)
-            
+
         # classification mode
         elif self.task == 'class':
             self.classes_to_idx = {i: idx for idx,
@@ -372,7 +372,7 @@ class NeuralNet(object):
                                        target=self.target)
             print('Test set loaded')
             PreCluster(test_dataset, method='mcl')
-            
+
             self.test_loader = DataLoader(
                 test_dataset)
 
@@ -417,47 +417,47 @@ class NeuralNet(object):
             (tuple):
         """
         self.model.eval()
-        
+
         loss_func, loss_val = self.loss, 0
         out = []
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}
 
         for data_batch in loader:
-            
+
             data_batch = data_batch.to(self.device)
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
-            
+
             # Check if a target value was provided (i.e. benchmarck scenario)
             if data_batch.y is not None:
                 y += data_batch.y.tolist()
                 loss_val += loss_func(pred,
                                       data_batch.y).detach().item()
-                
+
             # get the outputs for export
             if self.task == 'class':
                 pred = np.argmax(pred.detach(), axis=1)
             else:
                 pred = pred.detach().reshape(-1)
-                
+
             out += pred.tolist()
-            
+
             # get the data
             data['mol'] += data_batch['mol']
-            
+
         # Save targets
         if self.task == 'class':
             data['targets'] += [self.idx_to_classes(
                 x) for x in y]
             data['outputs'] += [self.idx_to_classes(x)
                                 for x in out]
-            
+
         else:
             data['targets'] += y
             data['outputs'] += out
-            
+
         print(y, out)
         return out, y, loss_val, data
 
@@ -472,33 +472,33 @@ class NeuralNet(object):
         out = []
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}
-        
+
         for data_batch in self.train_loader:
             data_batch = data_batch.to(self.device)
             self.optimizer.zero_grad()
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
-            
+
             try:
                 y += data_batch.y.tolist()
             except ValueError:
                 print(
                     "You must provide target values (y) for the training set")
-                
+
             loss = self.loss(pred, data_batch.y)
             running_loss += loss.detach().item()
             loss.backward()
             self.optimizer.step()
-            
+
             # get the outputs for export
             if self.task == 'class':
                 pred = np.argmax(pred.detach(), axis=1)
             else:
                 pred = pred.detach().reshape(-1)
-                
+
             out += pred.tolist()
-            
+
             # get the data
             data['mol'] += data_batch['mol']
 
@@ -599,7 +599,7 @@ class NeuralNet(object):
             if target is not None:
                 target = torch.tensor(
                     [self.classes_to_idx[int(x)] for x in target])
-        
+
         elif self.transform_sigmoid is True :
             pred = torch.sigmoid(pred.reshape(-1))
 
