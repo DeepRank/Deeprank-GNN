@@ -142,7 +142,7 @@ class NeuralNet(object):
         # divide the dataset
         train_dataset, valid_dataset = DivideDataSet(
             dataset, percent=self.percent)
-
+        
         # dataloader
         self.train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=self.shuffle)
@@ -414,13 +414,14 @@ class NeuralNet(object):
             (tuple):
         """
         self.model.eval()
-
+        
         loss_func, loss_val = self.loss, 0
         out = []
         y = []
         data = {'outputs': [], 'targets': [], 'mol': []}
 
         for data_batch in loader:
+            
             data_batch = data_batch.to(self.device)
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
@@ -442,18 +443,18 @@ class NeuralNet(object):
             
             # get the data
             data['mol'] += data_batch['mol']
-
+            
         # Save targets
         if self.task == 'class':
             data['targets'] += [self.idx_to_classes(
                 x) for x in y]
             data['outputs'] += [self.idx_to_classes(x)
                                 for x in out]
-
+            
         else:
             data['targets'] += y
             data['outputs'] += out
-
+            
         print(y, out)
         return out, y, loss_val, data
 
