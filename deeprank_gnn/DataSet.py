@@ -140,7 +140,7 @@ class HDF5DataSet(Dataset):
         # and get fname and mol name from the index
         self.create_index_molecules()
 
-    def __len__(self):
+    def len(self):
         """Gets the length of the dataset
         Returns:
             int: number of complexes in the dataset
@@ -229,7 +229,7 @@ class HDF5DataSet(Dataset):
                     exit()
 
     def load_one_graph(self, fname, mol):
-        """Loads one graph 
+        """Loads one graph
 
         Args:
             fname (str): hdf5 file name

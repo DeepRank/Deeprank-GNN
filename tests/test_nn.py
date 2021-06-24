@@ -11,7 +11,7 @@ __PLOT__ = False
 class TestNeuralNet(unittest.TestCase):
 
     def setUp(self):
-        self.database = 'tests//hdf5/1ATN_residue.hdf5'
+        self.database = 'tests/hdf5/1ATN_residue.hdf5'
 
     def test_neural_net(self):
         NN = NeuralNet(self.database, GINet,
