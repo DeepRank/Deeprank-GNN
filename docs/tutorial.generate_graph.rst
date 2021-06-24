@@ -90,8 +90,8 @@ You may instead generate the PPI graphs and add your own target values.
   
   if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
   
-  >>> CustomizeGraph.add_target(pdb_path=pdb_path, target_name='new_target', 
-  >>>                           target_list=list_of_target_values.txt, sep=',')
+  >>> CustomizeGraph.add_target(graph_path=graph_path, target_name='new_target', 
+  >>>                           target_list='list_of_target_values.txt', sep=',')
   
 .. [1] 
   Lensink MF, Méndez R, Wodak SJ, Docking and scoring protein complexes: CAPRI 3rd Edition. Proteins. 2007
