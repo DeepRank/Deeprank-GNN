@@ -30,18 +30,20 @@ jobs:
     - run: conda --version
     - run: which python
     - name: install conda dependenies
+      run: conda install scipy mpi4py h5py
+    - name: install torch
       env:
-        TORCH: "1.8"
-      run: conda install scipy mpi4py h5py pytorch==${TORCH} torchvision cpuonly -c pytorch -c conda-forge
+        TORCH: "1.8.0"
+      run: pip install torch==${TORCH}+cpu torchvision==${TORCH}+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
     - name: install torch geometric
       env:
         TORCH_GEO: "1.8.0"
       run: |
-        pip install --no-index torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
-        pip install --no-index torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
-        pip install --no-index torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
-        pip install --no-index torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
+        pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH_GEO}+cpu.html
         pip install torch-geometric
 
     - name: Install the package
