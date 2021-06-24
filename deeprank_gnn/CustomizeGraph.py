@@ -22,7 +22,7 @@ def add_target(graph_path, target_name, target_list, sep=' '):
     first_model = True
 
     for hdf5 in glob.glob('{}/*.hdf5'.format(graph_path)):
-        if True:
+        try:
             f5 = h5py.File(hdf5, 'a')
             for model in f5.keys():
                 group=f5['{}/score/'.format(model)]
@@ -41,6 +41,6 @@ def add_target(graph_path, target_name, target_list, sep=' '):
                 
             f5.close()
             
-        #except:
-        #    print('no graph for {}'.format(hdf5))
+        except:
+            print('no graph for {}'.format(hdf5))
 
