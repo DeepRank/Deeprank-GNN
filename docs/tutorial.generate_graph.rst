@@ -47,7 +47,7 @@ Note that the pssm information is used to compute the **pssm**, **cons** and **i
 >>> pssm_path = './data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
->>>          graph_type='residue', outfile='1ATN_residue.2.hdf5', nproc=4)
+>>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
 
 Add your target values
 -------------------------------------
