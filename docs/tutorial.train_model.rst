@@ -25,11 +25,7 @@ Training a module
 
 - **polarity**: apolar/polar/neg_charged/pos_charged (one hot encoded)
 
-- **depth**: average atom depth of the atoms in a residue (distance to the surface)
-
 - **bsa**: buried surface are
-
-- **hse**: half sphere exposure
 
 - **pssm**: pssm score for each residues
 
@@ -39,9 +35,14 @@ Training a module
 
 - **type**: residue type (one hot encoded)
 
+- **depth** (opt. in graph. gen. step): average atom depth of the atoms in a residue (distance to the surface)
+
+- **hse** (opt. in graph. gen. step): half sphere exposure
+
+
 
 >>> node_feature=['type', 'polarity', 'bsa',
->>>               'depth', 'hse', 'ic', 'pssm']
+>>>               'ic', 'pssm']
 
 .. note::  
   **External edges** connect 2 residues of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
@@ -52,8 +53,8 @@ Training a module
 2. Select the target (benchmarking mode)
 ---------------------------------------------
 
-When using Deeprank-GNN in a bencharking mode, the target (often referred to as Y) should be provided.
-The target values are pre-calculated during the Graph generation step if a reference structure is provided.
+When using Deeprank-GNN in a benchmarking mode, you must specify your target (often referred to as Y).
+The target values are pre-calculated during the Graph generation step **if a reference structure is provided**.
 
 **Pre-calculated targets:** 
 
