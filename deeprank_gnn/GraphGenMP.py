@@ -82,6 +82,9 @@ class GraphHDF5(object):
                            for f in os.listdir(tmpdir)]
             graph_names = list(
                 filter(lambda x: x.endswith('.pkl'), graph_names))
+            is not None:
+                graph_names = list(
+                    filter(lambda x: x.startswith(select), graph_names))
 
             # transfer them to the hdf5
             f5 = h5py.File(outfile, 'w')
@@ -96,7 +99,7 @@ class GraphHDF5(object):
 
         # clean up
         rmfiles = glob.glob(
-            '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs')
+            '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs') + glob.glob('{}*.pkl'.format(select))
         for f in rmfiles:
             os.remove(f)
 
