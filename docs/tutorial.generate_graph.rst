@@ -9,11 +9,86 @@ Creating Graphs
   
   You can provide PSSM matrices to compute evolutionary conservation node features. Some pre-calculated PSSM matrices can be downloaded from http://3dcons.cnb.csic.es/.
   A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format. **Make sure the sequence numbering matches the PDB residues numbering.**
+  
+  By default, the following features are assigned to each node of the graph :
+  
+- **pos**: xyz coordinates
 
-Training mode 
+- **chain**: chain ID
+
+- **charge**: residue charge
+
+- **polarity**: apolar/polar/neg_charged/pos_charged (one hot encoded)
+
+- **bsa**: buried surface are
+
+- **pssm**: pssm score for each residues
+
+- **cons**: pssm score of the residue
+
+- **ic**: information content of the PSSM (~Shannon entropy)
+
+- **type**: residue type (one hot encoded)
+
+The following one are optional, and require more computation time (~x10) :
+
+- **depth**: average atom depth of the atoms in a residue (distance to the surface)
+
+- **hse**: half sphere exposure
+
+Generate your graphs 
 -------------------------------------
 
-In a training mode, you are required to provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values based on CAPRI quality criteria [1]_ will be automatically computed and assigned to the graphs : 
+Note that the pssm information is used to compute the **pssm**, **cons** and **ic** node features and is optional.
+
+>>> from deeprank_gnn.GraphGenMP import GraphHDF5
+>>>
+>>> pdb_path = './data/pdb/1ATN/'
+>>> pssm_path = './data/pssm/1ATN/'
+>>>
+>>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
+>>>          graph_type='residue', outfile='1ATN_residue.2.hdf5', nproc=4)
+
+Add your own target values
+-------------------------------------
+
+Use the CustomizeGraph class to add target values to the graphs. 
+
+If you are benchmarking docking models, go to the **next section**.
+
+>>> from deeprank_gnn.GraphGen import GraphHDF5
+>>> from deeprank_gnn.CustomizeGraph import CustomizeGraph
+>>>
+>>> pdb_path = './data/pdb/1ATN/'
+>>> pssm_path = './data/pssm/1ATN/'
+>>>
+>>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
+>>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
+>>>
+>>> CustomizeGraph.add_target(graph_path='.', target_name='new_target',
+>>>                           target_list=list_of_target_values.txt)
+
+.. note::
+  The list of target values should respect the following format:
+  
+  ``model_name_1 0``
+  
+  ``model_name_2 1``
+  
+  ``model_name_3 0``
+  
+  ``model_name_4 0``
+  
+  if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
+  
+  >>> CustomizeGraph.add_target(graph_path=graph_path, target_name='new_target', 
+  >>>                           target_list='list_of_target_values.txt', sep=',')
+  
+  
+Docking benchmark mode 
+-------------------------------------
+
+In a docking benchmark mode, you cano provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed, based on CAPRI quality criteria [1]_,  and assigned to the graphs : 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
@@ -44,54 +119,6 @@ In a training mode, you are required to provide the path to the reference struct
    - Reference PDB files: ``1ATN.pdb``
    
 
-Prediction mode
--------------------------------------
 
-In a prediction mode, you may use a pre-trained model and run it on graphs for which no experimental structure is available. 
-No targets will be computed.
-
->>> from deeprank_gnn.GraphGenMP import GraphHDF5
->>>
->>> pdb_path = './data/pdb/1ATN/'
->>> pssm_path = './data/pssm/1ATN/'
->>>
->>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
->>>          graph_type='residue', outfile='1ATN_residue.2.hdf5', nproc=4)
-
-Add your own target values
--------------------------------------
-
-The automatically computed target values are docking related, which may not match your research requirement.
-
-You may instead generate the PPI graphs and add your own target values.
-
->>> from deeprank_gnn.GraphGen import GraphHDF5
->>> from deeprank_gnn.CustomizeGraph import CustomizeGraph
->>>
->>> pdb_path = './data/pdb/1ATN/'
->>> pssm_path = './data/pssm/1ATN/'
->>>
->>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
->>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
->>>
->>> CustomizeGraph.add_target(graph_path='.', target_name='new_target',
->>>                           target_list=list_of_target_values.txt)
-
-.. note::
-  The list of target values should respect the following format:
-  
-  ``1ATN_xxx-1 0``
-  
-  ``1ATN_xxx-2 1``
-  
-  ``1ATN_xxx-3 0``
-  
-  ``1ATN_xxx-4 0``
-  
-  if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
-  
-  >>> CustomizeGraph.add_target(graph_path=graph_path, target_name='new_target', 
-  >>>                           target_list='list_of_target_values.txt', sep=',')
-  
 .. [1] 
   Lensink MF, Méndez R, Wodak SJ, Docking and scoring protein complexes: CAPRI 3rd Edition. Proteins. 2007
