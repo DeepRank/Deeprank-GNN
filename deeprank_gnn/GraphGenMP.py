@@ -82,7 +82,7 @@ class GraphHDF5(object):
                            for f in os.listdir(tmpdir)]
             graph_names = list(
                 filter(lambda x: x.endswith('.pkl'), graph_names))
-            is not None:
+            if select is not None:
                 graph_names = list(
                     filter(lambda x: x.startswith(select), graph_names))
 
