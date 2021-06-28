@@ -84,7 +84,7 @@ class GraphHDF5(object):
                 filter(lambda x: x.endswith('.pkl'), graph_names))
             if select is not None:
                 graph_names = list(
-                    filter(lambda x: x.startswith(select), graph_names))
+                    filter(lambda x: x.startswith(tmpdir+select), graph_names))
 
             # transfer them to the hdf5
             f5 = h5py.File(outfile, 'w')
