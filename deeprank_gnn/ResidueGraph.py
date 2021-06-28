@@ -15,7 +15,7 @@ class ResidueGraph(Graph):
 
     def __init__(self, pdb=None, pssm=None,
                  contact_distance=8.5, internal_contact_distance=3,
-                 pssm_align='res'):
+                 pssm_align='res', biopython=False):
         """Class from which Residue features are computed
 
         Args:
@@ -58,6 +58,8 @@ class ResidueGraph(Graph):
 
         self.polarity_encoding = {
             'apolar': 0, 'polar': 1, 'neg_charged': 2, 'pos_charged': 3}
+        
+        self.biopython = biopython
         #self.edge_polarity_encoding, iencod = {}, 0
         ##for k1, v1 in self.polarity_encoding.items():
         ##for k2, v2 in self.polarity_encoding.items():
@@ -219,16 +221,17 @@ class ResidueGraph(Graph):
         t0 = time()
         model = BioWrappers.get_bio_model(db.pdbfile)
         #print('_Model %f' %(time()-t0))
-
-        #t0 = time()
-        ResDepth = BioWrappers.get_depth_contact_res(
-            model, self.nx.nodes)
-        #print('_RD %f' %(time()-t0))
-
-        #t0 = time()
-        HSE = BioWrappers.get_hse(model)
-        #print('_HSE %f' %(time()-t0))
-
+        
+        if self.biopython == True :
+            #t0 = time()
+            ResDepth = BioWrappers.get_depth_contact_res(
+                model, self.nx.nodes)
+            #print('_RD %f' %(time()-t0))
+            
+            #t0 = time()
+            HSE = BioWrappers.get_hse(model)
+            #print('_HSE %f' %(time()-t0))
+            
         # loop over all the nodes
         for node_key in self.nx.nodes:
 
@@ -255,11 +258,13 @@ class ResidueGraph(Graph):
                 self.nx.nodes[node_key]['cons'] = data[self.pssm_pos[resName]]
                 self.nx.nodes[node_key]['ic'] = PSSM.get_ic_data(
                     node_key, self.ic)
+            
+            if self.biopython == True :
 
-            self.nx.nodes[node_key]['depth'] = ResDepth[node_key] if node_key in ResDepth else 0
-            bio_key = (chainID, resSeq)
-            self.nx.nodes[node_key]['hse'] = HSE[bio_key] if bio_key in HSE else (
-                0, 0, 0)
+                self.nx.nodes[node_key]['depth'] = ResDepth[node_key] if node_key in ResDepth else 0
+                bio_key = (chainID, resSeq)
+                self.nx.nodes[node_key]['hse'] = HSE[bio_key] if bio_key in HSE else (
+                    0, 0, 0)
 
     def get_edge_features(self):
         """Assigns distance feature to each edge
