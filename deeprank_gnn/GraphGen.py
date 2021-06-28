@@ -11,7 +11,7 @@ from .Graph import Graph
 class GraphHDF5(object):
 
     def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
-                 select=None, outfile='graph.hdf5'):
+                 select=None, outfile='graph.hdf5', biopython=False):
         """Master class from which graphs are computed 
 
         Args:
@@ -48,7 +48,7 @@ class GraphHDF5(object):
                     pssm = self._get_pssm(pssm_path, mol_name, base_name)
                 else pssm = None
                 # generate a graph 
-                graph = ResidueGraph(pdb=pdbfile, pssm=pssm)
+                graph = ResidueGraph(pdb=pdbfile, pssm=pssm, biopython=biopython)
 
             # get the score
             if ref_path is not None:

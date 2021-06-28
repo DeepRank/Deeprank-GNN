@@ -16,7 +16,7 @@ class GraphHDF5(object):
 
     def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
                  select=None, outfile='graph.hdf5', nproc=1, use_tqdm=True, tmpdir='./',
-                 limit=None):
+                 limit=None, biopython=False):
         """Master class from which graphs are computed 
         Args:
             pdb_path (str): path to the docking models
@@ -65,7 +65,7 @@ class GraphHDF5(object):
         # store the graphs the HDF5 file
         if nproc == 1:
             graphs = self.get_all_graphs(
-                pdbs, pssm, ref, outfile, use_tqdm)
+                pdbs, pssm, ref, outfile, use_tqdm, biopython)
 
         else:
 
@@ -74,7 +74,7 @@ class GraphHDF5(object):
 
             pool = mp.Pool(nproc)
             part_process = partial(
-                self._pickle_one_graph, pssm=pssm, ref=ref, tmpdir=tmpdir)
+                self._pickle_one_graph, pssm=pssm, ref=ref, tmpdir=tmpdir, biopython=biopython)
             pool.map(part_process, pdbs)
 
             # get teh graph names
@@ -100,7 +100,7 @@ class GraphHDF5(object):
         for f in rmfiles:
             os.remove(f)
 
-    def get_all_graphs(self, pdbs, pssm, ref, outfile, use_tqdm=True):
+    def get_all_graphs(self, pdbs, pssm, ref, outfile, use_tqdm=True, biopython=False):
 
         graphs = []
         if use_tqdm:
@@ -111,7 +111,7 @@ class GraphHDF5(object):
 
         for name in lst:
             try:
-                graphs.append(self._get_one_graph(name, pssm, ref))
+                graphs.append(self._get_one_graph(name, pssm, ref, biopython))
             except Exception as e:
                 print('Issue encountered while computing graph ', name)
                 print(e)
@@ -126,10 +126,10 @@ class GraphHDF5(object):
         f5.close()
 
     @staticmethod
-    def _pickle_one_graph(name, pssm, ref, tmpdir='./'):
+    def _pickle_one_graph(name, pssm, ref, tmpdir='./', biopython=False):
 
         # get the graph
-        g = ResidueGraph(pdb=name, pssm=pssm[name])
+        g = ResidueGraph(pdb=name, pssm=pssm[name], biopython=biopython)
         if ref is not None:
             g.get_score(ref)
 
@@ -143,10 +143,10 @@ class GraphHDF5(object):
         f.close()
 
     @staticmethod
-    def _get_one_graph(name, pssm, ref):
+    def _get_one_graph(name, pssm, ref, biopython):
 
         # get the graph
-        g = ResidueGraph(pdb=name, pssm=pssm[name])
+        g = ResidueGraph(pdb=name, pssm=pssm[name], biopython=biopython)
         if ref is not None:
             g.get_score(ref)
         return g

@@ -458,7 +458,6 @@ class NeuralNet(object):
             data['targets'] += y
             data['outputs'] += out
 
-        print(y, out)
         return out, y, loss_val, data
 
     def _epoch(self, epoch):
