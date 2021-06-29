@@ -73,6 +73,7 @@ The target values are pre-calculated during the Graph generation step **if a ref
 .. note::  
  In classification mode (i.e. task="class") you must provide the list of target classes to the NeuralNet (e.g. classes=[1,2,3,4])
 
+
 >>> target='irmsd'
 
 3. Select hyperparameters
