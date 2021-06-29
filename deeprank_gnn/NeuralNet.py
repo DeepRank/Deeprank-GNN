@@ -22,7 +22,7 @@ class NeuralNet(object):
                  edge_feature=['dist'], target='irmsd', lr=0.01,
                  batch_size=32, percent=[1.0, 0.0],
                  database_eval=None, index=None, class_weights=None, task=None,
-                 classes=[0, 1], threshold=0.3,
+                 classes=[0, 1], threshold=None,
                  pretrained_model=None, shuffle=True, outdir='./', cluster_nodes='mcl', transform_sigmoid=False):
         """Class from which the network is trained, evaluated and tested
 
@@ -76,7 +76,13 @@ class NeuralNet(object):
                         f"                  task='class',"
                         f"                  shuffle=True,"
                         f"                  percent=[0.8, 0.2])")
-
+           
+            if self.task == 'class' and self.threshold == None:
+                print('the threshold for accuracy computation is set to {}'.format(self.classes[1]))
+                self.threshold == self.classes[1]
+            if self.task == 'reg' and self.threshold == None:
+                print('the threshold for accuracy computation is set to 0.3')
+                self.threshold == 0.3
             self.load_model(database, Net, database_eval)
 
         else:
