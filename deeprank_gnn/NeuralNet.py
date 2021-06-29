@@ -79,10 +79,10 @@ class NeuralNet(object):
            
             if self.task == 'class' and self.threshold == None:
                 print('the threshold for accuracy computation is set to {}'.format(self.classes[1]))
-                self.threshold == self.classes[1]
+                self.threshold = self.classes[1]
             if self.task == 'reg' and self.threshold == None:
                 print('the threshold for accuracy computation is set to 0.3')
-                self.threshold == 0.3
+                self.threshold = 0.3
             self.load_model(database, Net, database_eval)
 
         else:
