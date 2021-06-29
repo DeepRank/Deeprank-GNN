@@ -93,13 +93,19 @@ class GraphHDF5(object):
             for name in graph_names:
                 f = open(name, 'rb')
                 g = pickle.load(f)
-                g.nx2h5(f5)
+                try:
+                    g.nx2h5(f5)
+                except Exception as e:
+                    print('Issue encountered while computing graph ', name)
+                    print(e)
                 f.close()
+                os.remove(name)
+                
             f5.close()
 
         # clean up
         rmfiles = glob.glob(
-            '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs') + glob.glob('{}*.pkl'.format(select))
+            '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs') 
         for f in rmfiles:
             os.remove(f)
 
