@@ -70,6 +70,9 @@ The target values are pre-calculated during the Graph generation step **if a ref
 
 - **capri_classes**: 1: ``RMSD < 1A``, 2: ``RMSD < 2A``, 3: ``RMSD < 4A``, 4: ``RMSD < 6A``, 0: ``RMSD >= 6A``
 
+.. note::  
+ In classification mode (i.e. task="class") you must provide the list of target classes to the NeuralNet (e.g. classes=[1,2,3,4])
+
 >>> target='irmsd'
 
 3. Select hyperparameters
