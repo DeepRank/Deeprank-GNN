@@ -449,9 +449,9 @@ class NeuralNet(object):
 
         # Save targets
         if self.task == 'class':
-            data['targets'] += [self.idx_to_classes(
-                x) for x in y]
-            data['outputs'] += [self.idx_to_classes(x)
+            data['targets'] += [self.idx_to_classes[x]
+                                for x in y]
+            data['outputs'] += [self.idx_to_classes[x]
                                 for x in out]
 
         else:
@@ -503,9 +503,9 @@ class NeuralNet(object):
 
         # save targets and predictions
         if self.task == 'class':
-            data['targets'] += [self.idx_to_classes(x)
+            data['targets'] += [self.idx_to_classes[x]
                                 for x in y]
-            data['outputs'] += [self.idx_to_classes(x)
+            data['outputs'] += [self.idx_to_classes[x]
                                 for x in out]
         else:
             data['targets'] += y
