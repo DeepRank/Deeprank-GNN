@@ -1,4 +1,4 @@
-# DeepRank
+# DeepRank-GNN
 
 
 [![Build Status](https://github.com/DeepRank/DeepRank-GNN/workflows/build/badge.svg)](https://github.com/DeepRank/DeepRank-GNN/actions)
