@@ -79,8 +79,11 @@ Design your  own neural network architecture
 ---------------------------
 
 The provided example makes use of **internal edges** and **external edges**.
-We perform convolutions on the internal and external edges independently by providing the followinf data to the convolution layers: 
+
+We perform convolutions on the internal and external edges independently by providing the following data to the convolution layers: 
+
 - data_ext.internal_edge_index, data_ext.internal_edge_attr for the **internal** edges 
+
 - data_ext.edge_index, data_ext.edge_attr for the **external** edges
 
 >>> class GIN_EGAT(torch.nn.Module):
