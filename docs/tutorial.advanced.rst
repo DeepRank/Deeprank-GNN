@@ -78,6 +78,11 @@ Example:
 Design your  own neural network architecture
 ---------------------------
 
+The provided example makes use of **internal edges** and **external edges**.
+We perform convolutions on the internal and external edges independently by providing the followinf data to the convolution layers: 
+- data_ext.internal_edge_index, data_ext.internal_edge_attr for the **internal** edges 
+- data_ext.edge_index, data_ext.edge_attr for the **external** edges
+
 >>> class GIN_EGAT(torch.nn.Module):
 >>>     def __init__(self, input_shape, output_shape = 1):
 >>>         super(GIN_EGAT, self).__init__()
@@ -112,13 +117,13 @@ Design your  own neural network architecture
 >>>         # INTRA-PROTEIN INTERACTION GRAPH
 >>>         # first conv block                                                                                                                                                  
 >>>         data_ext.x = act(self.conv1_ext(
->>>             data_ext.x, data_ext.edge_index, data_ext.edge_attr))
+>>>             data_ext.x, data_ext.internal_edge_index, data_ext.internal_edge_attr))
 >>>         cluster = get_preloaded_cluster(data_ext.cluster0, data_ext.batch)
 >>>         data_ext = community_pooling(cluster, data_ext)
 >>> 
 >>>         # second conv block                                                                                                                                                    
 >>>         data_ext.x = act(self.conv2_ext(
->>>             data_ext.x, data_ext.edge_index, data_ext.edge_attr))
+>>>             data_ext.x, data_ext.internal_edge_index, data_ext.internal_edge_attr))
 >>>         cluster = get_preloaded_cluster(data_ext.cluster1, data_ext.batch)
 >>>         x_ext, batch_ext = max_pool_x(cluster, data_ext.x, data_ext.batch)
 >>> 
