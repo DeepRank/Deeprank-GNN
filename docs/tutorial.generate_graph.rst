@@ -4,7 +4,7 @@
 Creating Graphs
 =====================================
 
-Deeprank-GNN automatically generates a residue-level graph of **protein-protein interfaces** in which nodes correspond to a single residue, and 2 types of edges are defined:
+Deeprank-GNN automatically generates a residue-level graphs of **protein-protein interfaces** in which nodes correspond to a single residue, and 2 types of edges are defined:
   
 - **External edges** connect 2 residues (nodes) of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
   
