@@ -14,6 +14,14 @@ Training a module
 
 >>> edge_feature=['dist']
 
+
+.. note::  
+  **External edges** connect 2 residues of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
+  
+  **Internal edges** connect 2 residues within a chain if they have at least 1 pairwise atomic distance **< 3 A** (Used to cluster nodes)
+
+
+
 1.2. Node features:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -43,11 +51,6 @@ Training a module
 
 >>> node_feature=['type', 'polarity', 'bsa',
 >>>               'ic', 'pssm']
-
-.. note::  
-  **External edges** connect 2 residues of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
-  
-  **Internal edges** connect 2 residues within a chain if they have at least 1 pairwise atomic distance **< 3 A** (Used to cluster nodes)
 
 
 2. Select the target (benchmarking mode)
