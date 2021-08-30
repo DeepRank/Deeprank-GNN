@@ -4,8 +4,15 @@
 Creating Graphs
 =====================================
 
+Deeprank-GNN automatically generates a residue-level graph of **protein-protein interfaces** in which nodes correspond to a single residue, and 2 types of edges are defined:
+  
+- **External edges** connect 2 residues (nodes) of chain A and B if they have at least 1 pairwise atomic distance **< 8.5 A** (Used for to define neighbors)
+  
+- **Internal edges** connect 2 residues (nodes) within a chain if they have at least 1 pairwise atomic distance **< 3 A** (Used to cluster nodes)
+
+
 .. warning::
-  The graph generation requires an ensemble of PDB files containing two chains: chain **A** and chain **B**.
+  The graph generation requires an ensemble of PDB files containing two chains: chain **A** and chain **B**. 
   
   You can provide PSSM matrices to compute evolutionary conservation node features. Some pre-calculated PSSM matrices can be downloaded from http://3dcons.cnb.csic.es/.
   A ``3dcons_to_deeprank_pssm.py`` converter can be found in the ``tool`` folder to convert the 3dcons PSSM format into the Deeprank-GNN PSSM format. **Make sure the sequence numbering matches the PDB residues numbering.**
