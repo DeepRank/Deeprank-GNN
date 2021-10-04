@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 
 
-class EGAT(torch.nn.Module):
+class GINet_conv(torch.nn.Module):
     """
     Graph Attention Layer including edge features
     Inspired by Sazan Mahbub et al. "EGAT: Edge Aggregated Graph Attention Networks and Transfer Learning Improve Protein-Protein Interaction Site Prediction"
@@ -16,7 +16,7 @@ class EGAT(torch.nn.Module):
                  number_edge_features=1,
                  bias=False):
 
-        super(EGAT, self).__init__()
+        super(GINet_conv, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
