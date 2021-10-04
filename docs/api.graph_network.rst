@@ -4,7 +4,8 @@ Graph Network
 GINet
 --------------------------------------
 
-Edge Aggregated Graph Attention Networks 
+Graph Interaction Networks layer
+
 This layer is inspired by Sazan Mahbub et al. "EGAT: Edge Aggregated Graph Attention Networks and Transfer Learning Improve Protein-Protein Interaction Site Prediction", BioRxiv 2020
 
 1) Create edges feature by concatenating node feature
