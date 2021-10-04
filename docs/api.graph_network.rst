@@ -1,7 +1,7 @@
 Graph Network
 =====================================
 
-GINet
+GINet layer
 --------------------------------------
 
 Graph Interaction Networks layer
@@ -34,7 +34,7 @@ Herein, we add the edge feature to the step 1)
     :undoc-members:
 
 
-Fout Net
+Fout Net layer
 ---------------------------------------
 
 This layer is described by eq. (1) of "Protein Interface Predition using Graph Convolutional Network", by Alex Fout et al. NIPS 2018
@@ -46,7 +46,7 @@ This layer is described by eq. (1) of "Protein Interface Predition using Graph C
     :members:
     :undoc-members:
 
-sGraphAttention (sGAT)
+sGraphAttention (sGAT) layer
 ---------------------------------------
 
 This is a new layer that is similar to the graph attention network but simpler
@@ -60,7 +60,7 @@ This is a new layer that is similar to the graph attention network but simpler
     :members:
     :undoc-members:
 
-WGAT Conv
+WGAT Conv layer
 ---------------------------------------
 
 .. automodule:: deeprank_gnn.wgat_conv
