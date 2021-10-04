@@ -20,7 +20,7 @@ Example:
 >>> from torch_geometric.nn.inits import uniform
 >>> from torch_geometric.nn import max_pool_x
 >>> 
->>> class EGAT(torch.nn.Module):
+>>> class GINet_layer(torch.nn.Module):
 >>> 
 >>>     def __init__(self,
 >>>                  in_channels,
@@ -86,14 +86,14 @@ We perform convolutions on the internal and external edges independently by prov
 
 - data_ext.edge_index, data_ext.edge_attr for the **external** edges
 
->>> class GIN_EGAT(torch.nn.Module):
+>>> class GINet(torch.nn.Module):
 >>>     def __init__(self, input_shape, output_shape = 1):
->>>         super(GIN_EGAT, self).__init__()
->>>         self.conv1 = EGAT(input_shape, 16)
->>>         self.conv2 = EGAT(16, 32)
+>>>         super(GINet_layer, self).__init__()
+>>>         self.conv1 = GINet_layer(input_shape, 16)
+>>>         self.conv2 = GINet_layer(16, 32)
 >>> 
->>>         self.conv1_ext = EGAT(input_shape, 16)
->>>         self.conv2_ext = EGAT(16, 32)
+>>>         self.conv1_ext = GINet_layer(input_shape, 16)
+>>>         self.conv2_ext = GINet_layer(16, 32)
 >>> 
 >>>         self.fc1 = nn.Linear(2*32, 128)
 >>>         self.fc2 = nn.Linear(128, output_shape)
@@ -144,7 +144,7 @@ We perform convolutions on the internal and external edges independently by prov
 Use your GNN architecture in Deeprank-GNN
 ---------------------------
 
->>> model = NeuralNet(database, GIN_EGAT,
+>>> model = NeuralNet(database, GINet,
 >>>                node_feature=node_feature,
 >>>                edge_feature=edge_feature,
 >>>                target=target,
