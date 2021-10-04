@@ -1,7 +1,7 @@
 Graph Network
 =====================================
 
-EGAT
+GINet
 --------------------------------------
 
 Edge Aggregated Graph Attention Networks 
@@ -28,7 +28,7 @@ Herein, we add the edge feature to the step 1)
     e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j || We * edge_{attr} ])
 
 
-.. automodule:: deeprank_gnn.EGAT
+.. automodule:: deeprank_gnn.ginet_conv
     :members:
     :undoc-members:
 
@@ -41,11 +41,11 @@ This layer is described by eq. (1) of "Protein Interface Predition using Graph C
 .. math::
     z = x_i * Wc + 1 / Ni Sum_j x_j * Wn + b
 
-.. automodule:: deeprank_gnn.foutnet
+.. automodule:: deeprank_gnn.foutnet_conv
     :members:
     :undoc-members:
 
-GInet
+sGraphAttention (sGAT)
 ---------------------------------------
 
 This is a new layer that is similar to the graph attention network but simpler
@@ -55,7 +55,7 @@ This is a new layer that is similar to the graph attention network but simpler
 
 || is the concatenation operator: [1,2,3] || [4,5,6] = [1,2,3,4,5,6] Ni is the number of neighbor of node i Sum_j runs over the neighbors of node i :math:`a_ij` is the edge attribute between node i and j
 
-.. automodule:: deeprank_gnn.ginet
+.. automodule:: deeprank_gnn.sgat_conv
     :members:
     :undoc-members:
 
