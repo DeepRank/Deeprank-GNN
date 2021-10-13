@@ -86,14 +86,20 @@ We perform convolutions on the internal and external edges independently by prov
 
 - data_ext.edge_index, data_ext.edge_attr for the **external** edges
 
+.. note::  
+The GNN class **must** be initialized with 3 arguments: 
+- input_shape 
+- output_shape 
+- input_shape_edge 
+
 >>> class GINet(torch.nn.Module):
->>>     def __init__(self, input_shape, output_shape = 1):
+>>>     def __init__(self, input_shape, output_shape = 1, input_shape_edge = 1):
 >>>         super(GINet_layer, self).__init__()
 >>>         self.conv1 = GINet_layer(input_shape, 16)
 >>>         self.conv2 = GINet_layer(16, 32)
 >>> 
->>>         self.conv1_ext = GINet_layer(input_shape, 16)
->>>         self.conv2_ext = GINet_layer(16, 32)
+>>>         self.conv1_ext = GINet_layer(input_shape, 16, input_shape_edge)
+>>>         self.conv2_ext = GINet_layer(16, 32, input_shape_edge)
 >>> 
 >>>         self.fc1 = nn.Linear(2*32, 128)
 >>>         self.fc2 = nn.Linear(128, output_shape)
