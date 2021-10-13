@@ -104,7 +104,7 @@ class FoutLayer(torch.nn.Module):
 
 class FoutNet(torch.nn.Module):
 
-    def __init__(self, input_shape, output_shape = 1):
+    def __init__(self, input_shape, output_shape = 1, input_shape_edge = None):
         super(FoutNet, self).__init__()
 
         self.conv1 = FoutLayer(input_shape, 16)

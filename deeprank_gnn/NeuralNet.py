@@ -211,10 +211,12 @@ class NeuralNet(object):
         if self.device.type == 'cuda':
             print(torch.cuda.get_device_name(0))
 
+        self.num_edge_features = len(self.edge_feature)
+        
         # regression mode
         if self.task == 'reg':
             self.model = Net(dataset.get(
-                0).num_features).to(self.device)
+                0).num_features, 1, self.num_edge_features).to(self.device)
 
         # classification mode
         elif self.task == 'class':
@@ -225,7 +227,7 @@ class NeuralNet(object):
             self.output_shape = len(self.classes)
             try:
                 self.model = Net(dataset.get(
-                    0).num_features, self.output_shape).to(self.device)
+                    0).num_features, self.output_shape, self.num_edge_features).to(self.device)
             except:
                 raise ValueError(
                     f"The loaded model does not accept output_shape = {self.output_shape} argument \n\t"

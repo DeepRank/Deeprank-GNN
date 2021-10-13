@@ -114,7 +114,7 @@ class sGraphAttention(torch.nn.Module):
 
 class sGAT(torch.nn.Module):
 
-    def __init__(self, input_shape, output_shape=1):
+    def __init__(self, input_shape, output_shape=1, input_shape_edge=None):
         super(sGAT, self).__init__()
 
         self.conv1 = sGraphAttention(input_shape, 16)
