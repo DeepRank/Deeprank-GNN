@@ -407,8 +407,8 @@ class NeuralNet(object):
                 _test_acc = self.get_metrics('test', threshold).accuracy
                 self.test_acc = _test_acc
 
-                self.test_loss = _test_loss
-                self._export_epoch_hdf5(0, self.data)
+            self.test_loss = _test_loss
+            self._export_epoch_hdf5(0, self.data)
                 
 
     def eval(self, loader):
