@@ -87,22 +87,20 @@ class GraphHDF5(object):
                     filter(lambda x: x.startswith(tmpdir+select), graph_names))
 
             # transfer them to the hdf5
-            f5 = h5py.File(outfile, 'w')
-            desc = '{:25s}'.format('   Store in HDF5')
+            with h5py.File(outfile, 'w') as f5:
+                desc = '{:25s}'.format('   Store in HDF5')
 
-            for name in graph_names:
-                f = open(name, 'rb')
-                g = pickle.load(f)
-                try:
-                    g.nx2h5(f5)
-                except Exception as e:
-                    print('Issue encountered while computing graph ', name)
-                    print(e)
-                f.close()
-                os.remove(name)
+                for name in graph_names:
+                    f = open(name, 'rb')
+                    g = pickle.load(f)
+                    try:
+                        g.nx2h5(f5)
+                    except Exception as e:
+                        print('Issue encountered while computing graph ', name)
+                        print(e)
+                    f.close()
+                    os.remove(name)
                 
-            f5.close()
-
         # clean up
         rmfiles = glob.glob(
             '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs') 
@@ -125,14 +123,13 @@ class GraphHDF5(object):
                 print('Issue encountered while computing graph ', name)
                 print(e)
 
-        f5 = h5py.File(outfile, 'w')
-        for g in graphs:
-            try:
-                g.nx2h5(f5)
-            except Exception as e:
-                print('Issue encountered while storing graph ', g.pdb)
-                print(e)
-        f5.close()
+        with h5py.File(outfile, 'w') as f5: 
+            for g in graphs:
+                try:
+                    g.nx2h5(f5)
+                except Exception as e:
+                    print('Issue encountered while storing graph ', g.pdb)
+                    print(e)
 
     @staticmethod
     def _pickle_one_graph(name, pssm, ref, tmpdir='./', biopython=False):
