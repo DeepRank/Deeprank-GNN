@@ -76,13 +76,16 @@ class GINet_conv(torch.nn.Module):
 
 
 class GINet(torch.nn.Module):
-    def __init__(self, input_shape, output_shape = 1):
+    # input_shape -> number of node input features
+    # output_shape -> number of output value per graph
+    # input_shape_edge -> number of edge input features
+    def __init__(self, input_shape, output_shape = 1, input_shape_edge = 1):
         super(GINet, self).__init__()
-        self.conv1 = GINet_conv(input_shape, 16)
-        self.conv2 = GINet_conv(16, 32)
+        self.conv1 = GINet_conv(input_shape, 16, input_shape_edge)
+        self.conv2 = GINet_conv(16, 32, input_shape_edge)
 
-        self.conv1_ext = GINet_conv(input_shape, 16)
-        self.conv2_ext = GINet_conv(16, 32)
+        self.conv1_ext = GINet_conv(input_shape, 16, input_shape_edge)
+        self.conv2_ext = GINet_conv(16, 32, input_shape_edge)
 
         self.fc1 = nn.Linear(2*32, 128)
         self.fc2 = nn.Linear(128, output_shape)
