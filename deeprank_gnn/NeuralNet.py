@@ -278,85 +278,83 @@ class NeuralNet(object):
         fname = self.update_name(hdf5, self.outdir)
 
         # Open output file for writting
-        self.f5 = h5py.File(fname, 'w')
+        with h5py.File(fname, 'w') as self.f5:
+            
+            # Number of epochs
+            self.nepoch = nepoch
+            
+            # Loop over epochs
+            self.data = {}
+            for epoch in range(1, nepoch+1):
 
-        # Number of epochs
-        self.nepoch = nepoch
-
-        # Loop over epochs
-        self.data = {}
-        for epoch in range(1, nepoch+1):
-
-            # Train the model
-            self.model.train()
-
-            t0 = time()
-            _out, _y, _loss, self.data['train'] = self._epoch(epoch)
-            t = time() - t0
-            self.train_loss.append(_loss)
-            self.train_out = _out
-            self.train_y = _y
-            _acc = self.get_metrics('train', self.threshold).accuracy
-            self.train_acc.append(_acc)
-
-            # Print the loss and accuracy (training set)
-            self.print_epoch_data(
-                'train', epoch, _loss, _acc, t)
-
-            # Validate the model
-            if validate is True:
-
+                # Train the model
+                self.model.train()
+                
                 t0 = time()
-                _out, _y, _val_loss, self.data['eval'] = self.eval(
-                    self.valid_loader)
+                _out, _y, _loss, self.data['train'] = self._epoch(epoch)
                 t = time() - t0
-
-                self.valid_loss.append(_val_loss)
-                self.valid_out = _out
-                self.valid_y = _y
-                _val_acc = self.get_metrics(
-                    'eval', self.threshold).accuracy
-                self.valid_acc.append(_val_acc)
-
-                # Print loss and accuracy (validation set)
+                self.train_loss.append(_loss)
+                self.train_out = _out
+                self.train_y = _y
+                _acc = self.get_metrics('train', self.threshold).accuracy
+                self.train_acc.append(_acc)
+                
+                # Print the loss and accuracy (training set)
                 self.print_epoch_data(
-                    'valid', epoch, _val_loss, _val_acc, t)
+                    'train', epoch, _loss, _acc, t)
 
-                # save the best model (i.e. lowest loss value on validation data)
-                if save_model == 'best':
+                # Validate the model
+                if validate is True:
 
-                    if min(self.valid_loss) == _val_loss:
-                        self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
-                            self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
+                    t0 = time()
+                    _out, _y, _val_loss, self.data['eval'] = self.eval(
+                        self.valid_loader)
+                    t = time() - t0
 
-            else:
-                # if no validation set, saves the best performing model on the traing set
-                if save_model == 'best':
-                    if min(self.train_loss) == _train_loss:
-                        print(
-                            'WARNING: The training set is used both for learning and model selection.')
-                        print(
-                            'this may lead to training set data overfitting.')
-                        print(
-                            'We advice you to use an external validation set.')
-                        self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
-                            self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
+                    self.valid_loss.append(_val_loss)
+                    self.valid_out = _out
+                    self.valid_y = _y
+                    _val_acc = self.get_metrics(
+                        'eval', self.threshold).accuracy
+                    self.valid_acc.append(_val_acc)
 
-            # Save epoch data
-            if (save_epoch == 'all') or (epoch == nepoch):
-                self._export_epoch_hdf5(epoch, self.data)
+                    # Print loss and accuracy (validation set)
+                    self.print_epoch_data(
+                        'valid', epoch, _val_loss, _val_acc, t)
 
-            elif (save_epoch == 'intermediate') and (epoch % save_every == 0):
-                self._export_epoch_hdf5(epoch, self.data)
+                    # save the best model (i.e. lowest loss value on validation data)
+                    if save_model == 'best':
 
-        # Save the last model
-        if save_model == 'last':
-            self.save_model(filename='t{}_y{}_b{}_e{}_lr{}.pth.tar'.format(
-                self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr)))
+                        if min(self.valid_loss) == _val_loss:
+                            self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
+                                self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
 
-        # Close output file
-        self.f5.close()
+                else:
+                    # if no validation set, saves the best performing model on the traing set
+                    if save_model == 'best':
+                        if min(self.train_loss) == _train_loss:
+                            print(
+                                'WARNING: The training set is used both for learning and model selection.')
+                            print(
+                                'this may lead to training set data overfitting.')
+                            print(
+                                'We advice you to use an external validation set.')
+                            self.save_model(filename='t{}_y{}_b{}_e{}_lr{}_{}.pth.tar'.format(
+                                self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr), str(epoch)))
 
+                # Save epoch data
+                if (save_epoch == 'all') or (epoch == nepoch):
+                    self._export_epoch_hdf5(epoch, self.data)
+                    
+                elif (save_epoch == 'intermediate') and (epoch % save_every == 0):
+                    self._export_epoch_hdf5(epoch, self.data)
+
+            # Save the last model
+            if save_model == 'last':
+                self.save_model(filename='t{}_y{}_b{}_e{}_lr{}.pth.tar'.format(
+                    self.task, self.target, str(self.batch_size), str(nepoch), str(self.lr)))
+
+                
     def test(self, database_test=None, threshold=4, hdf5='test_data.hdf5'):
         """
         Tests the model
@@ -370,49 +368,48 @@ class NeuralNet(object):
         fname = self.update_name(hdf5, self.outdir)
 
         # Open output file for writting
-        self.f5 = h5py.File(fname, 'w')
+        with h5py.File(fname, 'w') as self.f5:
 
-        # Loads the test dataset if provided
-        if database_test is not None:
-            # Load the test set
-            test_dataset = HDF5DataSet(root='./', database=database_test,
-                                       node_feature=self.node_feature, edge_feature=self.edge_feature,
-                                       target=self.target)
-            print('Test set loaded')
-            PreCluster(test_dataset, method='mcl')
+            # Loads the test dataset if provided
+            if database_test is not None:
+                # Load the test set
+                test_dataset = HDF5DataSet(root='./', database=database_test,
+                                           node_feature=self.node_feature, edge_feature=self.edge_feature,
+                                           target=self.target)
+                print('Test set loaded')
+                PreCluster(test_dataset, method='mcl')
 
-            self.test_loader = DataLoader(
-                test_dataset)
+                self.test_loader = DataLoader(
+                    test_dataset)
 
-        else:
-            if self.load_pretrained_model == None:
-                raise ValueError(
-                    "You need to upload a test dataset \n\t"
-                    "\n\t"
-                    ">> model.test(test_dataset)\n\t"
-                    "if a pretrained network is loaded, you can directly test the model on the loaded dataset :\n\t"
-                    ">> model = NeuralNet(database_test, gnn, pretrained_model = model_saved, target=None)\n\t"
-                    ">> model.test()\n\t")
-        self.data = {}
+            else:
+                if self.load_pretrained_model == None:
+                    raise ValueError(
+                        "You need to upload a test dataset \n\t"
+                        "\n\t"
+                        ">> model.test(test_dataset)\n\t"
+                        "if a pretrained network is loaded, you can directly test the model on the loaded dataset :\n\t"
+                        ">> model = NeuralNet(database_test, gnn, pretrained_model = model_saved, target=None)\n\t"
+                        ">> model.test()\n\t")
+            self.data = {}
 
-        # Run test
-        _out, _y, _test_loss, self.data['test'] = self.eval(
-            self.test_loader)
+            # Run test
+            _out, _y, _test_loss, self.data['test'] = self.eval(
+                self.test_loader)
+            
+            self.test_out = _out
+            
+            if len(_y) == 0:
+                self.test_y = None
+                self.test_acc = None
+            else:
+                self.test_y = _y
+                _test_acc = self.get_metrics('test', threshold).accuracy
+                self.test_acc = _test_acc
 
-        self.test_out = _out
-
-        if len(_y) == 0:
-            self.test_y = None
-            self.test_acc = None
-        else:
-            self.test_y = _y
-            _test_acc = self.get_metrics('test', threshold).accuracy
-            self.test_acc = _test_acc
-
-        self.test_loss = _test_loss
-        self._export_epoch_hdf5(0, self.data)
-
-        self.f5.close()
+            self.test_loss = _test_loss
+            self._export_epoch_hdf5(0, self.data)
+                
 
     def eval(self, loader):
         """

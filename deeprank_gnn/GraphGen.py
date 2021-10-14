@@ -28,40 +28,38 @@ class GraphHDF5(object):
         if select is not None:
             pdbs = list(filter(lambda x: x.startswith(select), pdbs))
 
-        f5 = h5py.File(outfile, 'w')
+        with h5py.File(outfile, 'w') as f5:
+            
+            desc = '{:25s}'.format('   Create HDF5')
+            data_tqdm = tqdm(pdbs, desc=desc, file=sys.stdout)
+            
+            for name in data_tqdm:
 
-        desc = '{:25s}'.format('   Create HDF5')
-        data_tqdm = tqdm(pdbs, desc=desc, file=sys.stdout)
+                # pdb name
+                pdbfile = os.path.join(pdb_path, name)
 
-        for name in data_tqdm:
+                # mol name and base name
+                mol_name = os.path.splitext(name)[0]
+                base_name = mol_name.split('_')[0]
 
-            # pdb name
-            pdbfile = os.path.join(pdb_path, name)
+                if graph_type == 'residue':
+                    # get the pssm file for pdb
+                    if pssm_path is not None: 
+                        pssm = self._get_pssm(pssm_path, mol_name, base_name)
+                    else pssm = None
+                    # generate a graph 
+                    graph = ResidueGraph(pdb=pdbfile, pssm=pssm, biopython=biopython)
 
-            # mol name and base name
-            mol_name = os.path.splitext(name)[0]
-            base_name = mol_name.split('_')[0]
+                # get the score
+                if ref_path is not None:
+                    ref = os.path.join(ref_path, base_name+'.pdb')
+                    graph.get_score(ref)
 
-            if graph_type == 'residue':
-                # get the pssm file for pdb
-                if pssm_path is not None: 
-                    pssm = self._get_pssm(pssm_path, mol_name, base_name)
-                else pssm = None
-                # generate a graph 
-                graph = ResidueGraph(pdb=pdbfile, pssm=pssm, biopython=biopython)
-
-            # get the score
-            if ref_path is not None:
-                ref = os.path.join(ref_path, base_name+'.pdb')
-                graph.get_score(ref)
-
-            # export the graph in hdf5 format
-            try:
-                graph.nx2h5(f5)
-            except:
-                print('WARNING: No graph generated for {}'.format(name))
-
-        f5.close()
+                # export the graph in hdf5 format
+                try:
+                    graph.nx2h5(f5)
+                except:
+                    print('WARNING: No graph generated for {}'.format(name))
 
     @staticmethod
     def _get_pssm(pssm_path, mol_name, base_name):
