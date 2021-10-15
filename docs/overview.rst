@@ -1,7 +1,7 @@
 Overview
 =========================
 
-Deeprank_GNN is a framework that converts PPI interfaces into graphs and uses those to learn interaction patterns using Graph Neural Networks.
+DeepRank-GNN is a framework that converts PPI interfaces into graphs and uses those to learn interaction patterns using Graph Neural Networks.
 
 The framework is designed to be adapted to any PPI related research project.
 
@@ -46,7 +46,7 @@ By definition, graphs are non-structured geometric structures and do not hold or
 
 Building up on our previous tool DeepRank(https://github.com/DeepRank/deeprank) that maps atomic and residue-level features from PPIs to 3D grids and applies 3D CNNs to learn problem-specific interaction patterns, we present here Deeprank-GNN. Deeprank-GNN converts PPI interfaces into graphs and uses those to learn interaction patterns. 
 
-Deeprank-GNN is a framework than can be easily used by the community and adapted to any topic involving 
+DeepRank-GNN is a framework than can be easily used by the community and adapted to any topic involving 
 PPI interactions. The framework allows users to define their own graph neural network, features and target values. 
 
 .. [1] Krizhevsky A, Sutskever I, Hinton GE, ImageNet classification with deep convolutional neural networks. Adv Neural Inf Process Syst 25, 2012
