@@ -46,7 +46,8 @@ class GraphHDF5(object):
                     # get the pssm file for pdb
                     if pssm_path is not None: 
                         pssm = self._get_pssm(pssm_path, mol_name, base_name)
-                    else pssm = None
+                    else:
+                        pssm = None
                     # generate a graph 
                     graph = ResidueGraph(pdb=pdbfile, pssm=pssm, biopython=biopython)
 
