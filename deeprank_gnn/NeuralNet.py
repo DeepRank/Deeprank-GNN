@@ -101,7 +101,7 @@ class NeuralNet(object):
         # Load the test set
         test_dataset = HDF5DataSet(root='./', database=database,
                                    node_feature=self.node_feature, edge_feature=self.edge_feature,
-                                   target=self.target)
+                                   target=self.target, clustering_method=self.cluster_nodes)
         self.test_loader = DataLoader(
             test_dataset)
         PreCluster(test_dataset, method=self.cluster_nodes)
@@ -164,7 +164,7 @@ class NeuralNet(object):
             print('Loading independent evaluation dataset...')
             valid_dataset = HDF5DataSet(root='./', database=database_eval, index=self.index,
                                         node_feature=self.node_feature, edge_feature=self.edge_feature,
-                                        target=self.target)
+                                        target=self.target, clustering_method=self.cluster_nodes)
 
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
                 print('Loading clusters for the evaluation set.')
@@ -375,7 +375,7 @@ class NeuralNet(object):
                 # Load the test set
                 test_dataset = HDF5DataSet(root='./', database=database_test,
                                            node_feature=self.node_feature, edge_feature=self.edge_feature,
-                                           target=self.target)
+                                           target=self.target, clustering_method=self.cluster_nodes)
                 print('Test set loaded')
                 PreCluster(test_dataset, method='mcl')
 
