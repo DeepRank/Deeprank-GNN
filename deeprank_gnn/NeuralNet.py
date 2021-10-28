@@ -134,7 +134,7 @@ class NeuralNet(object):
         # dataset
         dataset = HDF5DataSet(root='./', database=database, index=self.index,
                               node_feature=self.node_feature, edge_feature=self.edge_feature,
-                              target=self.target)
+                              target=self.target, clustering_method=self.cluster_nodes)
 
         if self.cluster_nodes != None:
             if self.cluster_nodes == 'mcl' or self.cluster_nodes == 'louvain':
