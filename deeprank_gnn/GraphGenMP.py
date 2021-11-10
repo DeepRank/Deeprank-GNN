@@ -17,7 +17,7 @@ class GraphHDF5(object):
     def __init__(self, pdb_path, ref_path=None, graph_type='residue', pssm_path=None,
                  select=None, outfile='graph.hdf5', nproc=1, use_tqdm=True, tmpdir='./',
                  limit=None, biopython=False):
-        """Master class from which graphs are computed 
+        """Master class from which graphs are computed
         Args:
             pdb_path (str): path to the docking models
             ref_path (str, optional): path to the reference model. Defaults to None.
@@ -29,6 +29,14 @@ class GraphHDF5(object):
             use_tqdm (bool, optional): Default to True.
             tmpdir (str, optional): Default to `./`.
             limit (int, optional): Default to None.
+
+
+            >>> pdb_path = './data/pdb/1ATN/'
+            >>> pssm_path = './data/pssm/1ATN/'
+            >>> ref = './data/ref/1ATN/'
+
+            >>> GraphHDF5(pdb_path=pdb_path, ref_path=ref, pssm_path=pssm_path,
+                          graph_type='residue', outfile='1AK4_residue.hdf5')
         """
         # get the list of PDB names
         pdbs = list(filter(lambda x: x.endswith(
@@ -51,7 +59,8 @@ class GraphHDF5(object):
             mol_name = os.path.splitext(base)[0]
             base_name = mol_name.split('_')[0]
             if pssm_path is not None:
-                pssm[p] = self._get_pssm(pssm_path, mol_name, base_name)
+                pssm[p] = self._get_pssm(
+                    pssm_path, mol_name, base_name)
             else:
                 pssm[p] = None
 
@@ -96,14 +105,15 @@ class GraphHDF5(object):
                     try:
                         g.nx2h5(f5)
                     except Exception as e:
-                        print('Issue encountered while computing graph ', name)
+                        print(
+                            'Issue encountered while computing graph ', name)
                         print(e)
                     f.close()
                     os.remove(name)
-                
+
         # clean up
         rmfiles = glob.glob(
-            '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs') 
+            '*.izone') + glob.glob('*.lzone') + glob.glob('*.refpairs')
         for f in rmfiles:
             os.remove(f)
 
@@ -118,12 +128,13 @@ class GraphHDF5(object):
 
         for name in lst:
             try:
-                graphs.append(self._get_one_graph(name, pssm, ref, biopython))
+                graphs.append(self._get_one_graph(
+                    name, pssm, ref, biopython))
             except Exception as e:
                 print('Issue encountered while computing graph ', name)
                 print(e)
 
-        with h5py.File(outfile, 'w') as f5: 
+        with h5py.File(outfile, 'w') as f5:
             for g in graphs:
                 try:
                     g.nx2h5(f5)
@@ -135,7 +146,8 @@ class GraphHDF5(object):
     def _pickle_one_graph(name, pssm, ref, tmpdir='./', biopython=False):
 
         # get the graph
-        g = ResidueGraph(pdb=name, pssm=pssm[name], biopython=biopython)
+        g = ResidueGraph(
+            pdb=name, pssm=pssm[name], biopython=biopython)
         if ref is not None:
             g.get_score(ref)
 
@@ -152,7 +164,8 @@ class GraphHDF5(object):
     def _get_one_graph(name, pssm, ref, biopython):
 
         # get the graph
-        g = ResidueGraph(pdb=name, pssm=pssm[name], biopython=biopython)
+        g = ResidueGraph(
+            pdb=name, pssm=pssm[name], biopython=biopython)
         if ref is not None:
             g.get_score(ref)
         return g
@@ -178,13 +191,3 @@ class GraphHDF5(object):
                 raise FileNotFoundError(
                     'PSSM file for ' + mol_name + ' not found')
         return pssm
-
-
-if __name__ == '__main__':
-
-    pdb_path = './data/pdb/1ATN/'
-    pssm_path = './data/pssm/1ATN/'
-    ref = './data/ref/1ATN/'
-
-    GraphHDF5(pdb_path=pdb_path, ref_path=ref, pssm_path=pssm_path,
-              graph_type='residue', outfile='1AK4_residue.hdf5')

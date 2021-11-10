@@ -21,6 +21,12 @@ class GraphHDF5(object):
             pssm_path ([type], optional): path to the pssm file. Defaults to None.
             select (str, optional): filter files that starts with 'input'. Defaults to None.
             outfile (str, optional): Defaults to 'graph.hdf5'.
+
+            >>> pdb_path = './data/pdb/1ATN/'
+            >>> pssm_path = './data/pssm/1ATN/'
+            >>> ref = './data/ref/1ATN/'
+            >>> GraphHDF5(pdb_path=pdb_path, ref_path=ref, pssm_path=pssm_path,
+                          graph_type='residue', outfile='1AK4_residue.hdf5')
         """
         # get the list of PDB names
         pdbs = list(filter(lambda x: x.endswith(
@@ -45,11 +51,13 @@ class GraphHDF5(object):
                 if graph_type == 'residue':
                     # get the pssm file for pdb
                     if pssm_path is not None:
-                        pssm = self._get_pssm(pssm_path, mol_name, base_name)
+                        pssm = self._get_pssm(
+                            pssm_path, mol_name, base_name)
                     else:
                         pssm = None
                     # generate a graph
-                    graph = ResidueGraph(pdb=pdbfile, pssm=pssm, biopython=biopython)
+                    graph = ResidueGraph(
+                        pdb=pdbfile, pssm=pssm, biopython=biopython)
 
                 # get the score
                 if ref_path is not None:
@@ -90,12 +98,3 @@ class GraphHDF5(object):
                 raise FileNotFoundError(
                     'PSSM file for ' + mol_name + ' not found')
         return pssm
-
-if __name__ == '__main__':
-
-    pdb_path = './data/pdb/1ATN/'
-    pssm_path = './data/pssm/1ATN/'
-    ref = './data/ref/1ATN/'
-
-    GraphHDF5(pdb_path=pdb_path, ref_path=ref, pssm_path=pssm_path,
-              graph_type='residue', outfile='1AK4_residue.hdf5')

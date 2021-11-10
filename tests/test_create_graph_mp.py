@@ -10,7 +10,12 @@ class TestCreateGraph(unittest.TestCase):
         self.pssm_path = './tests/data/pssm/1ATN/'
         self.ref = './tests/data/ref/1ATN/'
 
-    def test_create(self):
+    def test_create_serial(self):
         GraphHDF5(pdb_path=self.pdb_path, ref_path=self.ref, pssm_path=self.pssm_path,
                   graph_type='residue', outfile='1ATN_residue.hdf5',
                   nproc=1, tmpdir='./tmpdir')
+
+    def test_create_mp(self):
+        GraphHDF5(pdb_path=self.pdb_path, ref_path=self.ref, pssm_path=self.pssm_path,
+                  graph_type='residue', outfile='1ATN_residue.hdf5',
+                  nproc=2, tmpdir='./tmpdir2')
