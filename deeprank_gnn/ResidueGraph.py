@@ -102,8 +102,8 @@ class ResidueGraph(Graph):
 
         for e, inst in execs.items():
             if shutil.which(e) is None:
-                raise Warning(e, ' is not installed see ',
-                              inst, ' for details')
+                print(e, ' is not installed see ',
+                      inst, ' for details')
 
     def get_graph(self, db):
         """Gets the interface graph nodes and edges given the
