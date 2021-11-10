@@ -443,6 +443,7 @@ class NeuralNet(object):
 
             # get the outputs for export
             if self.task == 'class':
+                pred = F.softmax(pred, dim=1)
                 pred = np.argmax(pred.detach(), axis=1)
             else:
                 pred = pred.detach().reshape(-1)
@@ -497,6 +498,7 @@ class NeuralNet(object):
 
             # get the outputs for export
             if self.task == 'class':
+                pred = F.softmax(pred, dim=1)
                 pred = np.argmax(pred.detach(), axis=1)
             else:
                 pred = pred.detach().reshape(-1)
@@ -598,7 +600,7 @@ class NeuralNet(object):
     def format_output(self, pred, target=None):
         """Format the network output depending on the task (classification/regression)."""
         if self.task == 'class' :
-            pred = F.softmax(pred, dim=1)
+            #pred = F.softmax(pred, dim=1)
 
             if target is not None:
                 target = torch.tensor(
