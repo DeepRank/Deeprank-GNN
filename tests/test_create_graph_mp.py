@@ -18,4 +18,8 @@ class TestCreateGraph(unittest.TestCase):
     def test_create_mp(self):
         GraphHDF5(pdb_path=self.pdb_path, ref_path=self.ref, pssm_path=self.pssm_path,
                   graph_type='residue', outfile='1ATN_residue.hdf5',
-                  nproc=2, tmpdir='./tmpdir2')
+                  nproc=1, tmpdir='./tmpdir2')
+
+
+if __name__ == "__main__":
+    unittest.main()

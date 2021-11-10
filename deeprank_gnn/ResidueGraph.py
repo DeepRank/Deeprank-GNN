@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import shutil
-import torch 
+import torch
 from time import time
 import networkx as nx
 
@@ -58,13 +58,13 @@ class ResidueGraph(Graph):
 
         self.polarity_encoding = {
             'apolar': 0, 'polar': 1, 'neg_charged': 2, 'pos_charged': 3}
-        
+
         self.biopython = biopython
         #self.edge_polarity_encoding, iencod = {}, 0
-        ##for k1, v1 in self.polarity_encoding.items():
-        ##for k2, v2 in self.polarity_encoding.items():
+        # for k1, v1 in self.polarity_encoding.items():
+        # for k2, v2 in self.polarity_encoding.items():
         ##key = tuple(np.sort([v1, v2]))
-        ##if key not in self.edge_polarity_encoding:
+        # if key not in self.edge_polarity_encoding:
         ##self.edge_polarity_encoding[key] = iencod
         #iencod += 1
 
@@ -102,11 +102,11 @@ class ResidueGraph(Graph):
 
         for e, inst in execs.items():
             if shutil.which(e) is None:
-                raise OSError(e, ' is not installed see ',
+                raise Warning(e, ' is not installed see ',
                               inst, ' for details')
 
     def get_graph(self, db):
-        """Gets the interface graph nodes and edges given the 
+        """Gets the interface graph nodes and edges given the
         internal and external distance threshold
 
         Args:
@@ -151,7 +151,7 @@ class ResidueGraph(Graph):
             - contains residue(s) absent form the pssm matrix
 
         Args:
-            res_contact_pairs ([type]): list of contact pairs 
+            res_contact_pairs ([type]): list of contact pairs
             pssm ([type]): pssm file
             verbose (bool, optional): [description]. Defaults to False.
 
@@ -221,17 +221,17 @@ class ResidueGraph(Graph):
         t0 = time()
         model = BioWrappers.get_bio_model(db.pdbfile)
         #print('_Model %f' %(time()-t0))
-        
-        if self.biopython == True :
+
+        if self.biopython == True:
             #t0 = time()
             ResDepth = BioWrappers.get_depth_contact_res(
                 model, self.nx.nodes)
             #print('_RD %f' %(time()-t0))
-            
+
             #t0 = time()
             HSE = BioWrappers.get_hse(model)
             #print('_HSE %f' %(time()-t0))
-            
+
         # loop over all the nodes
         for node_key in self.nx.nodes:
 
@@ -258,8 +258,8 @@ class ResidueGraph(Graph):
                 self.nx.nodes[node_key]['cons'] = data[self.pssm_pos[resName]]
                 self.nx.nodes[node_key]['ic'] = PSSM.get_ic_data(
                     node_key, self.ic)
-            
-            if self.biopython == True :
+
+            if self.biopython == True:
 
                 self.nx.nodes[node_key]['depth'] = ResDepth[node_key] if node_key in ResDepth else 0
                 bio_key = (chainID, resSeq)
@@ -273,13 +273,13 @@ class ResidueGraph(Graph):
 
         for e in self.nx.edges:
             node1, node2 = e
-            #self.nx.edges[node1, node2]['polarity'] = self._get_edge_polarity(
+            # self.nx.edges[node1, node2]['polarity'] = self._get_edge_polarity(
             #    node1, node2)
             self.nx.edge_index.append(
                 [node_keys.index(node1), node_keys.index(node2)])
 
     def get_internal_edges(self, db):
-        """Gets internal edges and the associated distances 
+        """Gets internal edges and the associated distances
         """
         nodesA, nodesB = [], []
         for n in self.nx.nodes:
@@ -304,7 +304,7 @@ class ResidueGraph(Graph):
             cutoff ([type]): internal edge cutoff
 
         Returns:
-            edges between two nodes, 
+            edges between two nodes,
             and the minimum distance between those two nodes
         """
         lnodes = list(nodes)
@@ -333,7 +333,7 @@ class ResidueGraph(Graph):
             cutoff ([type]): internal edge cutoff
 
         Returns:
-            edges between two nodes, 
+            edges between two nodes,
             and the mean distance between those two nodes
         """
         lnodes = list(nodes)
@@ -361,8 +361,8 @@ class ResidueGraph(Graph):
         """Gets edge polarity
 
         Args:
-            node1 
-            node2 
+            node1
+            node2
         """
         v1 = self.nx.nodes[node1]['polarity']
         v2 = self.nx.nodes[node2]['polarity']
@@ -382,7 +382,6 @@ class ResidueGraph(Graph):
         d2 = -2*np.dot(xyz1, xyz2.T) + np.sum(xyz1**2,
                                               axis=1)[:, None] + np.sum(xyz2**2, axis=1)
         return np.sqrt(np.min(d2))
-
 
     def onehot(self, idx, size):
         """One hot encoder

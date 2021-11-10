@@ -148,6 +148,7 @@ class GraphHDF5(object):
         # get the graph
         g = ResidueGraph(
             pdb=name, pssm=pssm[name], biopython=biopython)
+
         if ref is not None:
             g.get_score(ref)
 
