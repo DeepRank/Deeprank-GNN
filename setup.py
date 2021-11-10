@@ -38,12 +38,12 @@ setup(
     ],
     test_suite='tests',
 
-    # not sure if the install of torhc-geometric will work ..
+    # not sure if the install of torch-geometric will work ..
     install_requires=[
         'numpy >= 1.13', 'scipy', 'h5py', 'torch>=1.5.0', 'networkx',
         'pdb2sql', 'sklearn', 'chart-studio', 'BioPython', 'python-louvain',
         'markov-clustering', 'torch-sparse', 'torch-scatter', 'torch-cluster',
-        'torch-spline-conv', 'torch-geometric'
+        'torch-spline-conv', 'torch-geometric', 'tqdm'
     ],
     extras_require={
         'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],
