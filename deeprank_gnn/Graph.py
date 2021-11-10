@@ -33,31 +33,31 @@ class Graph(object):
 
         ref_name = os.path.splitext(os.path.basename(ref))[0]
         sim = StructureSimilarity(self.pdb, ref)
-        
+
         # Input pre-computed zone files
         if os.path.exists(ref_name+'.lzone'):
             self.score['lrmsd'] = sim.compute_lrmsd_fast(
-            method='svd', lzone=ref_name+'.lzone')
+                method='svd', lzone=ref_name+'.lzone')
             self.score['irmsd'] = sim.compute_irmsd_fast(
-            method='svd', izone=ref_name+'.izone')
-        
+                method='svd', izone=ref_name+'.izone')
+
         # Compute zone files
-        else: 
+        else:
             self.score['lrmsd'] = sim.compute_lrmsd_fast(
-            method='svd')
+                method='svd')
             self.score['irmsd'] = sim.compute_irmsd_fast(
-            method='svd')
+                method='svd')
 
         self.score['fnat'] = sim.compute_fnat_fast()
         self.score['dockQ'] = sim.compute_DockQScore(
             self.score['fnat'], self.score['lrmsd'], self.score['irmsd'])
         self.score['bin_class'] = self.score['irmsd'] < 4.0
-        
+
         self.score['capri_class'] = 5
         for thr, val in zip([6.0, 4.0, 2.0, 1.0], [4, 3, 2, 1]):
             if self.score['irmsd'] < thr:
                 self.score['capri_class'] = val
-        
+
     def nx2h5(self, f5):
         """Converts Networkx object to hdf5 format
 
@@ -235,7 +235,8 @@ class Graph(object):
         if molgrp is None:
             f5.close()
 
-    def plotly_2d(self, out=None, offline=False, iplot=True, method='louvain'):
+    def plotly_2d(self, out=None, offline=False, iplot=True,
+                  disable_plot=False, method='louvain'):
         """Plots the interface graph in 2D
 
         Args:
@@ -376,12 +377,13 @@ class Graph(object):
                 showgrid=False, zeroline=False, showticklabels=False),
             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
 
-        if iplot:
-            py.iplot(fig, filename=out)
-        else:
-            py.plot(fig)
+        if not disable_plot:
+            if iplot:
+                py.iplot(fig, filename=out)
+            else:
+                py.plot(fig)
 
-    def plotly_3d(self, out=None, offline=False, iplot=True):
+    def plotly_3d(self, out=None, offline=False, iplot=True, disable_plot=False):
         """Plots interface graph in 3D
 
         Args:
@@ -467,14 +469,16 @@ class Graph(object):
                             showgrid=False, zeroline=False, showticklabels=False),
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
 
-        if iplot:
-            py.iplot(fig, filename=out)
-        else:
-            py.plot(fig)
+        if not disable_plot:
+            if iplot:
+                py.iplot(fig, filename=out)
+            else:
+                py.plot(fig)
 
 
 if __name__ == "__main__":
     import h5py
     graph = Graph()
-    graph.h52nx('1AK4_residue.hdf5', '1ATN')
-    graph.plotly_2d('1ATN')
+    graph.h52nx('../tests/hdf5/1ATN_residue.hdf5', '1ATN_1w')
+    graph.plotly_2d('1ATN', disable_plot=True)
+    graph.plotly_3d('1ATN', disable_plot=True)
