@@ -8,21 +8,6 @@ from torch_geometric.nn.inits import uniform
 from torch_scatter import scatter_mean
 
 
-def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
-    num_nodes = maybe_num_nodes(edge_index, num_nodes)
-
-    dtype, device = edge_index.dtype, edge_index.device
-    loop = torch.arange(0, num_nodes, dtype=dtype, device=device)
-    loop = loop.unsqueeze(0).repeat(2, 1)
-    edge_index = torch.cat([edge_index, loop], dim=1)
-
-    dtype, device = edge_attr.dtype, edge_attr.device
-    loop = torch.ones(num_nodes,dtype=dtype, device=device)
-    edge_attr = torch.cat([edge_attr,loop])
-
-    return edge_index, edge_attr
-
-
 class WGATConv(torch.nn.Module):
 
     """
@@ -64,21 +49,23 @@ class WGATConv(torch.nn.Module):
 
         row, col = edge_index
         num_node = len(x)
-        edge_attr = edge_attr.unsqueeze(-1) if edge_attr.dim() == 1 else edge_attr
+        edge_attr = edge_attr.unsqueeze(
+            -1) if edge_attr.dim() == 1 else edge_attr
 
         # create edge feature by concatenating node feature
         alpha = torch.cat([x[row], x[col]], dim=-1)
 
         # multiply the edge features with the fliter
-        alpha = torch.mm(alpha,self.weight)
+        alpha = torch.mm(alpha, self.weight)
 
         # multiply each edge features with the corresponding dist
         alpha = edge_attr*alpha
 
         # scatter the resulting edge feature to get node features
-        out = torch.zeros(num_node,self.out_channels).to(alpha.device)
-        out = scatter_mean(alpha,row,dim=0,out=out)
-        out = scatter_mean(alpha,col,dim=0,out=out)
+        out = torch.zeros(
+            num_node, self.out_channels).to(alpha.device)
+        out = scatter_mean(alpha, row, dim=0, out=out)
+        out = scatter_mean(alpha, col, dim=0, out=out)
 
         # add the bias
         if self.bias is not None:
@@ -88,5 +75,5 @@ class WGATConv(torch.nn.Module):
 
     def __repr__(self):
         return '{}({}, {})'.format(self.__class__.__name__,
-                                             self.in_channels,
-                                             self.out_channels)
+                                   self.in_channels,
+                                   self.out_channels)
