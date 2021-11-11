@@ -215,22 +215,16 @@ class ResidueGraph(Graph):
         bsa_calc.get_contact_residue_sasa(
             cutoff=self.contact_distance)
         bsa_data = bsa_calc.bsa_data
-        #print('_BSA %f' %(time()-t0))
 
         # biopython data
-        t0 = time()
         model = BioWrappers.get_bio_model(db.pdbfile)
-        #print('_Model %f' %(time()-t0))
 
         if self.biopython == True:
-            #t0 = time()
+
             ResDepth = BioWrappers.get_depth_contact_res(
                 model, self.nx.nodes)
-            #print('_RD %f' %(time()-t0))
 
-            #t0 = time()
             HSE = BioWrappers.get_hse(model)
-            #print('_HSE %f' %(time()-t0))
 
         # loop over all the nodes
         for node_key in self.nx.nodes:

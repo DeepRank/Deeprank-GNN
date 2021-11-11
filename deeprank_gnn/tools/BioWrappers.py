@@ -9,51 +9,79 @@ from Bio import BiopythonWarning
 import tempfile
 
 with warnings.catch_warnings():
-    warnings.simplefilter('ignore',BiopythonWarning)
+    warnings.simplefilter('ignore', BiopythonWarning)
     from Bio import SearchIO
 
 from time import time
 
-def get_bio_model(pdbfile):
 
-    # (f,name) = tempfile.mkstemp()
-    # sqldb.exportpdb(name)
-    #parser = PDBParser(PERMISSIVE=1)
+def get_bio_model(pdbfile):
+    """Get the model
+
+    Args:
+        pdbfile (str): pdbfile
+
+    Returns:
+        [type]: Bio object
+    """
     parser = PDBParser()
-    structure = parser.get_structure('_tmp',pdbfile)
-    #os.remove(name)
+    structure = parser.get_structure('_tmp', pdbfile)
     return structure[0]
 
-def get_depth_res(model):
 
-    t0 = time()
+def get_depth_res(model):
+    """Get the residue Depth
+
+    Args:
+        model (bio model): model of the strucrture
+
+    Returns:
+        dict: depth res
+    """
     rd = ResidueDepth(model)
-    print('__ Create RD %f' %(time()-t0))
 
     data = {}
     t0 = time()
     for k in list(rd.keys()):
-        new_key = (k[0],k[1][1])
+        new_key = (k[0], k[1][1])
         data[new_key] = rd[k][0]
-    print('__ Reformat RD %f' %(time()-t0))
+
     return data
 
 
-def get_depth_contact_res(model,contact_res):
+def get_depth_contact_res(model, contact_res):
+    """Get the residue Depth
+
+    Args:
+        model (bio model): model of the strucrture
+        contact_res (list): list of contact residues
+
+    Returns:
+        dict: depth res
+    """
 
     surface = get_surface(model)
     data = {}
     for r in contact_res:
         chain = model[r[0]]
         res = chain[r[1]]
-        data[r] = residue_depth(res,surface)
+        data[r] = residue_depth(res, surface)
     return data
 
+
 def get_hse(model):
+    """Get the hydrogen surface exposure
+
+    Args:
+        model (bio model): model of the strucrture
+
+    Returns:
+        dict: hse data
+    """
     hse = HSExposureCA(model)
     data = {}
     for k in list(hse.keys()):
-        new_key = (k[0],k[1][1])
+        new_key = (k[0], k[1][1])
 
         x = hse[k]
         if x[2] is None:
