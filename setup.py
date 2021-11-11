@@ -43,7 +43,7 @@ setup(
         'numpy >= 1.13', 'scipy', 'h5py', 'torch>=1.5.0', 'networkx', 'matplotlib',
         'pdb2sql', 'sklearn', 'chart-studio', 'BioPython', 'python-louvain',
         'markov-clustering', 'torch-sparse', 'torch-scatter', 'torch-cluster',
-        'torch-spline-conv', 'torch-geometric', 'tqdm'
+        'torch-spline-conv', 'torch-geometric', 'tqdm', 'freesasa'
     ],
     extras_require={
         'dev': ['prospector[with_pyroma]', 'yapf', 'isort'],
