@@ -124,7 +124,7 @@ class sGraphAttentionLayer(torch.nn.Module):
         # if the graph is undirected and (i,j) and (j,i) are both in
         # the edge_index then we do not need to have that second line
         # or we count everythong twice
-        #out = scatter_mean(alpha,col,dim=0,out=out)
+        # out = scatter_mean(alpha,col,dim=0,out=out)
 
         # add the bias
         if self.bias is not None:
