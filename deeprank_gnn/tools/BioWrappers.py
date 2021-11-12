@@ -78,6 +78,7 @@ def get_hse(model):
     Returns:
         dict: hse data
     """
+
     hse = HSExposureCA(model)
     data = {}
     for k in list(hse.keys()):

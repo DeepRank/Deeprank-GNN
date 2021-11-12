@@ -220,7 +220,6 @@ class ResidueGraph(Graph):
         model = BioWrappers.get_bio_model(db.pdbfile)
 
         if self.biopython == True:
-
             ResDepth = BioWrappers.get_depth_contact_res(
                 model, self.nx.nodes)
 
@@ -267,8 +266,6 @@ class ResidueGraph(Graph):
 
         for e in self.nx.edges:
             node1, node2 = e
-            # self.nx.edges[node1, node2]['polarity'] = self._get_edge_polarity(
-            #    node1, node2)
             self.nx.edge_index.append(
                 [node_keys.index(node1), node_keys.index(node2)])
 
@@ -365,10 +362,16 @@ class ResidueGraph(Graph):
         return self.edge_polarity_encoding[key]
 
     def _get_edge_distance(self, node1, node2, db):
+        """Get the edge distance between residues
 
-        # pos1 = self.nx.nodes[node1]['pos']
-        # pos2 = self.nx.nodes[node2]['pos']
-        # return np.linalg.norm(pos1-pos2)
+        Args:
+            node1 (tuple): (chainID, resID)
+            node2 (tuple): (chainID, resID)
+            db ([type]): pdb2sql database
+
+        Returns:
+            np.array: distance between residues
+        """
         xyz1 = np.array(
             db.get('x,y,z', chainID=node1[0], resSeq=node1[1]))
         xyz2 = np.array(
