@@ -76,12 +76,14 @@ class sGraphAttentionLayer(torch.nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 bias=True):
+                 bias=True,
+                 undirected=True):
 
         super(sGraphAttentionLayer, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.undirected = undirected
 
         self.weight = Parameter(
             torch.Tensor(2 * in_channels, out_channels))
@@ -99,8 +101,6 @@ class sGraphAttentionLayer(torch.nn.Module):
         uniform(size, self.bias)
 
     def forward(self, x, edge_index, edge_attr):
-
-        #print('weight : ', torch.sum(self.weight))
 
         row, col = edge_index
         num_node = len(x)
@@ -124,7 +124,8 @@ class sGraphAttentionLayer(torch.nn.Module):
         # if the graph is undirected and (i,j) and (j,i) are both in
         # the edge_index then we do not need to have that second line
         # or we count everythong twice
-        # out = scatter_mean(alpha,col,dim=0,out=out)
+        if not self.undirected:
+            out = scatter_mean(alpha, col, dim=0, out=out)
 
         # add the bias
         if self.bias is not None:
