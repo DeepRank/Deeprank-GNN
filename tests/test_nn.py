@@ -6,15 +6,15 @@ from deeprank_gnn.foutnet import FoutNet
 from deeprank_gnn.sGAT import sGAT
 
 
-def _model_base_test(database, model, plot):
+def _model_base_test(database, model, task='reg', target='irmsd', plot=False):
 
     NN = NeuralNet(database, model,
                    node_feature=['type', 'polarity', 'bsa',
                                  'depth', 'hse', 'ic', 'pssm'],
                    edge_feature=['dist'],
-                   target='irmsd',
+                   target=target,
                    index=None,
-                   task='reg',
+                   task=task,
                    batch_size=64,
                    percent=[0.8, 0.2])
 
@@ -38,13 +38,17 @@ class TestNeuralNet(unittest.TestCase):
         self.database = 'tests/hdf5/1ATN_residue.hdf5'
 
     def test_ginet(self):
-        _model_base_test(self.database, GINet, True)
+        _model_base_test(self.database, GINet, plot=True)
+
+    def test_ginet_class(self):
+        _model_base_test(self.database, GINet,
+                         task='class', target='binclass')
 
     def test_fout(self):
-        _model_base_test(self.database, FoutNet, False)
+        _model_base_test(self.database, FoutNet)
 
     def test_sgat(self):
-        _model_base_test(self.database, sGAT, False)
+        _model_base_test(self.database, sGAT)
 
 
 if __name__ == "__main__":
