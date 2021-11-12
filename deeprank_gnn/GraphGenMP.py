@@ -146,20 +146,26 @@ class GraphHDF5(object):
     def _pickle_one_graph(name, pssm, ref, tmpdir='./', biopython=False):
 
         # get the graph
-        g = ResidueGraph(
-            pdb=name, pssm=pssm[name], biopython=biopython)
+        try:
 
-        if ref is not None:
-            g.get_score(ref)
+            g = ResidueGraph(
+                pdb=name, pssm=pssm[name], biopython=biopython)
 
-        # pickle it
-        mol_name = os.path.basename(name)
-        mol_name = os.path.splitext(mol_name)[0]
-        fname = os.path.join(tmpdir, mol_name+'.pkl')
+            if ref is not None:
+                g.get_score(ref)
 
-        f = open(fname, 'wb')
-        pickle.dump(g, f)
-        f.close()
+            # pickle it
+            mol_name = os.path.basename(name)
+            mol_name = os.path.splitext(mol_name)[0]
+            fname = os.path.join(tmpdir, mol_name+'.pkl')
+
+            f = open(fname, 'wb')
+            pickle.dump(g, f)
+            f.close()
+
+        except Exception as e:
+            print('Issue encountered while storing graph ', name)
+            print(e)
 
     @staticmethod
     def _get_one_graph(name, pssm, ref, biopython):
