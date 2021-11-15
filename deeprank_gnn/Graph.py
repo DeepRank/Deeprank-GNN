@@ -474,11 +474,3 @@ class Graph(object):
                 py.iplot(fig, filename=out)
             else:
                 py.plot(fig)
-
-
-if __name__ == "__main__":
-    import h5py
-    graph = Graph()
-    graph.h52nx('../tests/hdf5/1ATN_residue.hdf5', '1ATN_1w')
-    graph.plotly_2d('1ATN', disable_plot=True)
-    graph.plotly_3d('1ATN', disable_plot=True)
