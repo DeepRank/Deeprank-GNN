@@ -33,7 +33,7 @@ By default, the following features are assigned to each node of the graph :
 
 - **type**: residue type (one hot encoded)
 
-The following one are computed if PSSM data is provided :
+The following features are computed if PSSM data is provided :
 
 - **pssm**: pssm score for each residues
 
@@ -41,7 +41,7 @@ The following one are computed if PSSM data is provided :
 
 - **ic**: information content of the PSSM (~Shannon entropy)
 
-The following one are optional, and computed only if Biopython is used (see next example) :
+The following features are optional, and computed only if Biopython is used (see next example) :
 
 - **depth**: average atom depth of the atoms in a residue (distance to the surface)
 
