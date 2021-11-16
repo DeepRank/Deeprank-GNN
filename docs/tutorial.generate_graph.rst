@@ -113,8 +113,8 @@ If you are benchmarking docking models, go to the **next section**.
   
   if your use other separators (eg. ``,``, ``;``, ``tab``) use the ``sep`` argument:
   
-  >>> CustomizeGraph.add_target(graph_path=graph_path, target_name='new_target', 
-  >>>                           target_list='list_of_target_values.txt', sep=',')
+  >>> add_target(graph_path=graph_path, target_name='new_target', 
+  >>>            target_list='list_of_target_values.txt', sep=',')
   
   
 Docking benchmark mode 
