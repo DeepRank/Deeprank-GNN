@@ -89,16 +89,16 @@ Use the CustomizeGraph class to add target values to the graphs.
 If you are benchmarking docking models, go to the **next section**.
 
 >>> from deeprank_gnn.GraphGen import GraphHDF5
->>> import deeprank_gnn.CustomizeGraph as CustomizeGraph
->>>
+>>> from deeprank_gnn.tools.CustomizeGraph import add_target
+>>> 
 >>> pdb_path = './data/pdb/1ATN/'
 >>> pssm_path = './data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
 >>>
->>> CustomizeGraph.add_target(graph_path='.', target_name='new_target',
->>>                           target_list=list_of_target_values.txt)
+>>> add_target(graph_path='.', target_name='new_target',
+>>>            target_list=list_of_target_values.txt)
 
 .. note::
   The list of target values should respect the following format:
@@ -120,7 +120,7 @@ If you are benchmarking docking models, go to the **next section**.
 Docking benchmark mode 
 -------------------------------------
 
-In a docking benchmark mode, you cano provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed, based on CAPRI quality criteria [1]_,  and assigned to the graphs : 
+In a docking benchmark mode, you can provide the path to the reference structures in the graph generation step. Knowing the reference structure, the following target values will be automatically computed, based on CAPRI quality criteria [1]_,  and assigned to the graphs : 
 
 - **irmsd**: interface RMSD (RMSD between the superimposed interface residues)
 
