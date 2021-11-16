@@ -18,14 +18,37 @@ class TestCommunity(unittest.TestCase):
         self.data.pos = torch.tensor(
             np.random.rand(self.data.num_nodes, 3))
 
-    def test_detection(self):
+    def test_detection_mcl(self):
         c = community_detection(
-            self.data.edge_index, self.data.num_nodes)
+            self.data.edge_index, self.data.num_nodes, method='mcl')
 
-    def test_detection_per_batch(self):
+    def test_detection_louvain(self):
+        c = community_detection(
+            self.data.edge_index, self.data.num_nodes, method='louvain')
+
+    @unittest.expectedFailure
+    def test_detection_error(self):
+        c = community_detection(
+            self.data.edge_index, self.data.num_nodes, method='xxx')
+
+    def test_detection_per_batch_mcl(self):
         batch = Batch().from_data_list([self.data, self.data])
         c = community_detection_per_batch(
-            self.data.edge_index, torch.as_tensor([0, 1, 2, 3, 4, 5]), self.data.num_nodes)
+            self.data.edge_index, torch.as_tensor([0, 1, 2, 3, 4, 5]),
+            self.data.num_nodes, method='mcl')
+
+    def test_detection_per_batch_louvain(self):
+        batch = Batch().from_data_list([self.data, self.data])
+        c = community_detection_per_batch(
+            self.data.edge_index, torch.as_tensor([0, 1, 2, 3, 4, 5]),
+            self.data.num_nodes, method='louvain')
+
+    @unittest.expectedFailure
+    def test_detection_per_batch_louvain(self):
+        batch = Batch().from_data_list([self.data, self.data])
+        c = community_detection_per_batch(
+            self.data.edge_index, torch.as_tensor([0, 1, 2, 3, 4, 5]),
+            self.data.num_nodes, method='xxxx')
 
     def test_pooling(self):
 

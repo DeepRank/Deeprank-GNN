@@ -106,6 +106,19 @@ def community_detection(edge_index, num_nodes, edge_attr=None, method='mcl'):
 
     Returns:
         cluster Tensor
+
+
+    Examples:
+
+        >>> import torch
+        >>> from torch_geometric.data import Data, Batch
+        >>> edge_index = torch.tensor([[0, 1, 1, 2, 3, 4, 4, 5],
+        >>>                            [1, 0, 2, 1, 4, 3, 5, 4]], dtype=torch.long)
+        >>> x = torch.tensor([[0], [1], [2], [3], [4], [5]],
+        >>>                  dtype=torch.float)
+        >>> data = Data(x=x, edge_index=edge_index)
+        >>> data.pos = torch.tensor(np.random.rand(data.num_nodes, 3))
+        >>> c = community_detection(data.edge_index, data.num_nodes)
     """
     # make the networkX graph
     g = nx.Graph()
@@ -158,6 +171,21 @@ def community_pooling(cluster, data):
 
     Returns:
         pooled features tensor
+
+
+    Example:
+        >>> import torch
+        >>> from torch_geometric.data import Data, Batch
+        >>> edge_index = torch.tensor([[0, 1, 1, 2, 3, 4, 4, 5],
+        >>>                            [1, 0, 2, 1, 4, 3, 5, 4]], dtype=torch.long)
+        >>> x = torch.tensor([[0], [1], [2], [3], [4], [5]],
+        >>>                  dtype=torch.float)
+        >>> data = Data(x=x, edge_index=edge_index)
+        >>> data.pos = torch.tensor(np.random.rand(data.num_nodes, 3))
+        >>> c = community_detection(data.edge_index, data.num_nodes)
+        >>> batch = Batch().from_data_list([data, data])
+        >>> cluster = community_detection(batch.edge_index, batch.num_nodes)
+        >>> new_batch = community_pooling(cluster, batch)
     """
     # determine what the batches has as attributes
     has_internal_edges = hasattr(data, 'internal_edge_index')
@@ -220,22 +248,3 @@ def community_pooling(cluster, data):
             data.cluster1 = c1
 
     return data
-
-
-if __name__ == "__main__":
-
-    import torch
-    from torch_geometric.data import Data, Batch
-
-    edge_index = torch.tensor([[0, 1, 1, 2, 3, 4, 4, 5],
-                               [1, 0, 2, 1, 4, 3, 5, 4]], dtype=torch.long)
-
-    x = torch.tensor([[0], [1], [2], [3], [4], [5]],
-                     dtype=torch.float)
-    data = Data(x=x, edge_index=edge_index)
-    data.pos = torch.tensor(np.random.rand(data.num_nodes, 3))
-    c = community_detection(data.edge_index, data.num_nodes)
-
-    batch = Batch().from_data_list([data, data])
-    cluster = community_detection(batch.edge_index, batch.num_nodes)
-    new_batch = community_pooling(cluster, batch)
