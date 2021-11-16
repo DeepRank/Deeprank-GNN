@@ -16,47 +16,6 @@ from torch_geometric.nn import max_pool_x
 from .community_pooling import get_preloaded_cluster, community_pooling
 
 
-class sGAT(torch.nn.Module):
-
-    def __init__(self, input_shape, output_shape=1, input_shape_edge=None):
-        super(sGAT, self).__init__()
-
-        self.conv1 = sGraphAttentionLayer(input_shape, 16)
-        self.conv2 = sGraphAttentionLayer(16, 32)
-
-        self.fc1 = torch.nn.Linear(32, 64)
-        self.fc2 = torch.nn.Linear(64, output_shape)
-
-        self.clustering = 'mcl'
-
-    def forward(self, data):
-
-        act = nn.Tanhshrink()
-        act = F.relu
-        #act = nn.LeakyReLU(0.25)
-
-        # first conv block
-        data.x = act(self.conv1(
-            data.x, data.edge_index, data.edge_attr))
-        cluster = get_preloaded_cluster(data.cluster0, data.batch)
-        data = community_pooling(cluster, data)
-
-        # second conv block
-        data.x = act(self.conv2(
-            data.x, data.edge_index, data.edge_attr))
-        cluster = get_preloaded_cluster(data.cluster1, data.batch)
-        x, batch = max_pool_x(cluster, data.x, data.batch)
-
-        # FC
-        x = scatter_mean(x, batch, dim=0)
-        x = act(self.fc1(x))
-        x = self.fc2(x)
-        #x = F.dropout(x, training=self.training)
-
-        return x
-        # return F.relu(x)
-
-
 class sGraphAttentionLayer(torch.nn.Module):
 
     """
@@ -123,7 +82,7 @@ class sGraphAttentionLayer(torch.nn.Module):
 
         # if the graph is undirected and (i,j) and (j,i) are both in
         # the edge_index then we do not need to have that second line
-        # or we count everythong twice
+        # or we count everything twice
         if not self.undirected:
             out = scatter_mean(alpha, col, dim=0, out=out)
 
@@ -137,3 +96,44 @@ class sGraphAttentionLayer(torch.nn.Module):
         return '{}({}, {})'.format(self.__class__.__name__,
                                    self.in_channels,
                                    self.out_channels)
+
+
+class sGAT(torch.nn.Module):
+
+    def __init__(self, input_shape, output_shape=1, input_shape_edge=None):
+        super(sGAT, self).__init__()
+
+        self.conv1 = sGraphAttentionLayer(input_shape, 16)
+        self.conv2 = sGraphAttentionLayer(16, 32)
+
+        self.fc1 = torch.nn.Linear(32, 64)
+        self.fc2 = torch.nn.Linear(64, output_shape)
+
+        self.clustering = 'mcl'
+
+    def forward(self, data):
+
+        act = nn.Tanhshrink()
+        act = F.relu
+        #act = nn.LeakyReLU(0.25)
+
+        # first conv block
+        data.x = act(self.conv1(
+            data.x, data.edge_index, data.edge_attr))
+        cluster = get_preloaded_cluster(data.cluster0, data.batch)
+        data = community_pooling(cluster, data)
+
+        # second conv block
+        data.x = act(self.conv2(
+            data.x, data.edge_index, data.edge_attr))
+        cluster = get_preloaded_cluster(data.cluster1, data.batch)
+        x, batch = max_pool_x(cluster, data.x, data.batch)
+
+        # FC
+        x = scatter_mean(x, batch, dim=0)
+        x = act(self.fc1(x))
+        x = self.fc2(x)
+        #x = F.dropout(x, training=self.training)
+
+        return x
+        # return F.relu(x)

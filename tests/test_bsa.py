@@ -8,7 +8,7 @@ class TestBSA(unittest.TestCase):
     def setUp(self):
         self.bsa = BSA('tests/data/pdb/1ATN/1ATN_1w.pdb')
 
-    def test_strcutre(self):
+    def test_structure(self):
         self.bsa.get_structure()
         self.bsa.get_contact_residue_sasa()
 

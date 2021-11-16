@@ -15,8 +15,6 @@ class TestCommunity(unittest.TestCase):
         self.x = torch.tensor(
             [[0], [1], [2], [3], [4], [5]], dtype=torch.float)
         self.data = Data(x=self.x, edge_index=self.edge_index)
-        self.data.pos = torch.tensor(
-            np.random.rand(self.data.num_nodes, 3))
 
     def test_detection_mcl(self):
         c = community_detection(

@@ -30,6 +30,7 @@ class BSA(object):
 
         Args :
             pdb_data (list(byte) or str): pdb data or filename of the pdb
+            sqldb (pdb2sql.interface instance or None, optional) if the sqldb is None the sqldb will be created
             chainA (str, optional): name of the first chain
             chainB (str, optional): name of the second chain
 
