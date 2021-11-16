@@ -187,6 +187,7 @@ def community_pooling(cluster, data):
         >>> cluster = community_detection(batch.edge_index, batch.num_nodes)
         >>> new_batch = community_pooling(cluster, batch)
     """
+
     # determine what the batches has as attributes
     has_internal_edges = hasattr(data, 'internal_edge_index')
     has_pos2D = hasattr(data, 'pos2D')
