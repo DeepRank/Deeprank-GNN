@@ -1,0 +1,37 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: DeepRank-GNN
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Manon
+    family-names: Réau
+    email: manon.reau@gmail.com
+    affiliation: Utrecht University
+    orcid: 'https://orcid.org/0000-0002-3862-8990'
+  - given-names: Nicolas
+    family-names: Renaud
+    email: nicolas.gm.renaud@gmail.com
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0001-9589-2694'
+identifiers:
+  - type: url
+    value: ''
+    description: 'https://github.com/DeepRank/Deeprank-GNN'
+repository-code: 'https://github.com/DeepRank/Deeprank-GNN'
+url: 'https://deeprank-gnn.readthedocs.io/'
+abstract: >-
+  DeepRank-GNN allows ranking of Protein-protein
+  Interface using a graph representation of the
+  contact residues. Graphs of such interfaces are
+  used to train graph neural network for the
+  prediction of the experimental validity of the
+  interface.
+keywords:
+  - graph neural network
+  - protein-protein interface
+license: Apache-2.0
