@@ -167,7 +167,7 @@ train the network, perform 50 epochs
 
 - example 2:
 
-train the model, evaluate it at each epoch, save the best model (i.e. the model with the lowest loss), and write all predictions to ``output.hdf5``
+train the model, evaluate the model at each epoch, save the best model (i.e. the model with the lowest loss), and write all predictions to ``output.hdf5``
 
 >>> model.train(nepoch=50, validate=True, save_model='best', hdf5='output.hdf5')
 
@@ -191,7 +191,7 @@ The following analysis only apply if a reference structure was provided during t
 
 6.2.1. **Plot accuracy evolution**
 
->>> model.plot_loss(name='plot_accuracy')
+>>> model.plot_acc(name='plot_accuracy')
 
 6.2.2. **Plot hitrate**
 
