@@ -77,7 +77,6 @@ In this example, the biopython features (hse and depth) and the PSSM information
 >>> from deeprank_gnn.GraphGenMP import GraphHDF5
 >>>
 >>> pdb_path = './data/pdb/1ATN/'
->>> pssm_path = './data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, 
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
