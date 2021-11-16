@@ -19,7 +19,7 @@ Deeprank-GNN automatically generates a residue-level graphs of **protein-protein
   
   
  
-  By default, the following features are assigned to each node of the graph :
+By default, the following features are assigned to each node of the graph :
   
 - **pos**: xyz coordinates
 
@@ -31,15 +31,14 @@ Deeprank-GNN automatically generates a residue-level graphs of **protein-protein
 
 - **bsa**: buried surface are
 
+- **type**: residue type (one hot encoded)
+
+The following one are optional :
 - **pssm**: pssm score for each residues
 
 - **cons**: pssm score of the residue
 
 - **ic**: information content of the PSSM (~Shannon entropy)
-
-- **type**: residue type (one hot encoded)
-
-The following one are optional, and require more computation time (~x10) :
 
 - **depth**: average atom depth of the atoms in a residue (distance to the surface)
 
