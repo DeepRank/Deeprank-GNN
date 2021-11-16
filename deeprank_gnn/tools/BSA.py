@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import pdb2sql
+from pdb2sql.interface import interface
 
 try:
     import freesasa
@@ -11,7 +11,7 @@ except ImportError:
 
 class BSA(object):
 
-    def __init__(self, pdb_data, sqldb, chainA='A', chainB='B'):
+    def __init__(self, pdb_data, sqldb=None, chainA='A', chainB='B'):
         '''Compute the burried surface area feature
 
         Freesasa is required for this feature.
@@ -30,6 +30,7 @@ class BSA(object):
 
         Args :
             pdb_data (list(byte) or str): pdb data or filename of the pdb
+            sqldb (pdb2sql.interface instance or None, optional) if the sqldb is None the sqldb will be created
             chainA (str, optional): name of the first chain
             chainB (str, optional): name of the second chain
 
@@ -43,7 +44,10 @@ class BSA(object):
         '''
 
         self.pdb_data = pdb_data
-        self.sql = sqldb
+        if sqldb is None:
+            self.sql = interface(pdb_data)
+        else:
+            self.sql = sqldb
         self.chains_label = [chainA, chainB]
 
         freesasa.setVerbosity(freesasa.nowarnings)
@@ -111,17 +115,3 @@ class BSA(object):
 
             # put the data in dict
             self.bsa_data[r] = [bsa]
-
-#####################################################################################
-#
-#       TEST THE CLASS
-#
-#####################################################################################
-
-
-if __name__ == '__main__':
-
-    bsa = BSA('1AK4.pdb')
-    bsa.get_structure()
-    # bsa.get_contact_residue_sasa()
-    bsa.sql.close()

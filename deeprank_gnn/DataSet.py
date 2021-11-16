@@ -348,7 +348,7 @@ class HDF5DataSet(Dataset):
                 if ('depth_0' in grp['clustering/{}'.format(self.clustering_method)].keys() and
                         'depth_1' in grp['clustering/{}'.format(
                             self.clustering_method)].keys()
-                        ):
+                    ):
                     data.cluster0 = torch.tensor(
                         grp['clustering/' + self.clustering_method + '/depth_0'][()], dtype=torch.long)
                     data.cluster1 = torch.tensor(
@@ -423,10 +423,13 @@ class HDF5DataSet(Dataset):
         for cond_name, cond_vals in self.dict_filter.items():
 
             try:
-                val = molgrp[cond_name][()]
+                val = molgrp['score'][cond_name][()]
             except KeyError:
                 print('   :Filter %s not found for mol %s' %
-                      (cond_name, mol))
+                      (cond_name, molgrp))
+                print('   :Filter options are')
+                for k in molgrp['score'].keys():
+                    print('   : ', k)
 
             # if we have a string it's more complicated
             if isinstance(cond_vals, str):
@@ -435,6 +438,7 @@ class HDF5DataSet(Dataset):
                 new_cond_vals = cond_vals
                 for o in ops:
                     new_cond_vals = new_cond_vals.replace(o, 'val'+o)
+
                 if not eval(new_cond_vals):
                     return False
             else:

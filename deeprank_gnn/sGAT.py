@@ -16,22 +16,7 @@ from torch_geometric.nn import max_pool_x
 from .community_pooling import get_preloaded_cluster, community_pooling
 
 
-def add_self_loops_wattr(edge_index, edge_attr, num_nodes=None):
-    num_nodes = maybe_num_nodes(edge_index, num_nodes)
-
-    dtype, device = edge_index.dtype, edge_index.device
-    loop = torch.arange(0, num_nodes, dtype=dtype, device=device)
-    loop = loop.unsqueeze(0).repeat(2, 1)
-    edge_index = torch.cat([edge_index, loop], dim=1)
-
-    dtype, device = edge_attr.dtype, edge_attr.device
-    loop = torch.ones(num_nodes, dtype=dtype, device=device)
-    edge_attr = torch.cat([edge_attr, loop])
-
-    return edge_index, edge_attr
-
-
-class sGraphAttention(torch.nn.Module):
+class sGraphAttentionLayer(torch.nn.Module):
 
     """
     This is a new layer that is similar to the graph attention network but simpler
@@ -50,12 +35,14 @@ class sGraphAttention(torch.nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 bias=True):
+                 bias=True,
+                 undirected=True):
 
-        super(sGraphAttention, self).__init__()
+        super(sGraphAttentionLayer, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.undirected = undirected
 
         self.weight = Parameter(
             torch.Tensor(2 * in_channels, out_channels))
@@ -73,8 +60,6 @@ class sGraphAttention(torch.nn.Module):
         uniform(size, self.bias)
 
     def forward(self, x, edge_index, edge_attr):
-
-        #print('weight : ', torch.sum(self.weight))
 
         row, col = edge_index
         num_node = len(x)
@@ -97,8 +82,9 @@ class sGraphAttention(torch.nn.Module):
 
         # if the graph is undirected and (i,j) and (j,i) are both in
         # the edge_index then we do not need to have that second line
-        # or we count everythong twice
-        #out = scatter_mean(alpha,col,dim=0,out=out)
+        # or we count everything twice
+        if not self.undirected:
+            out = scatter_mean(alpha, col, dim=0, out=out)
 
         # add the bias
         if self.bias is not None:
@@ -117,8 +103,8 @@ class sGAT(torch.nn.Module):
     def __init__(self, input_shape, output_shape=1, input_shape_edge=None):
         super(sGAT, self).__init__()
 
-        self.conv1 = sGraphAttention(input_shape, 16)
-        self.conv2 = sGraphAttention(16, 32)
+        self.conv1 = sGraphAttentionLayer(input_shape, 16)
+        self.conv2 = sGraphAttentionLayer(16, 32)
 
         self.fc1 = torch.nn.Linear(32, 64)
         self.fc2 = torch.nn.Linear(64, output_shape)
