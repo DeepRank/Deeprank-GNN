@@ -33,12 +33,15 @@ By default, the following features are assigned to each node of the graph :
 
 - **type**: residue type (one hot encoded)
 
-The following one are optional :
+The following one are computed if PSSM data is provided :
+
 - **pssm**: pssm score for each residues
 
 - **cons**: pssm score of the residue
 
 - **ic**: information content of the PSSM (~Shannon entropy)
+
+The following one are optional, and computed only if Biopython is used (see next example) :
 
 - **depth**: average atom depth of the atoms in a residue (distance to the surface)
 
@@ -49,12 +52,34 @@ Generate your graphs
 
 Note that the pssm information is used to compute the **pssm**, **cons** and **ic** node features and is optional.
 
+In this example, all features are computed
+
 >>> from deeprank_gnn.GraphGenMP import GraphHDF5
 >>>
 >>> pdb_path = './data/pdb/1ATN/'
 >>> pssm_path = './data/pssm/1ATN/'
 >>>
->>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
+>>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path, biopython=True,
+>>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
+
+In this example, the biopython features (hse and depth) are ignored
+
+>>> from deeprank_gnn.GraphGenMP import GraphHDF5
+>>>
+>>> pdb_path = './data/pdb/1ATN/'
+>>> pssm_path = './data/pssm/1ATN/'
+>>>
+>>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path, 
+>>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
+
+In this example, the biopython features (hse and depth) and the PSSM information are ignored
+
+>>> from deeprank_gnn.GraphGenMP import GraphHDF5
+>>>
+>>> pdb_path = './data/pdb/1ATN/'
+>>> pssm_path = './data/pssm/1ATN/'
+>>>
+>>> GraphHDF5(pdb_path=pdb_path, 
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
 
 Add your target values
