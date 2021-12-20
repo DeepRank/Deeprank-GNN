@@ -3,7 +3,7 @@ We herein provide the pretrained model `fold6_treg_yfnat_b128_e20_lr0.001_4.pt` 
 An example of code to run DeepRank-GNN on new data with the pre-trained model is provided (*test.py*).
 
 Usage: 
-`python test.py path_to_test_graphs`
+`python test.py `
 
 You can also check `https://deeprank-gnn.readthedocs.io/en/latest/tutorial.train_model.html#use-deeprank-gnn-paper-s-pretrained-model`
 
@@ -15,3 +15,43 @@ Further information can be found in the DeepRank online documentation (https://d
 
 M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin, DeepRank-GNN: A Graph Neural Network Framework to Learn Patterns in Protein-Protein Interfaces
 bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
+
+Details of the code
+'''
+import glob 
+import sys 
+import time
+import datetime 
+import numpy as np
+
+from deeprank_gnn.GraphGenMP import GraphHDF5
+from deeprank_gnn.NeuralNet import NeuralNet
+from deeprank_gnn.ginet import GINet
+'''
+
+### Graph generation section
+'''
+#path to the docking models in pdb format
+pdb_path = '../tests/data/pdb/1ATN/' 
+#path to the pssm files
+pssm_path = '../tests/data/pssm/1ATN/'
+
+GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
+        graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
+'''
+
+### Prediction section
+'''
+pretrained_model = 'fold6_treg_yfnat_b128_e20_lr0.001_4.pt'
+gnn = GINet
+
+#path to the graph(s)
+database_test = glob.glob('./*.hdf5')
+
+start_time = time.time()
+model = NeuralNet(database_test, gnn, pretrained_model = pretrained_model)    
+model.test(threshold=None)
+end_time = time.time()
+
+print ('Elapsed time: {end_time-start_time}')
+'''
