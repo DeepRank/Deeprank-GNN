@@ -1,0 +1,11 @@
+We herein provide the pretrained model fold6_treg_yfnat_b128_e20_lr0.001_4 that was evaluated in 
+the initial DeepRank-GNN paper (doi: 10.1101/2021.12.08.471762) and a python script to apply it 
+on your own graphs.
+
+Usage: 
+python test.py path_to_test_graphs
+
+Please cite:
+DeepRank-GNN: A Graph Neural Network Framework to Learn Patterns in Protein-Protein Interfaces
+M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin
+bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
