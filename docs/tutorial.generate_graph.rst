@@ -66,8 +66,8 @@ In this example, the biopython features (hse and depth) are ignored
 
 >>> from deeprank_gnn.GraphGenMP import GraphHDF5
 >>>
->>> pdb_path = './data/pdb/1ATN/'
->>> pssm_path = './data/pssm/1ATN/'
+>>> pdb_path = './data/pdb/1ATN/' # path to the docking model in PDB format
+>>> pssm_path = './data/pssm/1ATN/' # path to the pssm files
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path, 
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
