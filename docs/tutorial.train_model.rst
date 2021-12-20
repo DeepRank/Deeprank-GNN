@@ -353,9 +353,7 @@ Using default settings
 Use DeepRank-GNN paper's pretrained model
 =============================================
 
-See: 
-
-M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin, "DeepRank-GNN: A Graph Neural Network Framework to Learn Patterns in Protein-Protein Interfaces", bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
+**See**: M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin, "DeepRank-GNN: A Graph Neural Network Framework to Learn Patterns in Protein-Protein Interfaces", bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
 
 You can get the pre-trained model from DeepRank-GNN github repository (https://github.com/DeepRank/Deeprank-GNN/tree/master/paper_pretrained_models/fold6_treg_yfnat_b128_e20_lr0.001_4.pt)
 
