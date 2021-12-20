@@ -10,9 +10,9 @@ An example of code to run DeepRank-GNN on new data with the pre-trained model is
 
 You can also check `https://deeprank-gnn.readthedocs.io/en/latest/tutorial.train_model.html#use-deeprank-gnn-paper-s-pretrained-model`
 
-The data used to train the model are available on SBGrid:  https://data.sbgrid.org/dataset/843/ 
+The data used to train the model are available on [SBGrid](https://data.sbgrid.org/dataset/843/)
 
-Further information can be found in the DeepRank-GNN online documentation (https://deeprank-gnn.readthedocs.io/en/latest/index.html)
+Further information can be found in the DeepRank-GNN online [documentation](https://deeprank-gnn.readthedocs.io/en/latest/index.html)
 
 ## Please cite
 
