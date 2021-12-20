@@ -38,7 +38,7 @@ All the graphs/line graphs of all the pdb/pssm stored in `data/pdb/` and `data/p
 
 
 ```python
-from GraphGen import GraphHDF5
+from GraphGenMP import GraphHDF5
 
 pdb_path = './data/pdb'
 pssm_path = './data/pssm'
