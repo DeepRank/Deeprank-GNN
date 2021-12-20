@@ -12,7 +12,7 @@ You can also check `https://deeprank-gnn.readthedocs.io/en/latest/tutorial.train
 
 The data used to train the model are available on SBGrid:  https://data.sbgrid.org/dataset/843/ 
 
-Further information can be found in the DeepRank online documentation (https://deeprank-gnn.readthedocs.io/en/latest/index.html)
+Further information can be found in the DeepRank-GNN online documentation (https://deeprank-gnn.readthedocs.io/en/latest/index.html)
 
 ## Please cite
 
