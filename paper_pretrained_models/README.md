@@ -12,7 +12,7 @@ The data used to train the model are available on SBGrid:  https://data.sbgrid.o
 
 Further information can be found in the DeepRank online documentation (https://deeprank-gnn.readthedocs.io/en/latest/index.html)
 
-##Please cite
+## Please cite
 
 M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin, DeepRank-GNN: A Graph Neural Network Framework to Learn Patterns in Protein-Protein Interfaces
 bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
