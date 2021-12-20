@@ -2,6 +2,8 @@ We herein provide the pretrained model fold6_treg_yfnat_b128_e20_lr0.001_4 that 
 the initial DeepRank-GNN paper (doi: 10.1101/2021.12.08.471762) and a python script to apply it 
 on your own graphs.
 
+The training data are available on SBGrid:  https://data.sbgrid.org/dataset/843/
+
 Usage: 
 python test.py path_to_test_graphs
 
