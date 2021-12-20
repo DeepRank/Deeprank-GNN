@@ -5,6 +5,7 @@ An example of code to run DeepRank-GNN on new data with the pre-trained model is
 ## Usage: 
 `python test.py `
 
+
 You can also check `https://deeprank-gnn.readthedocs.io/en/latest/tutorial.train_model.html#use-deeprank-gnn-paper-s-pretrained-model`
 
 The data used to train the model are available on SBGrid:  https://data.sbgrid.org/dataset/843/ 
@@ -54,4 +55,4 @@ model.test(threshold=None)
 end_time = time.time()
 
 print ('Elapsed time: {end_time-start_time}')
-'''
+```
