@@ -352,5 +352,45 @@ Using default settings
 >>> model.save_model("model_backup.pth.tar")
 >>> model.test(database_test, threshold=4.0)
 
+Use DeepRank-GNN paper's pretrained model
+=============================================
+
+See: DeepRank-GNN: A Graph Neural Network Framework to Learn Patterns in Protein-Protein Interfaces
+
+M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin
+
+bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
+
+You can get the pre-trained model from DeepRank-GNN github repository (https://github.com/DeepRank/Deeprank-GNN/tree/master/paper_pretrained_models/fold6_treg_yfnat_b128_e20_lr0.001_4.pt)
+
+>>> import glob 
+>>> import sys 
+>>> import time
+>>> import datetime 
+>>> import numpy as np
+>>> 
+>>> from deeprank_gnn.GraphGenMP import GraphHDF5
+>>> from deeprank_gnn.NeuralNet import NeuralNet
+>>> from deeprank_gnn.ginet import GINet
+>>>
+>>> pdb_path = './data/pdb/1ATN/'
+>>> pssm_path = './data/pssm/1ATN/'
+>>> pretrained_model = 'fold6_treg_yfnat_b128_e20_lr0.001_4.pt'
+>>>
+>>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
+>>>         graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
+>>> 
+>>> gnn = GINet
+>>> 
+>>> database_test = glob.glob('1ATN_residue.hdf5')
+>>> 
+>>> ### Make the prediction
+>>> start_time = time.time()
+>>> model = NeuralNet(database_test, gnn, pretrained_model = pretrained_model)    
+>>> model.test(threshold=None)
+>>> end_time = time.time()
+>>> print ('Elapsed time: {end_time-start_time}')
+
+         
 .. note::  
  For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the **tools** directory
