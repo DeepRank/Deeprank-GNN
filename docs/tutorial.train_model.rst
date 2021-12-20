@@ -115,7 +115,6 @@ The user may :
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>>
->>> database = './hdf5/1ACB_residue.hdf5'
 >>> database = './1ATN_residue.hdf5'
 >>>
 >>> model = NeuralNet(database, GINet,
@@ -287,7 +286,6 @@ In short
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>>
->>> database = './hdf5/1ACB_residue.hdf5'
 >>> database = './1ATN_residue.hdf5'
 >>>
 >>> edge_feature=['dist']
@@ -371,24 +369,25 @@ You can get the pre-trained model from DeepRank-GNN github repository (https://g
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>>
+>>> ### Graph generation section
 >>> pdb_path = '../tests/data/pdb/1ATN/'
 >>> pssm_path = '../tests/data/pdb/1ATN/'
->>> pretrained_model = 'fold6_treg_yfnat_b128_e20_lr0.001_4.pt'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
 >>>         graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
 >>> 
+>>> ### Prediction section
 >>> gnn = GINet
->>> 
+>>> pretrained_model = 'fold6_treg_yfnat_b128_e20_lr0.001_4.pt'
 >>> database_test = glob.glob('1ATN_residue.hdf5')
 >>> 
->>> ### Make the prediction
 >>> start_time = time.time()
 >>> model = NeuralNet(database_test, gnn, pretrained_model = pretrained_model)    
 >>> model.test(threshold=None)
 >>> end_time = time.time()
 >>> print ('Elapsed time: {end_time-start_time}')
-
+>>> 
+>>> ### The output is automatically stored in **test_data.hdf5** 
          
 .. note::  
  For storage convenience, all predictions are stored in a HDF5 file. A converter from HDF5 to csv is provided in the **tools** directory
