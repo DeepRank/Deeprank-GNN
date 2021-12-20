@@ -1,6 +1,7 @@
 We herein provide the pretrained model `fold6_treg_yfnat_b128_e20_lr0.001_4.pt` from the DeepRank-GNN paper (doi: 10.1101/2021.12.08.471762).
 
 An example of code to run DeepRank-GNN on new data with the pre-trained model is provided (*test.py*).
+
 Usage: 
 `python test.py path_to_test_graphs`
 
