@@ -17,7 +17,8 @@ M. Réau, N. Renaud, L. C. Xue, A. M. J. J. Bonvin, DeepRank-GNN: A Graph Neural
 bioRxiv 2021.12.08.471762; doi: https://doi.org/10.1101/2021.12.08.471762
 
 Details of the code
-'''
+
+```
 import glob 
 import sys 
 import time
@@ -27,10 +28,9 @@ import numpy as np
 from deeprank_gnn.GraphGenMP import GraphHDF5
 from deeprank_gnn.NeuralNet import NeuralNet
 from deeprank_gnn.ginet import GINet
-'''
-
+```
 ### Graph generation section
-'''
+```
 #path to the docking models in pdb format
 pdb_path = '../tests/data/pdb/1ATN/' 
 #path to the pssm files
@@ -38,10 +38,10 @@ pssm_path = '../tests/data/pssm/1ATN/'
 
 GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
         graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
-'''
+```
 
 ### Prediction section
-'''
+```
 pretrained_model = 'fold6_treg_yfnat_b128_e20_lr0.001_4.pt'
 gnn = GINet
 
