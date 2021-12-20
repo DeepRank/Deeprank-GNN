@@ -371,8 +371,8 @@ You can get the pre-trained model from DeepRank-GNN github repository (https://g
 >>> from deeprank_gnn.NeuralNet import NeuralNet
 >>> from deeprank_gnn.ginet import GINet
 >>>
->>> pdb_path = './data/pdb/1ATN/'
->>> pssm_path = './data/pssm/1ATN/'
+>>> pdb_path = '../tests/data/pdb/1ATN/'
+>>> pssm_path = '../tests/data/pdb/1ATN/'
 >>> pretrained_model = 'fold6_treg_yfnat_b128_e20_lr0.001_4.pt'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
