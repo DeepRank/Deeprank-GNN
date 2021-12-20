@@ -9,9 +9,9 @@ from deeprank_gnn.NeuralNet import NeuralNet
 from deeprank_gnn.ginet import GINet
 
 ### path to the docking models in pdb format
-pdb_path = './data/pdb/1ATN/' 
+pdb_path = '../tests/data/pdb/1ATN/' 
 ### path to the pssm files
-pssm_path = './data/pssm/1ATN/'
+pssm_path = '../tests/data/pssm/1ATN/'
 
 GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
         graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
