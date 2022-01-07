@@ -72,7 +72,7 @@ NN.train(nepoch=250, validate=False)
 NN.plot_scatter()
 ```
 
-## Custom GNN
+## Custom CNN
 
 It is also possible to define new network architecture and to specify the loss and optimizer to be used during the training.
 
