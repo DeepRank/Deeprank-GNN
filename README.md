@@ -25,7 +25,7 @@ pip install DeepRank-GNN
 Alternatively you can get all the new developments by cloning the repo and installing the code with
 
 ```
-git clone https://DeepRank/Deeprank-GNN 
+git clone https://github.com/DeepRank/Deeprank-GNN 
 cd DeepRank-GNN
 pip install -e ./
 ```
@@ -72,7 +72,7 @@ NN.train(nepoch=250, validate=False)
 NN.plot_scatter()
 ```
 
-## Custom CNN
+## Custom GNN
 
 It is also possible to define new network architecture and to specify the loss and optimizer to be used during the training.
 
