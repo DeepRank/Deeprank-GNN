@@ -195,6 +195,11 @@ class GraphHDF5(object):
             if os.path.isfile(pssmA) and os.path.isfile(pssmB):
                 pssm = {'A': pssmA, 'B': pssmB}
             else:
-                raise FileNotFoundError(
-                    'PSSM file for ' + mol_name + ' not found')
+                pssmA = os.path.join(pssm_path, mol_name+'.A.pdb.pssm')
+                pssmB = os.path.join(pssm_path, mol_name+'.B.pdb.pssm')
+                if os.path.isfile(pssmA) and os.path.isfile(pssmB):
+                    pssm = {'A': pssmA, 'B': pssmB}
+                else:
+                    raise FileNotFoundError(
+                        'PSSM file for ' + mol_name + ' not found')
         return pssm
