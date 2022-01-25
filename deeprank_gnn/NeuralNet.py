@@ -434,7 +434,10 @@ class NeuralNet(object):
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
-
+            
+            pred = pred.to(self.device)
+            data_batch.y = data_batch.y.to(self.device)
+            
             # Check if a target value was provided (i.e. benchmarck scenario)
             if data_batch.y is not None:
                 y += data_batch.y.tolist()
@@ -444,9 +447,9 @@ class NeuralNet(object):
             # get the outputs for export
             if self.task == 'class':
                 pred = F.softmax(pred, dim=1)
-                pred = np.argmax(pred.detach(), axis=1)
+                pred = np.argmax(pred.cpu().detach(), axis=1)
             else:
-                pred = pred.detach().reshape(-1)
+                pred = pred.cpu().detach().reshape(-1)
 
             out += pred.tolist()
 
@@ -484,7 +487,10 @@ class NeuralNet(object):
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
-
+            
+            pred = pred.to(self.device)
+            data_batch.y = data_batch.y.to(self.device)
+            
             loss = self.loss(pred, data_batch.y)
             running_loss += loss.detach().item()
             loss.backward()
@@ -499,9 +505,9 @@ class NeuralNet(object):
             # get the outputs for export
             if self.task == 'class':
                 pred = F.softmax(pred, dim=1)
-                pred = np.argmax(pred.detach(), axis=1)
+                pred = np.argmax(pred.cpu().detach(), axis=1)
             else:
-                pred = pred.detach().reshape(-1)
+                pred = pred.cpu().detach().reshape(-1)
 
             out += pred.tolist()
 
