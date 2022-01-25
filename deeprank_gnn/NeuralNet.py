@@ -434,7 +434,7 @@ class NeuralNet(object):
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
-            
+
             pred = pred.to(self.device)
             data_batch.y = data_batch.y.to(self.device)
             
@@ -487,7 +487,7 @@ class NeuralNet(object):
             pred = self.model(data_batch)
             pred, data_batch.y = self.format_output(
                 pred, data_batch.y)
-            
+
             pred = pred.to(self.device)
             data_batch.y = data_batch.y.to(self.device)
             
