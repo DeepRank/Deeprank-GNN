@@ -98,7 +98,7 @@ If you are benchmarking docking models, go to the **next section**.
 >>>          graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
 >>>
 >>> add_target(graph_path='.', target_name='new_target',
->>>            target_list=list_of_target_values.txt)
+>>>            target_list='list_of_target_values.txt')
 
 .. note::
   The list of target values should respect the following format:
