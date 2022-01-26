@@ -437,7 +437,7 @@ class NeuralNet(object):
 
             pred = pred.to(self.device)
             data_batch.y = data_batch.y.to(self.device)
-            
+
             # Check if a target value was provided (i.e. benchmarck scenario)
             if data_batch.y is not None:
                 y += data_batch.y.tolist()
