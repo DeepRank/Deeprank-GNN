@@ -319,12 +319,14 @@ class HDF5DataSet(Dataset):
             y = None
 
         else:
-            if grp['score/'+self.target][()] is not None:
-                y = torch.tensor(
-                    [grp['score/'+self.target][()]], dtype=torch.float).contiguous()
+            if self.target in grp['score/'].keys():
+                if grp['score/'+self.target][()] is not None:
+                    y = torch.tensor(
+                        [grp['score/'+self.target][()]], dtype=torch.float).contiguous()
+                else:
+                    y = None
             else:
                 y = None
-
         # pos
         pos = torch.tensor(grp['node_data/pos/']
                            [()], dtype=torch.float).contiguous()
