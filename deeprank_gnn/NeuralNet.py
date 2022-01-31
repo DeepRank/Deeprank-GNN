@@ -425,8 +425,9 @@ class NeuralNet(object):
 
         loss_func, loss_val = self.loss, 0
         out = []
+        raw_outputs = []
         y = []
-        data = {'outputs': [], 'targets': [], 'mol': []}
+        data = {'outputs': [], 'raw_outputs' = [], 'targets': [], 'mol': []}
 
         for data_batch in loader:
 
@@ -446,10 +447,12 @@ class NeuralNet(object):
 
             # get the outputs for export
             if self.task == 'class':
-                pred = F.softmax(pred, dim=1)
-                pred = np.argmax(pred.cpu().detach(), axis=1)
+                pred = F.softmax(pred.cpu().detach(), dim=1)
+                raw_outputs += pred.tolist()
+                pred = np.argmax(pred, axis=1)
             else:
                 pred = pred.cpu().detach().reshape(-1)
+                raw_outputs += pred.tolist()
 
             out += pred.tolist()
 
@@ -466,7 +469,9 @@ class NeuralNet(object):
         else:
             data['targets'] += y
             data['outputs'] += out
-
+        
+        data['raw_outputs'] += raw_outputs
+        
         return out, y, loss_val, data
 
     def _epoch(self, epoch):
@@ -478,8 +483,9 @@ class NeuralNet(object):
         """
         running_loss = 0
         out = []
+        raw_outputs = []
         y = []
-        data = {'outputs': [], 'targets': [], 'mol': []}
+        data = {'outputs': [], 'raw_outputs' : [], 'targets': [], 'mol': []}
 
         for data_batch in self.train_loader:
             data_batch = data_batch.to(self.device)
@@ -504,11 +510,13 @@ class NeuralNet(object):
 
             # get the outputs for export
             if self.task == 'class':
-                pred = F.softmax(pred, dim=1)
-                pred = np.argmax(pred.cpu().detach(), axis=1)
+                pred = F.softmax(pred, dim=1).cpu().detach()
+                raw_outputs += pred.tolist()
+                pred = np.argmax(pred, axis=1)
             else:
                 pred = pred.cpu().detach().reshape(-1)
-
+                raw_outputs += pred.tolist()
+                
             out += pred.tolist()
 
             # get the data
@@ -523,6 +531,8 @@ class NeuralNet(object):
         else:
             data['targets'] += y
             data['outputs'] += out
+            
+        data['raw_outputs'] += raw_outputs
 
         return out, y, running_loss, data
 
