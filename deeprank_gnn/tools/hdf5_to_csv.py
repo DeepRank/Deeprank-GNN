@@ -23,7 +23,7 @@ def hdf5_to_csv(hdf5_path):
                         # This section is specific to the binary class
                         # it adds the raw output, i.e. probabilities to belong to the class 0 and the class 1, to the prediction hdf5
                         # This way, binary information can be transformed back to continuous data and used for ranking
-                        if 'raw_output' in hdf5['{}/{}'.format(epoch, dataset)].keys():
+                        if 'raw_outputs' in hdf5['{}/{}'.format(epoch, dataset)].keys():
                                 if first :
                                         header = ['epoch', 'set', 'model', 'targets', 'prediction', 'raw_prediction_0', 'raw_prediction_1']
                                         output_file = open('{}.csv'.format(name), 'w')
@@ -31,9 +31,9 @@ def hdf5_to_csv(hdf5_path):
                                         output_file.close()
                                         first = False
                                 # probability of getting 0         
-                                outputs_0 = hdf5['{}/{}/raw_output'.format(epoch, dataset)][()][:,0]
+                                outputs_0 = hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()][:,0]
                                 # probability of getting 1
-                                outputs_1 = hdf5['{}/{}/raw_output'.format(epoch, dataset)][()][:,1]
+                                outputs_1 = hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()][:,1]
                                 dataset_df = pd.DataFrame(list(zip(epoch_lst, dataset_lst, mol, targets, outputs, outputs_0, outputs_1)), columns = header)
                         
                         else:
