@@ -427,7 +427,7 @@ class NeuralNet(object):
         out = []
         raw_outputs = []
         y = []
-        data = {'outputs': [], 'raw_outputs' = [], 'targets': [], 'mol': []}
+        data = {'outputs': [], 'raw_outputs' : [], 'targets': [], 'mol': []}
 
         for data_batch in loader:
 
