@@ -26,7 +26,7 @@ Welcome to DeepRank-GNN's documentation!
    :caption: API
 
    api.graph_generator
-   api.graph_network
+   api.graph_neural_etwork
    api.neural_network
 
 Indices and tables
