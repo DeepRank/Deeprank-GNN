@@ -1,4 +1,4 @@
-Graph Network
+Graph Neural Networks
 =====================================
 
 GINet layer
@@ -29,7 +29,7 @@ Herein, we add the edge feature to the step 1)
     e_{ij} = LeakyReLu (a_{ij} * [W * x_i || W * x_j || We * edge_{attr} ])
 
 
-.. automodule:: deeprank_gnn.ginet_conv
+.. automodule:: deeprank_gnn.ginet
     :members:
     :undoc-members:
 
@@ -42,7 +42,7 @@ This layer is described by eq. (1) of "Protein Interface Predition using Graph C
 .. math::
     z = x_i * Wc + 1 / Ni Sum_j x_j * Wn + b
 
-.. automodule:: deeprank_gnn.foutnet_conv
+.. automodule:: deeprank_gnn.foutnet
     :members:
     :undoc-members:
 
@@ -56,13 +56,7 @@ This is a new layer that is similar to the graph attention network but simpler
 
 || is the concatenation operator: [1,2,3] || [4,5,6] = [1,2,3,4,5,6] Ni is the number of neighbor of node i Sum_j runs over the neighbors of node i :math:`a_ij` is the edge attribute between node i and j
 
-.. automodule:: deeprank_gnn.sgat_conv
+.. automodule:: deeprank_gnn.sGat
     :members:
     :undoc-members:
 
-WGAT Conv layer
----------------------------------------
-
-.. automodule:: deeprank_gnn.wgat_conv
-    :members:
-    :undoc-members:
