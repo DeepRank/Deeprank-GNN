@@ -45,7 +45,7 @@ def hdf5_to_csv(hdf5_path):
                                         first = False
                                 dataset_df = pd.DataFrame(list(zip(epoch_lst, dataset_lst, mol, targets, outputs)), columns = header)
                         
-                        dataset_df.to_csv('{}.csv'.format(name), mode='a', header=False)
+                        dataset_df.to_csv('{}.csv'.format(name), mode='a', header=True)
         
 
 if __name__ == "__main__":	
