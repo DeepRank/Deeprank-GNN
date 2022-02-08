@@ -369,7 +369,7 @@ You can get the `pre-trained model <https://github.com/DeepRank/Deeprank-GNN/tre
 >>>
 >>> ### Graph generation section
 >>> pdb_path = '../tests/data/pdb/1ATN/'
->>> pssm_path = '../tests/data/pdb/1ATN/'
+>>> pssm_path = '../tests/data/pssm/1ATN/'
 >>>
 >>> GraphHDF5(pdb_path=pdb_path, pssm_path=pssm_path,
 >>>         graph_type='residue', outfile='1ATN_residue.hdf5', nproc=4)
