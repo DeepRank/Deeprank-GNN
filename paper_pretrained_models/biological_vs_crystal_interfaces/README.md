@@ -44,8 +44,7 @@ database_test = 'biological_vs_crystal.hdf5'
 GraphHDF5(pdb_path=pdb, pssm_path=pssm, biopython=False,
               graph_type='residue', outfile=database_test, nproc=8)
 ```
-In a benchmark mode, you can add the target values of your test set
-# to comute the performance metrics
+In a benchmark mode, you can add the target values of your test set to compute the performance metrics
 ```
 add_target(graph_path=database_test, target_name='bio_interface',
            target_list='bio_interfaces.txt')
