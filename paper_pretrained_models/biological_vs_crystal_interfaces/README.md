@@ -8,8 +8,6 @@ An example of code to run DeepRank-GNN on new data with the pre-trained model is
 `python test.py `
 
 
-You can also check Deeprank-GNN documentation: [`use-deeprank-gnn-paper-s-pretrained-model`](https://deeprank-gnn.readthedocs.io/en/latest/tutorial.train_model.html#use-deeprank-gnn-paper-s-pretrained-model)
-
 The data used to train the model are available on [SBGrid](https://data.sbgrid.org/dataset/843/)
 
 ## Please cite
