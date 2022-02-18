@@ -45,6 +45,7 @@ GraphHDF5(pdb_path=pdb, pssm_path=pssm, biopython=False,
               graph_type='residue', outfile=database_test, nproc=8)
 ```
 In a benchmark mode, you can add the target values of your test set to compute the performance metrics
+More details are provided in DeepRank-GNN's [online documentation](https://deeprank-gnn.readthedocs.io/en/latest/tutorial.generate_graph.html#add-your-target-values)
 ```
 add_target(graph_path=database_test, target_name='bio_interface',
            target_list='bio_interfaces.txt')
