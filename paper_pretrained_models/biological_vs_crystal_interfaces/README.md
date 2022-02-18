@@ -38,7 +38,7 @@ pssm_path = '../DC/pssm/'
 #path to the graphs (hdf5) file 
 database_test = 'biological_vs_crystal.hdf5'
 
-# Generation of the graphs (HDF5 file)
+#generation of the graphs (HDF5 file)
 GraphHDF5(pdb_path=pdb, pssm_path=pssm, biopython=False,
               graph_type='residue', outfile=database_test, nproc=8)
 ```
