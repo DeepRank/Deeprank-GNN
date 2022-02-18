@@ -1,6 +1,6 @@
 # Run DeepRank-GNN pre-trained model on your own data
 
-We herein provide the pretrained model `fold6_treg_yfnat_b128_e20_lr0.001_4.pt` from the DeepRank-GNN paper (doi: 10.1101/2021.12.08.471762).
+We herein provide the pretrained model `tclass_ybio_interface_b128_e50_lr0.001_26.pth.tar` from the DeepRank-GNN paper (doi: 10.1101/2021.12.08.471762).
 
 An example of code to run DeepRank-GNN on new data with the pre-trained model is provided (*test.py*).
 
