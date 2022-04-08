@@ -88,7 +88,7 @@ Use the CustomizeGraph class to add target values to the graphs.
 
 If you are benchmarking docking models, go to the **next section**.
 
->>> from deeprank_gnn.GraphGen import GraphHDF5
+>>> from deeprank_gnn.GraphGenMP import GraphHDF5
 >>> from deeprank_gnn.tools.CustomizeGraph import add_target
 >>> 
 >>> pdb_path = './data/pdb/1ATN/'
