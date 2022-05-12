@@ -20,26 +20,30 @@ def hdf5_to_csv(hdf5_path):
                         if len(targets) == 0:
                                 targets = 'n'*len(mol)
 
+                        bin=False
 
                         # This section is specific to the classes                                                                                                                    
                         # it adds the raw output, i.e. probabilities to belong to the class 0, the class 1, etc., to the prediction hdf5                                             
                         # This way, binary information can be transformed back to continuous data and used for ranking                                                               
                         if 'raw_outputs' in hdf5['{}/{}'.format(epoch, dataset)].keys():
-                                if first :
-                                        header = ['epoch', 'set', 'model', 'targets', 'prediction']
-                                        output_file = open('{}.csv'.format(name), 'w')
-                                        output_file.write(','+','.join(header)+'\n')
-                                        output_file.close()
-                                        first = False
-                                data_to_save = [epoch_lst, dataset_lst, mol, targets, outputs]
-                                for target_class in range(0,len(hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()][0,:])):
-                                        # probability of getting 0                                                                                                                   
-                                        outputs_per_class = hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()][:,target_class]
-                                        data_to_save.append(outputs_per_class)
-                                        header.append(f'raw_prediction_{target_class}')
-                                dataset_df = pd.DataFrame(list(zip(*data_to_save)), columns = header)
-
-                        else:
+                                if len(hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()].shape) > 1:
+                                        bin=True
+                                        if first :
+                                                header = ['epoch', 'set', 'model', 'targets', 'prediction']
+                                                output_file = open('{}.csv'.format(name), 'w')
+                                                output_file.write(','+','.join(header)+'\n')
+                                                output_file.close()
+                                                first = False
+                                        data_to_save = [epoch_lst, dataset_lst, mol, targets, outputs]
+                                        
+                                        for target_class in range(0,len(hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()])):
+                                                # probability of getting 0                                                                                                                   
+                                                outputs_per_class = hdf5['{}/{}/raw_outputs'.format(epoch, dataset)][()][:,target_class]
+                                                data_to_save.append(outputs_per_class)
+                                                header.append(f'raw_prediction_{target_class}')
+                                        dataset_df = pd.DataFrame(list(zip(*data_to_save)), columns = header)
+                                                
+                        if bin==False:
                                 if first :
                                         header = ['epoch', 'set', 'model', 'targets', 'prediction']
                                         output_file = open('{}.csv'.format(name), 'w')
