@@ -2,7 +2,9 @@
 
 This repository is no longer being maintained and has been archived for historical purposes. 
 
-We have now developed [DeepRank2](https://github.com/DeepRank/deeprank2), an improved and unified version of DeepRank-GNN, [DeepRank](https://github.com/DeepRank/deeprank), and [DeepRank-Mut](https://github.com/DeepRank/DeepRank-Mut).
+There is a new version called [DeepRank-GNN-esm](https://github.com/haddocking/DeepRank-GNN-esm) which incorporates the ESM embeddings as replacement of the PSSM profile as features. This version is accessible from a separate repository [here](https://github.com/haddocking/DeepRank-GNN-esm). Next to providing ESM features, it has the same functionalities as the original DeepRank-GNN version. For details refer to the following [publication](https://doi.org/10.1093/bioadv/vbad191).
+
+Next to that, there is a new [DeepRank2](https://github.com/DeepRank/deeprank2) version, an improved and unified version of DeepRank-GNN, [DeepRank](https://github.com/DeepRank/deeprank), and [DeepRank-Mut](https://github.com/DeepRank/DeepRank-Mut).
 
 :sparkles: DeepRank2 allows for transformation and storage of 3D representations of both protein-protein interfaces (PPIs) and protein single-residue variants (SRVs) into either graphs or volumetric grids containing structural and physico-chemical information. These can be used for training neural networks for a variety of patterns of interest, using either our pre-implemented training pipeline for graph neural networks (GNNs) or convolutional neural networks (CNNs) or external pipelines.
 
